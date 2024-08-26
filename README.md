@@ -1,5 +1,5 @@
 # IELTS
-A website to help people learn IELTS with all four skills.
+A website to help people learn IELTS with all four skills, based on AI.
 
 ## Connect to repo
 git remote add origin https://github.com/0x2ee08/IELTS
