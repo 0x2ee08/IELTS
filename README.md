@@ -12,4 +12,4 @@ git merge
 git commit -m "comment" \
 git push -u origin main
 
-sigma
+sus
