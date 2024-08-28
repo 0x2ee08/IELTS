@@ -11,7 +11,7 @@ interface MyComponentState {
 }
 
 const SpeakingPage: React.FC = () => {
-    const [ test ] = useState('a');
+    const [ test ] = useState('b');
     const [ username ] = useState('hsgs');
     const [ email ] = useState('hsgshackathon@gmail.com');
     const [ name ] = useState('hsgs2024');
@@ -31,13 +31,26 @@ const SpeakingPage: React.FC = () => {
     };
 
     const register = async () => {
-        // const token = localStorage.getItem('token');
         try {
             const response = await axios.post(`${config.API_BASE_URL}api/register`, { username, email, name, password, role },{
-                // headers: {
-                //     'authorization': `Bearer ${token}`
-                // }
             });
+        } finally {
+        }
+    };
+
+    const login = async () => {
+        try {
+            const response = await fetch(`${config.API_BASE_URL}api/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+            const result = await response.json();
+            localStorage.setItem('token', result.accessToken);
+            localStorage.setItem('username', result.username);
+            localStorage.setItem('role', result.role)
         } finally {
         }
     };
@@ -56,6 +69,13 @@ const SpeakingPage: React.FC = () => {
                 onClick={register}
             >
                 Register
+            </button>
+
+            <button
+                className="button p-2 my-4 mb-4 bg-blue-500 text-white rounded hover:bg-blue-600"
+                onClick={login}
+            >
+                Login
             </button>
         </div>
     );

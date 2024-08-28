@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const fs = require("fs");
 const { connectToDatabase } = require('../utils/mongodb');
 // const { MODEL_NAME, OPENROUTER_API_KEY, SPEAKING_MODEL, SPEAKING_KEY } = require('../config/config');
 const { authenticateToken, authenticateTokenContest, authorizeTeacher } = require('../middleware/authMiddleware');
@@ -9,13 +10,13 @@ const router = express.Router();
 // upload to MongoDB
 router.post('/save_to_database', authenticateToken, async (req, res) => {
     const { test } = req.body;
-    const { username } = req.user;
+    // const { username } = req.user;
 
     const db = await connectToDatabase();
     const tasksCollection = db.collection(`test`);
 
-    const result = await tasksCollection.insertOne({ test, created_by: username});
-    // const result = await tasksCollection.insertOne({ test });
+    // const result = await tasksCollection.insertOne({ test, created_by: username});
+    const result = await tasksCollection.insertOne({ test });
 
     res.json({ id: result.insertedId});
 });
