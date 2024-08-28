@@ -138,11 +138,11 @@ router.post('/get_class_list', async (req, res) => {
     const { school } = req.body;
 
     const db = await connectToDatabase();
-    const tasksCollection = db.collection(`class_list`);
+    const tasksCollection = db.collection(`school_list`);
 
-    const result = await tasksCollection.find({school: school}).toArray();
+    const result = await tasksCollection.findOne({name: school});
 
-    res.json({id: result.insertedId, result});
+    res.json({id: result.insertedId, classlist: result.class});
 });
 
 
