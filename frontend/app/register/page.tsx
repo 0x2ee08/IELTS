@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import config from '../config';
 import axios from 'axios';
 import Footer from '../components/Footer';
@@ -17,6 +18,7 @@ const RegisterPage: React.FC = () => {
     const [tokens, setToken] = useState(10);
     const [role] = useState('student');
     const [schoollist, setSchoollist] = useState<any[]>([]);
+    const router = useRouter();
 
     const register = async () => {
         try {
@@ -35,7 +37,7 @@ const RegisterPage: React.FC = () => {
                 localStorage.setItem('role', result.role);
     
                 // Redirect to user page
-                // router.push('/user');
+                router.push('/profile');
             } else {
                 alert('Register failed: ' + result.error);
             }

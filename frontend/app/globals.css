@@ -2,6 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.hover\:text-shadow:hover {
+/* .hover\:text-shadow:hover {
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
+} */
