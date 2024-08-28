@@ -9,7 +9,7 @@ const MainContent: React.FC = () => {
     /*<div className="min-h-screen bg-gray-100 flex flex-col items-center py-10">*/
       <div className="main-content">
         <header className="header">
-          <h1>IELTS Listening Practice</h1>
+          <h1>IELTS Testing</h1>
         </header>
         <div className="skills-section">
           <Link href ='/pick-from-a-list'> 

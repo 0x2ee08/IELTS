@@ -17,15 +17,10 @@ export default function Home() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-
-
-            Header
             <Header />
 
-            Main content
             <MainContent />
 
-            Footer
             <Footer />
         </div>
     );
