@@ -18,6 +18,7 @@ const RegisterPage: React.FC = () => {
     const [tokens, setToken] = useState(10);
     const [role] = useState('student');
     const [schoollist, setSchoollist] = useState<any[]>([]);
+    const [classlist, setClasslist] = useState<any[]>([]);
     const router = useRouter();
 
     const register = async () => {
@@ -27,7 +28,7 @@ const RegisterPage: React.FC = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username, email, name, class_, school, password, role, tokens }),
+                body: JSON.stringify({ username, email, name, school, class_, password, role, tokens }),
             });
             const result = await response.json();
 
@@ -80,9 +81,29 @@ const RegisterPage: React.FC = () => {
         }
     };
 
+    const getClassList = async (school: string) => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_class_list`, { school }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setClasslist(response.data.result);
+        } finally {
+            // handle final logic here if needed
+        }
+    };
+
     useEffect(() => {
         getSchoolList();
     }, []);
+
+    const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedSchool = e.target.value;
+        setSchool(selectedSchool);
+        getClassList(selectedSchool);
+    };
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -117,25 +138,31 @@ const RegisterPage: React.FC = () => {
                         />
                     </div>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your Class:</label>
-                        <input 
-                            type="text" 
-                            className="border border-gray-300 px-3 py-2 rounded-md w-full"
-                            value={class_}
-                            onChange={(e) => setClass(e.target.value)}
-                        />
-                    </div>
-                    <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">Select Your School:</label>
                         <select
                             value={school}
-                            onChange={(e) => setSchool(e.target.value)}
+                            onChange={handleSchoolChange}
                             className="border border-gray-300 px-3 py-2 rounded-md w-full"
                         >
                             <option value="">Select a school</option>
                             {schoollist.map((schoolOption) => (
                                 <option key={schoolOption.id} value={schoolOption.id}>
                                     {schoolOption.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Select Your Class:</label>
+                        <select
+                            value={class_}
+                            onChange={(e) => setClass(e.target.value)}
+                            className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                        >
+                            <option value="">Select a class</option>
+                            {classlist.map((classOption) => (
+                                <option key={classOption.id} value={classOption.id}>
+                                    {classOption.name}
                                 </option>
                             ))}
                         </select>
