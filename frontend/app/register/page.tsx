@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import config from '../config';
 import axios from 'axios';
 import Footer from '../components/Footer';
@@ -37,7 +38,7 @@ const RegisterPage: React.FC = () => {
                 localStorage.setItem('role', result.role);
 
                 // Redirect to user page
-                // router.push('/profile');
+                router.push('/profile');
             } else {
                 alert('Register failed: ' + result.error);
             }

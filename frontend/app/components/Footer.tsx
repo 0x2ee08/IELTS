@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
     return (
         <footer className="bg-slate-50 bg-opacity-90 text-black z-20">
             <div className="text-center py-4 text-gray-600 text-xs">
-          © 2024 Virtual Staging AI™
+                © Dự tuyển tổng hợp 2024
             </div>
         </footer>
     );
