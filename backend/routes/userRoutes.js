@@ -103,4 +103,15 @@ router.post('/user', authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/get_data_profile', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+
+    const db = await connectToDatabase();
+    const tasksCollection = db.collection(`users`);
+
+    const result = await tasksCollection.find({ username: username }).toArray();
+
+    res.json({id: result.insertedId, result});
+});
+
 module.exports = router;

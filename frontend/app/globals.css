@@ -1,1 +1,3 @@
-
+p::before {
+    content: none; /* Removes any content added before p elements */
+}
