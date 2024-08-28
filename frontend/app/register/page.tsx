@@ -6,7 +6,6 @@ import config from '../config';
 import axios from 'axios';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-import { useRouter } from 'next/navigation';
 
 const RegisterPage: React.FC = () => {
     const [status, setStatus] = useState('');
