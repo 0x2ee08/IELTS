@@ -2,11 +2,13 @@
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import config from '../config';
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [status, setStatus] = useState('');
+    const router = useRouter();
 
     const login = async () => {
         try {
@@ -25,7 +27,7 @@ const LoginPage: React.FC = () => {
                 localStorage.setItem('role', result.role);
     
                 // Redirect to user page
-                // router.push('/user');
+                router.push('/profile');
             } else {
                 alert('Login failed: ' + result.error);
             }
