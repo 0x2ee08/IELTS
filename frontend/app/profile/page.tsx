@@ -15,6 +15,8 @@ const ProfilePage: React.FC = () => {
         class_: '',
         avatar: '',
     });
+    const [schoollist, setSchoollist] = useState<any[]>([]);
+    const [classlist, setClasslist] = useState<any[]>([]);
 
     const getMongoDB = async () => {
         const token = localStorage.getItem('token');
@@ -26,28 +28,66 @@ const ProfilePage: React.FC = () => {
             });
             const profileData = response.data.result[0]; // Assuming single user profile data
             setData([profileData]);
-            setFormData({
-                name: profileData.name,
-                school: profileData.school,
-                class_: profileData.class_,
-                avatar: profileData.avatar,
-            });
+            formData.name = profileData.name;
+            formData.school = profileData.school;
+            formData.class_ = profileData.class_;
+            formData.avatar = profileData.avatar;
         } catch (error) {
             console.error('Error fetching data', error);
         }
     };
 
-    useEffect(() => {
-        getMongoDB();
-    }, []);
-
     const handleEditToggle = () => {
         setEditMode(!editMode);
+        getClassList(formData.school);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+    };
+
+    const getSchoolList = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_school_list`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setSchoollist(response.data.result);
+        } finally {
+            // handle final logic here if needed
+        }
+    };
+
+    const getClassList = async (school: string) => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_class_list`, { school }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setClasslist(response.data.classlist || []);
+        } finally {
+            // handle final logic here if needed
+        }
+    };
+
+    const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedSchool = e.target.value;
+        formData.school = selectedSchool;
+        getClassList(selectedSchool);
+    };
+
+    const handleClassChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setFormData({
+            name: formData.name, 
+            school: formData.school, 
+            class_:e.target.value, 
+            avatar:formData.avatar,
+        })
     };
 
     const update_profile = async (name: string, school: string, class_: string, avatar: string) => {
@@ -82,6 +122,11 @@ const ProfilePage: React.FC = () => {
         update_profile(formData.name, formData.school, formData.class_, formData.avatar);
     };
 
+    useEffect(() => {
+        getMongoDB();
+        getSchoolList();
+    }, []);
+
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
@@ -110,25 +155,35 @@ const ProfilePage: React.FC = () => {
                                         <label className="block text-gray-700 text-sm font-bold mb-2">
                                             School
                                         </label>
-                                        <input
-                                            type="text"
-                                            name="school"
+                                        <select
                                             value={formData.school}
-                                            onChange={handleInputChange}
-                                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                        />
+                                            onChange={handleSchoolChange}
+                                            className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                                        >
+                                            <option value="">Select a school</option>
+                                            {schoollist.map((schoolOption) => (
+                                                <option key={schoolOption.id} value={schoolOption.id}>
+                                                    {schoolOption.name}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                     <div className="mb-4">
                                         <label className="block text-gray-700 text-sm font-bold mb-2">
                                             Class
                                         </label>
-                                        <input
-                                            type="text"
-                                            name="class_"
+                                        <select
                                             value={formData.class_}
-                                            onChange={handleInputChange}
-                                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                        />
+                                            onChange={handleClassChange}
+                                            className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                                        >
+                                            <option value="">Select a class</option>
+                                            {classlist.map((_, idx) => (
+                                                <option key={classlist[idx]} value={classlist[idx]}>
+                                                    {classlist[idx]}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                     <div className="mb-4">
                                         <label className="block text-gray-700 text-sm font-bold mb-2">
