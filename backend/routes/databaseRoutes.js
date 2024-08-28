@@ -8,7 +8,7 @@ const { secret } = require('../config/config');
 const router = express.Router();
 
 // upload to MongoDB
-router.post('/save_to_database', authorizeTeacher, async (req, res) => {
+router.post('/save_to_database', async (req, res) => {
     const { test } = req.body;
     // const { username } = req.user;
 
