@@ -4,6 +4,7 @@ import Footer from '../components/Footer';
 import Header from '../components/Header';
 import React, { useState } from 'react';
 import config from '../config';
+import { useRouter } from 'next/navigation';
 
 const SendEmailPage: React.FC = () => {
     const [to, setTo] = useState('');
@@ -12,6 +13,9 @@ const SendEmailPage: React.FC = () => {
     const [status, setStatus] = useState<string | null>(null);
     const [usercode, setUsercode] = useState('');
     const [code, setCode] = useState('');
+    const [check, setCheck] = useState(false);
+    const [newpassword, setNewpassword] = useState('');
+    const router = useRouter();
 
     // Removed separate 'code' state and use local variable instead.
     const generateRandomCode = () => {
@@ -22,6 +26,7 @@ const SendEmailPage: React.FC = () => {
 
     const handleSendEmail = async () => {
         setStatus(null);
+        setNewpassword('');
 
         // Generate the code and set the text with it
         const randomCode = generateRandomCode();
@@ -39,42 +44,57 @@ const SendEmailPage: React.FC = () => {
             });
 
             if (response.ok) {
-                setStatus('Email sent successfully!');
+                alert('Email sent successfully!');
             } else {
                 const result = await response.json();
-                setStatus('Error: ' + result.error);
+                alert('Error: ' + result.error);
             }
         } catch (error) {
-            setStatus('Failed to send email');
+            alert('Failed to send email');
+        }
+    };
+
+    const change_password = async (email : string, newpassword : string) => {
+        try {
+            const response = await fetch(`${config.API_BASE_URL}api/change_password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, newpassword }),
+            });
+            const result = await response.json();
+            if (response.ok) {
+                alert('Password Changed successful!');
+                localStorage.setItem('token', result.accessToken);
+                localStorage.setItem('username', result.username);
+                localStorage.setItem('role', result.role);
+    
+                // Redirect to user page
+            } else {
+                alert('Changing failed: ' + result.error);
+            }
+
+        } finally {
         }
     };
 
     const handleChangePass = async () => {
-        setStatus(null);
-
-        // Generate the code and set the text with it
-        const randomCode = generateRandomCode();
-        const emailText = "Your code to reset password (please don't share this): " + randomCode;
-        setCode(randomCode.toString());
-        setText(emailText);
-
+        setCheck(false);
         try {
-            const response = await fetch(`${config.API_BASE_URL}api/send_email`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ to, subject, text: emailText }), // Pass the updated text
-            });
-
-            if (response.ok) {
-                setStatus('Email sent successfully!');
-            } else {
-                const result = await response.json();
-                setStatus('Error: ' + result.error);
+            console.log(usercode, code);
+            if (usercode !== code) {
+                alert("Wrong Verification Code. Please Check Again");
+                return;
             }
+            
+            setCheck(true);
+            change_password(to, newpassword);
+            // router.push('/profile');
+            // Optionally, redirect or update UI as needed
         } catch (error) {
-            setStatus('Failed to send email');
+            console.error("Error changing password:", error);
+        } finally {
         }
     };
 
@@ -99,12 +119,20 @@ const SendEmailPage: React.FC = () => {
                         Send Code
                     </button>
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your Code Received:</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your Code Received: (check in spam too)</label>
                         <input
-                            type="password"
                             className="border border-gray-300 px-3 py-2 rounded-md w-full"
                             value={usercode}
                             onChange={(e) => setUsercode(e.target.value)}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your New Password</label>
+                        <input
+                            type="password"
+                            className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                            value={newpassword}
+                            onChange={(e) => setNewpassword(e.target.value)}
                         />
                     </div>
                     <button

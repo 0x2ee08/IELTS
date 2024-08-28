@@ -84,15 +84,24 @@ router.get('/user', authenticateToken, async (req, res) => {
 });
 
 // Update user info
-router.post('/user', authenticateToken, async (req, res) => {
-    const { username } = req.user;
-    const { email, name } = req.body;
+router.post('/change_password', async (req, res) => {
+    // const { username } = req.user;
+    const { email, newpassword } = req.body;
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(newpassword)) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters long and include uppercase letters, lowercase letters, and numbers.' });
+    }
     try {
         const db = await connectToDatabase();
         const usersCollection = db.collection('users');
 
-        const result = await usersCollection.updateOne({ username }, { $set: { email, name } });
+        const hashedPassword = await bcrypt.hash(newpassword, 10);
+        const result = await usersCollection.updateOne(
+            { email },
+            { $set: { password: hashedPassword } }
+        );
+
         if (result.modifiedCount === 0) {
             return res.status(500).json({ error: 'Failed to update user info' });
         }
