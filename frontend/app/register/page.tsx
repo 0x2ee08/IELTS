@@ -1,9 +1,15 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, ChangeEvent, use} from 'react';
 import config from '../config';
+import axios from 'axios';
 
-const loginPage: React.FC = () => {
+declare const window: any;
+
+interface MyComponentState {
+    userInput: string;
+}
+const registerPage: React.FC = () => {
     const [status, setStatus] = useState('');
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -13,9 +19,7 @@ const loginPage: React.FC = () => {
     const [class_, setClass] = useState('');
     const [tokens, setToken] = useState(10);
     const [role] = useState('student');
-
-    // Define the list of school options
-    const schools = ['Harvard', 'Stanford', 'MIT', 'Oxford', 'Cambridge'];
+    const [ schoollist, setSchoollist ] = useState<any[]>([])
 
     const register = async () => {
         try {
@@ -42,6 +46,24 @@ const loginPage: React.FC = () => {
         } finally {
         }
     };
+
+    const getschoollist = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_school_list`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setSchoollist(response.data.result);
+        } finally {
+            
+        }
+    };
+
+    useEffect(() => {
+        getschoollist();
+    }, []);
 
     return (
         <div>
@@ -81,9 +103,9 @@ const loginPage: React.FC = () => {
                     className="border border-gray-300 px-3 py-2 rounded-md w-full"
                 >
                     <option value="">Select a school</option>
-                    {schools.map((schoolOption) => (
-                        <option key={schoolOption} value={schoolOption}>
-                            {schoolOption}
+                    {schoollist.map((schoolOption) => (
+                        <option key={schoolOption.id} value={schoolOption.id}>
+                            {schoolOption.name}
                         </option>
                     ))}
                 </select>
@@ -105,4 +127,4 @@ const loginPage: React.FC = () => {
     );
 };
 
-export default loginPage;
+export default registerPage;
