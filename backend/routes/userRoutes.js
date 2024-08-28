@@ -9,7 +9,7 @@ const router = express.Router();
 
 // User registration
 router.post('/register', async (req, res) => {
-    const { username, email, name, password, role } = req.body;
+    const { username, email, name, class_, school, password, role, tokens } = req.body;
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(password)) {
         return res.status(400).json({ error: 'Password must be at least 8 characters long and include uppercase letters, lowercase letters, and numbers.' });
@@ -30,7 +30,7 @@ router.post('/register', async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await usersCollection.insertOne({ username, email, name, password: hashedPassword, role, created_at: new Date() });
+        const result = await usersCollection.insertOne({ username, email, name, class_, school, password: hashedPassword, role, tokens, created_at: new Date() });
         res.json({ id: result.insertedId, username, email, name });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -102,5 +102,28 @@ router.post('/user', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Failed to update user info' });
     }
 });
+
+router.post('/get_data_profile', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+
+    const db = await connectToDatabase();
+    const tasksCollection = db.collection(`users`);
+
+    const result = await tasksCollection.find({ username: username }).toArray();
+
+    res.json({id: result.insertedId, result});
+});
+
+router.post('/get_school_list', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+
+    const db = await connectToDatabase();
+    const tasksCollection = db.collection(`school_list`);
+
+    const result = await tasksCollection.find({}).toArray();
+
+    res.json({id: result.insertedId, result});
+});
+
 
 module.exports = router;
