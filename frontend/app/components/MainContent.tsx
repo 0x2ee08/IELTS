@@ -5,50 +5,59 @@ import Link from 'next/link'
 
 const MainContent: React.FC = () => {
   return (
-    
-    /*<div className="min-h-screen bg-gray-100 flex flex-col items-center py-10">*/
       <div className="main-content">
         <header className="header">
-          <h1>IELTS Testing</h1>
+          <h1>IELTS</h1>
         </header>
         <div className="skills-section">
-          <Link href ='/pick-from-a-list'> 
+          <Link href ='/login'> 
           <div className="skill">
-              <h3>Pick From A List</h3>
-              <p> Develop your ability to select correct options from a list in IELTS listening tasks.</p>
+              <h3>exam 1</h3>
           </div>
           </Link>
 
-          <Link href ='/multiple-choice'>
+          <Link href ='/login'> 
           <div className="skill">
-              <h3>Multiple Choice</h3>
-              <p>Practice your multiple choice skills with various IELTS listening tests.</p>
+              <h3>exam 2</h3>
+          </div>
+          </Link>
+          <Link href ='/login'> 
+          <div className="skill">
+              <h3>exam 3</h3>
           </div>
           </Link>
 
-          <Link href ='/sentence-completion'>
+          <Link href ='/login'> 
           <div className="skill">
-              <h3>Sentence Completion</h3>
-              <p>Enhance your ability to complete sentences by listening to IELTS recordings.</p>
+              <h3>exam 4</h3>
           </div>
           </Link>
           
-          <Link href='matching'>
+          <Link href ='/login'>
           <div className="skill">
-            <h3>Matching Information</h3>
-            <p>Improve your matching skills with tailored IELTS listening exercises.</p>
+              <h3>exam 5</h3>
           </div>
           </Link>
 
-          <Link href='sort-answer'>
+          <Link href ='/login'>
           <div className="skill">
-            <h3>Short Answer</h3>
-            <p>Hone your short answer skills by practicing with specific IELTS listening questions.</p>
+              <h3>exam 6</h3>
+          </div>
+          </Link>
+          
+          <Link href='login'>
+          <div className="skill">
+            <h3>exam 7</h3>
+          </div>
+          </Link>
+
+          <Link href='login'>
+          <div className="skill">
+            <h3>exam 8</h3>
           </div>
           </Link>
         </div>
       </div>
-    /*</div>*/
   );
 };
 
