@@ -12,48 +12,128 @@ const MainContent: React.FC = () => {
         <div className="skills-section">
           <Link href ='/login'> 
           <div className="skill">
-              <h3>exam 1</h3>
+          <div className="skill-card">
+                <h3>IELTS Simulation Listening test 1</h3>
+                <div className="details">
+                  <span>⏰ 40 phút | 👥 148098 | 💬 288</span>
+                  <span>4 phần thi | 40 câu hỏi</span>
+                </div>
+                <div className="tags">
+                  <span className="tag">#IELTS Academic</span>
+                  <span className="tag">#Listening</span>
+                </div>
+              </div>
           </div>
           </Link>
 
           <Link href ='/login'> 
           <div className="skill">
-              <h3>exam 2</h3>
+          <div className="skill-card">
+                <h3>IELTS Simulation Listening test 2</h3>
+                <div className="details">
+                  <span>⏰ 40 phút | 👥 148098 | 💬 288</span>
+                  <span>4 phần thi | 40 câu hỏi</span>
+                </div>
+                <div className="tags">
+                  <span className="tag">#IELTS Academic</span>
+                  <span className="tag">#Listening</span>
+                </div>
+              </div>
           </div>
           </Link>
           <Link href ='/login'> 
           <div className="skill">
-              <h3>exam 3</h3>
+          <div className="skill-card">
+                <h3>IELTS Simulation Listening test 3</h3>
+                <div className="details">
+                  <span>⏰ 40 phút | 👥 148098 | 💬 288</span>
+                  <span>4 phần thi | 40 câu hỏi</span>
+                </div>
+                <div className="tags">
+                  <span className="tag">#IELTS Academic</span>
+                  <span className="tag">#Listening</span>
+                </div>
+              </div>
           </div>
           </Link>
 
           <Link href ='/login'> 
           <div className="skill">
-              <h3>exam 4</h3>
+          <div className="skill-card">
+                <h3>IELTS Simulation Listening test 4</h3>
+                <div className="details">
+                  <span>⏰ 40 phút | 👥 148098 | 💬 288</span>
+                  <span>4 phần thi | 40 câu hỏi</span>
+                </div>
+                <div className="tags">
+                  <span className="tag">#IELTS Academic</span>
+                  <span className="tag">#Listening</span>
+                </div>
+              </div>
           </div>
           </Link>
           
           <Link href ='/login'>
           <div className="skill">
-              <h3>exam 5</h3>
+          <div className="skill-card">
+                <h3>IELTS Simulation Listening test 5</h3>
+                <div className="details">
+                  <span>⏰ 40 phút | 👥 148098 | 💬 288</span>
+                  <span>4 phần thi | 40 câu hỏi</span>
+                </div>
+                <div className="tags">
+                  <span className="tag">#IELTS Academic</span>
+                  <span className="tag">#Listening</span>
+                </div>
+              </div>
           </div>
           </Link>
 
           <Link href ='/login'>
           <div className="skill">
-              <h3>exam 6</h3>
+          <div className="skill-card">
+                <h3>IELTS Simulation Listening test 6</h3>
+                <div className="details">
+                  <span>⏰ 40 phút | 👥 148098 | 💬 288</span>
+                  <span>4 phần thi | 40 câu hỏi</span>
+                </div>
+                <div className="tags">
+                  <span className="tag">#IELTS Academic</span>
+                  <span className="tag">#Listening</span>
+                </div>
+              </div>
           </div>
           </Link>
           
           <Link href='login'>
           <div className="skill">
-            <h3>exam 7</h3>
+          <div className="skill-card">
+                <h3>IELTS Simulation Listening test 7</h3>
+                <div className="details">
+                  <span>⏰ 40 phút | 👥 148098 | 💬 288</span>
+                  <span>4 phần thi | 40 câu hỏi</span>
+                </div>
+                <div className="tags">
+                  <span className="tag">#IELTS Academic</span>
+                  <span className="tag">#Listening</span>
+                </div>
+              </div>
           </div>
           </Link>
 
           <Link href='login'>
           <div className="skill">
-            <h3>exam 8</h3>
+          <div className="skill-card">
+                <h3>IELTS Simulation Listening test 8</h3>
+                <div className="details">
+                  <span>⏰ 40 phút | 👥 148098 | 💬 288</span>
+                  <span>4 phần thi | 40 câu hỏi</span>
+                </div>
+                <div className="tags">
+                  <span className="tag">#IELTS Academic</span>
+                  <span className="tag">#Listening</span>
+                </div>
+              </div>
           </div>
           </Link>
         </div>
