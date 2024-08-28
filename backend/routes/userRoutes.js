@@ -84,6 +84,32 @@ router.get('/user', authenticateToken, async (req, res) => {
 });
 
 // Update user info
+router.post('/update_profile', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { name, school, class_, avatar } = req.body;
+    try {
+        const db = await connectToDatabase();
+        const usersCollection = db.collection('users');
+
+        const result = await usersCollection.updateOne(
+            { username: username },
+            { 
+                $set: { 
+                    name: name, 
+                    school: school, 
+                    class_: class_, 
+                    avatar: avatar 
+                }
+            }
+        )
+
+        res.json({ id: result.insertedId, result});
+    } catch (error) {
+        console.error('Error update user profile:', error);
+        res.status(500).json({ error: 'Failed to update user profile' });
+    }
+});
+
 router.post('/change_password', async (req, res) => {
     // const { username } = req.user;
     const { email, newpassword } = req.body;

@@ -50,19 +50,36 @@ const ProfilePage: React.FC = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleFormSubmit = async () => {
+    const update_profile = async (name: string, school: string, class_: string, avatar: string) => {
         const token = localStorage.getItem('token');
         try {
-            await axios.post(`${config.API_BASE_URL}api/update_profile`, formData, {
+            const response = await fetch(`${config.API_BASE_URL}api/update_profile`, {
+                method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
+                body: JSON.stringify({name, school, class_, avatar}),
             });
-            setEditMode(false);
-            getMongoDB(); // Refresh profile data
-        } catch (error) {
-            console.error('Error updating profile', error);
+            const result = await response.json();
+            if (response.ok) {
+                alert('Update successful!');
+                localStorage.setItem('token', result.accessToken);
+                localStorage.setItem('username', result.username);
+                localStorage.setItem('role', result.role);
+    
+                // Redirect to user page
+                // router.push('/profile');
+            } else {
+                alert('Update failed: ' + result.error);
+            }
+
+        } finally {
         }
+    };
+
+    const handleFormSubmit = async () => {
+        update_profile(formData.name, formData.school, formData.class_, formData.avatar);
     };
 
     return (
@@ -126,7 +143,9 @@ const ProfilePage: React.FC = () => {
                                         />
                                     </div>
                                     <div className="flex justify-between">
-                                        <button onClick={handleFormSubmit} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                                        <button 
+                                            onClick={handleFormSubmit}
+                                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                                             Save
                                         </button>
                                         <button onClick={handleEditToggle} className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
