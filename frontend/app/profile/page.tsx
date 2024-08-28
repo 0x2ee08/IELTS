@@ -39,8 +39,8 @@ const ProfilePage: React.FC = () => {
                                     <p><strong>Username:</strong> {user.username}</p>
                                     <p><strong>Email:</strong> {user.email}</p>
                                     <p><strong>Name:</strong> {user.name}</p>
-                                    <p><strong>Class:</strong> {user.class_}</p>
                                     <p><strong>School:</strong> {user.school}</p>
+                                    <p><strong>Class:</strong> {user.class_}</p>
                                     <p><strong>Role:</strong> {user.role}</p>
                                     <p><strong>Current Tokens:</strong> {user.tokens}</p>
                                 </li>
