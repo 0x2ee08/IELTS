@@ -11,15 +11,15 @@ interface MyComponentState {
 }
 
 const SpeakingPage: React.FC = () => {
-    const [ test ] = useState('anHiep');
+    const [ test ] = useState('a');
 
     const saveToDataBase = async () => {
-        // const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
         try {
             const response = await axios.post(`${config.API_BASE_URL}api/save_to_database`, { test },{
-                // headers: {
-                //     'Authorization': `Bearer ${token}`
-                // }
+                headers: {
+                    'authorization': `Bearer ${token}`
+                }
             });
         } finally {
         }
@@ -31,8 +31,9 @@ const SpeakingPage: React.FC = () => {
                 className="button p-2 my-4 mb-4 bg-blue-500 text-white rounded hover:bg-blue-600"
                 onClick={saveToDataBase}
             >
-                Click here
+                Up to database
             </button>
+
         </div>
     );
 };
