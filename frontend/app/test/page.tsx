@@ -12,11 +12,11 @@ interface MyComponentState {
 
 const SpeakingPage: React.FC = () => {
     const [ test ] = useState('b');
+    const [ role ] = useState('admin');
     const [ username ] = useState('hsgs');
     const [ email ] = useState('hsgshackathon@gmail.com');
     const [ name ] = useState('hsgs2024');
     const [ password ] = useState('Hsgs2024');
-    const [ role ] = useState('admin');
 
     const saveToDataBase = async () => {
         const token = localStorage.getItem('token');
