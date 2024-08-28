@@ -139,8 +139,8 @@ const ProfilePage: React.FC = () => {
                                     <p><strong>Username:</strong> {data[0].username}</p>
                                     <p><strong>Email:</strong> {data[0].email}</p>
                                     <p><strong>Name:</strong> {formData.name}</p>
-                                    <p><strong>Class:</strong> {formData.class_}</p>
                                     <p><strong>School:</strong> {formData.school}</p>
+                                    <p><strong>Class:</strong> {formData.class_}</p>
                                     <p><strong>Role:</strong> {data[0].role}</p>
                                     <p><strong>Current Tokens:</strong> {data[0].tokens}</p>
                                     <button onClick={handleEditToggle} className="mt-4 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
