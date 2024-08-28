@@ -11,12 +11,12 @@
   
   .main-content {
     text-align: center;
-    padding: 40px 20px;
+    /* padding: 40px 20px;
     background-color: #ffffff;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    max-width: 1200px;
-    margin: 40px auto;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
+    /* max-width: 1200px; */
+    /* margin: 40px auto; */
   }
   
   .header {
@@ -24,7 +24,7 @@
   }
   
   .header h1 {
-    color: #ff7a00;
+    color: #03045e;
     font-size: 3em;
     margin-bottom: 10px;
   }
@@ -36,7 +36,7 @@
   
   .skills-section {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     justify-content: center;
   }
@@ -55,7 +55,7 @@
   }
   
   .skill h3 {
-    color: #ff7a00;
+    color: #03045e;
     margin-bottom: 15px;
     font-size: 1.5em;
   }

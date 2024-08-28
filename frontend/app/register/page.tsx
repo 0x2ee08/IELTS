@@ -30,14 +30,34 @@ const RegisterPage: React.FC = () => {
                 body: JSON.stringify({ username, email, name, class_, school, password, role, tokens }),
             });
             const result = await response.json();
+
             if (response.ok) {
                 alert('Register successful!');
-                localStorage.setItem('token', result.accessToken);
-                localStorage.setItem('username', result.username);
-                localStorage.setItem('role', result.role);
-
-                // Redirect to user page
-                router.push('/profile');
+                
+                try {
+                    const response2 = await fetch(`${config.API_BASE_URL}api/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, password }),
+                    });
+                    const result2 = await response2.json();
+                    if (response2.ok) {
+                        alert('Login successful!');
+                        localStorage.setItem('token', result2.accessToken);
+                        localStorage.setItem('username', result2.username);
+                        localStorage.setItem('role', result2.role);
+            
+                        // Redirect to user page
+                        router.push('/profile');
+                    } else {
+                        alert('Login failed: ' + result2.error);
+                    }
+        
+                } finally {
+                    setStatus('Successfully login');
+                }
             } else {
                 alert('Register failed: ' + result.error);
             }

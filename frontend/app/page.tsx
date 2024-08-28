@@ -38,9 +38,9 @@ export default function Home() {
               </div>
             </Slider>
           </div>
-          
+          <br />
           <MainContent />
-
+          <br />
           <Footer />
       </div>
     </div>
