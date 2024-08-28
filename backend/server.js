@@ -10,6 +10,7 @@ require('dotenv').config();
 
 const databaseRoutes = require('./routes/databaseRoutes');
 const userRoutes = require('./routes/userRoutes');
+const sendcodeRoutes = require('./routes/sendcodeRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -27,6 +28,7 @@ app.use(express.json());
 
 app.use('/api', databaseRoutes);
 app.use('/api', userRoutes);
+app.use('/api', sendcodeRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
