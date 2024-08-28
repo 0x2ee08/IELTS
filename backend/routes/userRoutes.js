@@ -114,8 +114,8 @@ router.post('/get_data_profile', authenticateToken, async (req, res) => {
     res.json({id: result.insertedId, result});
 });
 
-router.post('/get_school_list', authenticateToken, async (req, res) => {
-    const { username } = req.user;
+router.post('/get_school_list', async (req, res) => {
+    // const { username } = req.user;
 
     const db = await connectToDatabase();
     const tasksCollection = db.collection(`school_list`);
