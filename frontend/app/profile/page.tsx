@@ -11,10 +11,10 @@ interface MyComponentState {
 }
 
 const profilePage: React.FC = () => {
-    const [ username, setUsername ] = useState('');
-    const [ password, setPassword ] = useState('');
-    const [ status, setStatus ] = useState('');
-    const [ data, setData ] = useState<any[]>([]); 
+    const [ username, setUsername ] = useState('');  
+    const [ password, setPassword ] = useState('');  
+    const [ status, setStatus ] = useState('');   
+    const [ data, setData ] = useState<any[]>([]);   
 
     const getMongoDB = async () => {
         const token = localStorage.getItem('token');
@@ -30,12 +30,12 @@ const profilePage: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        getMongoDB();
+    }, []);
+
     return (
         <div>
-            <button onClick={getMongoDB}>
-                Fetch Data From Database
-            </button>
-
             {data.length > 0 ? (
                 <ul>
                     {data.map((user, index) => (
