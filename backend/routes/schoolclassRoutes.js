@@ -13,7 +13,7 @@ router.post('/get_school_list', async (req, res) => {
     const db = await connectToDatabase();
     const tasksCollection = db.collection(`school_list`);
 
-    const result = await tasksCollection.find({}).toArray();
+    const result = await tasksCollection.find({}).sort({ name: 1 }).toArray();
 
     res.json({id: result.insertedId, result});
 });
@@ -25,9 +25,10 @@ router.post('/get_class_list', async (req, res) => {
     const tasksCollection = db.collection(`school_list`);
 
     const result = await tasksCollection.findOne({name: school});
+    const lst = (result.class || []).sort();
     if (!result) return;
 
-    res.json({id: result.insertedId, classlist: result.class});
+    res.json({id: result.insertedId, classlist: lst});
 });
 
 router.post('/update_class_list', async (req, res) => {
