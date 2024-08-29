@@ -1,33 +1,38 @@
+// app/components/Header.tsx
 'use client'
 
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
+// NavLink Component
 type NavLinkProps = {
     href: string;
     text: string;
     isButton?: boolean;
+    customStyles?: string; // Add a prop for custom styles
 };
 
-const NavLink: React.FC<NavLinkProps> = ({ href, text, isButton }) => {
+const NavLink: React.FC<NavLinkProps> = ({ href, text, isButton, customStyles }) => {
     const pathname = usePathname();
     const isActive = pathname === href;
 
-    const baseClasses = "px-3 py-1 rounded-lg transition-transform duration-300 ease-in-out text-sm";
+    const baseClasses = "px-4 py-2 rounded-lg transition-transform duration-300 ease-in-out text-sm flex items-center justify-center";
     const activeClasses = "bg-gray-200 text-black";
-    const linkClasses = "text-[#03045E] hover:bg-gray-100 hover:scale-105 hover:shadow-md hover:shadow-[#00B4D8]/50 hover:translate-y-[-2px]"; 
+    const linkClasses = "text-[#03045E] hover:bg-gray-100 hover:scale-105 hover:shadow-md hover:shadow-[#00B4D8]/50 hover:translate-y-[-2px]";
     const buttonClasses = "bg-white text-[#00B4D8] border border-[#00B4D8] hover:bg-[#00B4D8] hover:text-white hover:scale-105";
+    const customButtonClasses = customStyles ? customStyles : buttonClasses;
 
     return (
         <Link href={href} passHref>
-            <button className={`${baseClasses} ${isButton ? buttonClasses : linkClasses} ${isActive && !isButton ? activeClasses : ''}`}>
+            <button className={`${baseClasses} ${isButton ? customButtonClasses : linkClasses} ${isActive && !isButton ? activeClasses : ''}`}>
                 {text}
             </button>
         </Link>
     );
 };
 
+// Header Component
 const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [username, setUsername] = useState<string | null>(null);
@@ -74,26 +79,31 @@ const Header: React.FC = () => {
                     
                     {/* Right-side links */}
                     <nav className={`md:flex md:space-x-4 ${isMenuOpen ? 'block' : 'hidden md:block'}`}>
-                            <NavLink href="/contests" text="Contests" />
-                            <NavLink href="/blogs" text="Blogs" />
-                            <NavLink href="/writing" text="Writing" />
-                            <NavLink href="/contests" text="Flash cards" />
-                            <NavLink href="/contests" text="Ted Talk" />
+                        <NavLink href="/contests" text="Contests" />
+                        <NavLink href="/blogs" text="Blogs" />
+                        <NavLink href="/writing" text="Writing" />
+                        <NavLink href="/flashcards" text="Flash Cards" />
+                        <NavLink href="/tedtalk" text="Ted Talk" />
 
                         {username && (role === 'admin' || role === 'teacher') ? (
-                            <>
-                                <NavLink href="/management" text="Dashboard" />
-                            </>
+                            <NavLink href="/management" text="Dashboard" />
                         ) : null}
 
                         {username ? (
                             <>
-                                <NavLink href="/profile" text={username} />
+                                <NavLink 
+                                    href="/profile" 
+                                    text={username} 
+                                    isButton 
+                                    customStyles="bg-[#5B99C2] text-white border border-[#5B99C2] hover:bg-[#4A8CC2] hover:scale-105"
+                                />
                                 <button 
                                     onClick={handleLogout} 
-                                    className="px-4 py-2 bg-black text-white rounded-lg shadow hover:bg-gray-700 transition-colors">
+                                    className="px-4 py-1 bg-white text-[#00B4D8] border border-[#00B4D8] hover:bg-[#00B4D8] hover:text-white hover:scale-105 rounded-lg shadow transition-transform duration-300 ease-in-out flex items-center justify-center font-light text-sm"
+                                >
                                     Log Out
                                 </button>
+
                             </>
                         ) : (
                             <div className="flex space-x-2 ml-auto">
