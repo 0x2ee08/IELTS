@@ -9,6 +9,6 @@ git pull \
 git merge
 
 ## Commit change
-git add .
+git add . \
 git commit -m "comment" \
 git push -u origin main
