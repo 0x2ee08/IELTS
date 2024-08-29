@@ -25,6 +25,7 @@ router.post('/get_class_list', async (req, res) => {
     const tasksCollection = db.collection(`school_list`);
 
     const result = await tasksCollection.findOne({name: school});
+    if (!result) return;
 
     res.json({id: result.insertedId, classlist: result.class});
 });
