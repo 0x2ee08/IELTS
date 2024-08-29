@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* styles/globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap');
+
+body {
+  font-family: 'Quicksand', sans-serif;
+}
+
 /* .hover\:text-shadow:hover {
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 } */

@@ -1,4 +1,3 @@
-// app/components/Header.tsx
 'use client'
 
 import Link from 'next/link';
@@ -17,8 +16,8 @@ const NavLink: React.FC<NavLinkProps> = ({ href, text, isButton }) => {
 
     const baseClasses = "px-3 py-1 rounded-lg transition-transform duration-300 ease-in-out text-sm";
     const activeClasses = "bg-gray-200 text-black";
-    const linkClasses = "text-[#03045E] hover:bg-gray-100";
-    const buttonClasses = "bg-[#00B4D8] text-white hover:bg-[#0096C7] hover:scale-105"; // Custom blue color
+    const linkClasses = "text-[#03045E] hover:bg-gray-100 hover:scale-105 hover:shadow-md hover:shadow-[#00B4D8]/50 hover:translate-y-[-2px]"; 
+    const buttonClasses = "bg-white text-[#00B4D8] border border-[#00B4D8] hover:bg-[#00B4D8] hover:text-white hover:scale-105";
 
     return (
         <Link href={href} passHref>
@@ -61,7 +60,7 @@ const Header: React.FC = () => {
 
     return (
         <header className="sticky top-0 bg-white dark:bg-gray-400 bg-opacity-90 backdrop-blur-sm text-black shadow-sm z-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center py-5">
                     {/* Logo and left-side menu button */}
                     <div className="flex items-center justify-start space-x-4">
@@ -75,14 +74,14 @@ const Header: React.FC = () => {
                     
                     {/* Right-side links */}
                     <nav className={`md:flex md:space-x-4 ${isMenuOpen ? 'block' : 'hidden md:block'}`}>
-                            <NavLink href="/reading" text="Reading" />
-                            <NavLink href="/listening" text="Listening" />
-                            <NavLink href="/writing" text="Writing" />
-                            <NavLink href="/speaking" text="Speaking" />
-                            <NavLink href="/contests" text="Contests" />
-                            <NavLink href="/flashcards" text="Flash Cards" />
-                            <NavLink href="/blogs" text="Blogs" />
-                            <NavLink href="/about" text="About" />
+                        <NavLink href="/reading" text="Reading" />
+                        <NavLink href="/listening" text="Listening" />
+                        <NavLink href="/writing" text="Writing" />
+                        <NavLink href="/speaking" text="Speaking" />
+                        <NavLink href="/contests" text="Contests" />
+                        <NavLink href="/flashcards" text="Flash Cards" />
+                        <NavLink href="/blogs" text="Blogs" />
+                        <NavLink href="/about" text="About" />
 
                         {username && (role === 'admin' || role === 'teacher') ? (
                             <>
