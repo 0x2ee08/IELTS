@@ -49,7 +49,7 @@ export default function Home() {
                     <div className="relative z-10 p-4 rounded-md">
                       Practice IELTS tests
                       <br />
-                      Enhance your Writing and Speking skill with AI
+                      Enhance your Writing and Speaking skill with AI
                     </div>
                   </div>
                 </div>
