@@ -77,9 +77,16 @@ const Header: React.FC = () => {
                     {/* Right-side links */}
                     
                     <nav className={`space-x-4 ${isMenuOpen ? 'block' : 'hidden md:flex'}`}>
-                        {username ? (
+                        {username && (role === 'admin' || role === 'teacher') ? (
                             <>
                                 <NavLink href="/management"  text='Dashboard'/>
+                            </>
+                        ) : (
+                            <>
+                            </>
+                        )}
+                        {username ? (
+                            <>
                                 <NavLink href="/profile"  text={username}/>
                                 <button 
                                     onClick={handleLogout} 
@@ -92,7 +99,7 @@ const Header: React.FC = () => {
                                 <NavLink href="/login" text="Login" />
                                 <NavLink href="/register" text="Register" />
                             </>
-                    )}
+                        )}
                     </nav>
                 </div>
             </div>
