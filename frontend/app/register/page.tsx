@@ -89,7 +89,7 @@ const RegisterPage: React.FC = () => {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            setClasslist(response.data.result);
+            setClasslist(response.data.classlist || []);
         } finally {
             // handle final logic here if needed
         }
@@ -160,9 +160,9 @@ const RegisterPage: React.FC = () => {
                             className="border border-gray-300 px-3 py-2 rounded-md w-full"
                         >
                             <option value="">Select a class</option>
-                            {classlist.map((classOption) => (
-                                <option key={classOption.id} value={classOption.id}>
-                                    {classOption.name}
+                            {classlist.map((_, idx) => (
+                                <option key={classlist[idx]} value={classlist[idx]}>
+                                    {classlist[idx]}
                                 </option>
                             ))}
                         </select>

@@ -60,6 +60,11 @@ const LoginPage: React.FC = () => {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
+                    <div className="mb-4 text-right">
+                        <a href="/password_reset" className="text-sm text-blue-500 hover:underline">
+                            Forgot your password?
+                        </a>
+                    </div>
                     <button
                         className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                         onClick={login}
