@@ -74,14 +74,11 @@ const Header: React.FC = () => {
                     
                     {/* Right-side links */}
                     <nav className={`md:flex md:space-x-4 ${isMenuOpen ? 'block' : 'hidden md:block'}`}>
-                        <NavLink href="/reading" text="Reading" />
-                        <NavLink href="/listening" text="Listening" />
-                        <NavLink href="/writing" text="Writing" />
-                        <NavLink href="/speaking" text="Speaking" />
-                        <NavLink href="/contests" text="Contests" />
-                        <NavLink href="/flashcards" text="Flash Cards" />
-                        <NavLink href="/blogs" text="Blogs" />
-                        <NavLink href="/about" text="About" />
+                            <NavLink href="/contests" text="Contests" />
+                            <NavLink href="/blogs" text="Blogs" />
+                            <NavLink href="/writing" text="Writing" />
+                            <NavLink href="/contests" text="Flash cards" />
+                            <NavLink href="/contests" text="Ted Talk" />
 
                         {username && (role === 'admin' || role === 'teacher') ? (
                             <>

@@ -6,7 +6,7 @@ import config from '../config';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import SchoolLeftSide from './school';
-import ClassLeftSide from './class';
+import ClassRightSide from './class';
 
 const ManagementPage: React.FC = () => {
     const [school, setSchool] = useState('');
@@ -43,10 +43,14 @@ const ManagementPage: React.FC = () => {
         }
     };
 
-    const handleSchoolChange = (selectedSchool: string) => {
-        setSchool(selectedSchool);
+    const handleSchoolChange = (newschool: string) => {
+        setSchool(newschool);
         setClass_(''); // Reset class selection when school changes
-        getClassList(selectedSchool); // Fetch classes for the selected school
+        getClassList(newschool); // Fetch classes for the selected school
+    };
+
+    const handleNewSchool = (newschool: string) => {
+        getSchoolList();
     };
 
     const handleClassChange = (processedClasses: string[]) => {
@@ -69,12 +73,13 @@ const ManagementPage: React.FC = () => {
                         school={school}
                         schoollist={schoollist}
                         onSchoolChange={handleSchoolChange}
+                        onNewSchool={handleNewSchool}
                     />
                 </div>
 
                 {/* Right side of the page (class list) */}
                 <div className="w-1/2 container mx-2 my-4 p-4 border border-gray-300 rounded shadow-md mr-4">
-                    <ClassLeftSide
+                    <ClassRightSide
                         school={school}
                         class_={class_}
                         classlist={classlist}

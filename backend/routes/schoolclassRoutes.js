@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { connectToDatabase } = require('../utils/mongodb');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const { authenticateToken, authorizeTeacher } = require('../middleware/authMiddleware');
 const { secret } = require('../config/config');
 
 const router = express.Router();
@@ -13,7 +13,7 @@ router.post('/get_school_list', async (req, res) => {
     const db = await connectToDatabase();
     const tasksCollection = db.collection(`school_list`);
 
-    const result = await tasksCollection.find({}).toArray();
+    const result = await tasksCollection.find({}).sort({ name: 1 }).toArray();
 
     res.json({id: result.insertedId, result});
 });
@@ -25,8 +25,10 @@ router.post('/get_class_list', async (req, res) => {
     const tasksCollection = db.collection(`school_list`);
 
     const result = await tasksCollection.findOne({name: school});
+    const lst = (result.class || []).sort();
+    if (!result) return;
 
-    res.json({id: result.insertedId, classlist: result.class});
+    res.json({id: result.insertedId, classlist: lst});
 });
 
 router.post('/update_class_list', async (req, res) => {
@@ -49,6 +51,24 @@ router.post('/update_class_list', async (req, res) => {
         console.error('Error updating user info:', error);
         res.status(500).json({ error: 'Failed to update class list' });
     }
+});
+
+router.post('/add_school', async (req, res) => {
+    const { role, newschool } = req.body;
+
+    const db = await connectToDatabase();
+    const tasksCollection = db.collection(`school_list`);
+
+    const check = await tasksCollection.findOne({name: newschool});
+    if(check) return res.status(400).json({ error: 'This school has already inserted' });
+
+    if(role !== 'admin' && role !== 'teacher') {
+        return res.status(400).json({ error: 'You have no permissions to do this.' });
+    } 
+
+    const result = await tasksCollection.insertOne({name: newschool, class: null});
+
+    res.json({id: result.insertedId, result});
 });
 
 module.exports = router;
