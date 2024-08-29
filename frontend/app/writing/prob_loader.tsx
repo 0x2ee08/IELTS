@@ -4,20 +4,17 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../config';
 
-interface SchoolLeftSideProps {
-    school: string;
-    schoollist: any[];
-    onSchoolChange: (school: string) => void;
-    onNewSchool: (school: string) => void;
+interface WritingProbLoaderProps {
+    prob_id: string
 }
 
-const SchoolLeftSide: React.FC<SchoolLeftSideProps> = ({ school, schoollist, onSchoolChange, onNewSchool }) => {
+const WritingProbLoader: React.FC<WritingProbLoaderProps> = ({ prob_id }) => {
 
     return (
         <div>
-            
+
         </div>
     );
 };
 
-export default SchoolLeftSide;
+export default WritingProbLoader;
