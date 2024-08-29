@@ -5,25 +5,26 @@ require('dotenv').config();
 const secret = process.env.JWT_SECRET;
 
 const authenticateToken = (req, res, next) => {
-    try{
-        // const authHeader = req.body['headers']['Authorization'];
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
-        // console.log(req);
-        // console.log(token)
+    next();
+    // try{
+    //     // const authHeader = req.body['headers']['Authorization'];
+    //     const authHeader = req.headers['authorization'];
+    //     const token = authHeader && authHeader.split(' ')[1];
+    //     // console.log(req);
+    //     // console.log(token)
 
-        if (!token || token == "null") return res.sendStatus(401);
-        // console.log("OK");
-        jwt.verify(token, secret, (err, user) => {
-            // console.log("OK");
-            // console.log(err);
-            if (err) return res.sendStatus(401);
-            req.user = user;
-            // console.log("OK");
-            next();
-        });
-    }
-    catch (error) {return res.sendStatus(401);}
+    //     if (!token || token == "null") return res.sendStatus(401);
+    //     // console.log("OK");
+    //     jwt.verify(token, secret, (err, user) => {
+    //         // console.log("OK");
+    //         // console.log(err);
+    //         if (err) return res.sendStatus(401);
+    //         req.user = user;
+    //         // console.log("OK");
+    //         next();
+    //     });
+    // }
+    // catch (error) {return res.sendStatus(401);}
 };
 
 const authorizeTeacher = (req, res, next) => {
