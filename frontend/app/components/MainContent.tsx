@@ -7,7 +7,7 @@ const MainContent: React.FC = () => {
       {/* Left Section: Upcoming Contest and Virtual Tests */}
       <div className="flex-1 space-y-8">
         {/* Upcoming Contest */}
-        <section className="bg-white p-6 rounded-lg shadow-md">
+        <section className="bg-white p-6 rounded-lg">
           <h2 className="text-lg font-semibold">UPCOMING CONTEST</h2>
           <div className="bg-blue-100 p-6 rounded-lg mt-4 shadow-lg">
             <h3 className="font-bold text-xl">Reading Skill (AI generated contest) #01</h3>
@@ -17,7 +17,7 @@ const MainContent: React.FC = () => {
         </section>
 
         {/* Virtual Tests */}
-        <section className="bg-white p-4 rounded-lg shadow-md">
+        <section className="bg-white p-4 rounded-lg">
             <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold">VIRTUAL TESTS</h2>
                 <div className="flex space-x-2">
@@ -39,13 +39,15 @@ const MainContent: React.FC = () => {
                     </div>
                 ))}
             </div>
-            <button className="mt-4 text-blue-500">READ MORE</button>
+            <div className="flex items-center justify-center mt-4">
+                <button className="text-blue-500 mr-4">READ MORE</button>
+            </div>
         </section>
       </div>
 
       {/* Right Section: Recent Blogs */}
       <aside className="w-full lg:w-1/3">
-        <section className="bg-white p-6 rounded-lg shadow-md">
+        <section className="bg-white p-6 rounded-lg ">
           <h2 className="text-lg font-semibold">RECENT BLOGS</h2>
           <div className="space-y-4 mt-4">
             {Array(5).fill(0).map((_, index) => (
@@ -60,7 +62,9 @@ const MainContent: React.FC = () => {
               </div>
             ))}
           </div>
-          <button className="mt-4 text-blue-500">READ MORE</button>
+          <div className="flex items-center justify-center mt-4">
+            <button className="text-blue-500 mr-4">READ MORE</button>
+          </div>
         </section>
       </aside>
     </div>
