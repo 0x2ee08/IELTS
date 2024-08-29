@@ -1,5 +1,4 @@
 import React from 'react';
-import './App.css'; // Make sure to create and style this CSS file as per your design requirements
 import Link from 'next/link'
 
 

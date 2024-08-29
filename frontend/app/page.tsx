@@ -6,7 +6,7 @@ import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Footer from './components/Footer';
-// import MainContent from './components/MainContent';
+import MainContent from './components/MainContent';
 import Header from './components/Header';
 
 import Slider from "react-slick";
@@ -41,9 +41,9 @@ export default function Home() {
                 </div>
             </Slider>
           </div>
-          <br />
-          {/* <MainContent /> */}
-          <br />
+
+          <MainContent />
+
           <Footer />
       </div>
     </div>
