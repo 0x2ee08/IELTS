@@ -10,4 +10,8 @@ git merge
 
 ## Commit change
 git commit -m "comment" \
+<<<<<<< HEAD
 git push -u origin main
+=======
+git push -u origin main
+>>>>>>> 062bb6ef7c1a14eac178270f2e37492db4e3099c
