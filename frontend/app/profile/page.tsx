@@ -104,9 +104,9 @@ const ProfilePage: React.FC = () => {
             const result = await response.json();
             if (response.ok) {
                 alert('Update successful!');
-                localStorage.setItem('token', result.accessToken);
-                localStorage.setItem('username', result.username);
-                localStorage.setItem('role', result.role);
+                // localStorage.setItem('token', result.accessToken);
+                // localStorage.setItem('username', result.username);
+                // localStorage.setItem('role', result.role);
     
                 // Redirect to user page
                 // router.push('/profile');
