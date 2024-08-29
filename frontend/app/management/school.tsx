@@ -1,6 +1,8 @@
 'use client'
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import config from '../config';
 
 interface SchoolLeftSideProps {
     school: string;
@@ -9,9 +11,33 @@ interface SchoolLeftSideProps {
 }
 
 const SchoolLeftSide: React.FC<SchoolLeftSideProps> = ({ school, schoollist, onSchoolChange }) => {
+    const [newschool, setNewschool] = useState('');
+
     const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedSchool = e.target.value;
         onSchoolChange(selectedSchool);
+    };
+
+    const addSchool = async (newschool: string) => {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/add_school`, {role, newschool}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            onSchoolChange(newschool);
+            alert('Successfully save new school');
+        } catch (error) {
+            console.error('Error adding school:', error);
+            alert('Error adding school:' + error);
+        }
+    };
+
+
+    const handleAddSchool = () => {
+        addSchool(newschool);
     };
 
     return (
@@ -32,6 +58,23 @@ const SchoolLeftSide: React.FC<SchoolLeftSideProps> = ({ school, schoollist, onS
                         </option>
                     ))}
                 </select>
+            </div>
+            <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                    If your school doesn't exist on system, add a new one:
+                </label>
+                <textarea
+                    value={newschool}
+                    onChange={(e) => setNewschool(e.target.value)}
+                    className="border border-gray-300 px-3 py-2 rounded-md w-full h-10"
+                />
+            </div>
+            <div className="mb-4">
+                <button 
+                    onClick={handleAddSchool}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Save
+                </button>
             </div>
         </div>
     );

@@ -27,13 +27,16 @@ const authenticateToken = (req, res, next) => {
 };
 
 const authorizeTeacher = (req, res, next) => {
-    // console.log(req.user);
-    if (req.user.role !== 'teacher' && req.user.role !== 'Teacher') {
-        if(req.user.role !== 'admin' && req.user.role !== 'Admin'){
-            return res.status(403).json({ message: 'Access denied. You are not authorized to perform this action.' });
+    try{
+        console.log(req.role);
+        if (req.role !== 'teacher' && req.role !== 'Teacher') {
+            if(req.role !== 'admin' && req.role !== 'Admin'){
+                return res.status(403).json({ message: 'Access denied. You are not authorized to perform this action.' });
+            }
         }
+        next();
     }
-    next();
+    catch (error) {return res.status(403).json({ message: 'Internal server error.' });}
 };
 
 const authenticateTokenContest = (req, res, next) => {
