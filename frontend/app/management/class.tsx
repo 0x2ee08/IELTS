@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import config from '../config';
 
-interface ClassLeftSideProps {
+interface ClassRightSideProps {
     school: string;
     class_: string;
     classlist: any[];
@@ -11,7 +11,7 @@ interface ClassLeftSideProps {
     onClassChange: (processedClasses: string[]) => void;
 }
 
-const ClassLeftSide: React.FC<ClassLeftSideProps> = ({ school, class_, classlist, classstring, onClassChange }) => {
+const ClassRightSide: React.FC<ClassRightSideProps> = ({ school, class_, classlist, classstring, onClassChange }) => {
     const [str, setStr] = useState(classstring);
 
     // Sync str with classstring whenever classstring changes
@@ -81,4 +81,4 @@ const ClassLeftSide: React.FC<ClassLeftSideProps> = ({ school, class_, classlist
     );
 };
 
-export default ClassLeftSide;
+export default ClassRightSide;
