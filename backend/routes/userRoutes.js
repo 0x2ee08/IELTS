@@ -149,26 +149,5 @@ router.post('/get_data_profile', authenticateToken, async (req, res) => {
     res.json({id: result.insertedId, result});
 });
 
-router.post('/get_school_list', async (req, res) => {
-    // const { username } = req.user;
-
-    const db = await connectToDatabase();
-    const tasksCollection = db.collection(`school_list`);
-
-    const result = await tasksCollection.find({}).toArray();
-
-    res.json({id: result.insertedId, result});
-});
-
-router.post('/get_class_list', async (req, res) => {
-    const { school } = req.body;
-    const db = await connectToDatabase();
-    const tasksCollection = db.collection(`school_list`);
-
-    const result = await tasksCollection.findOne({name: school});
-
-    res.json({id: result.insertedId, classlist: result.class});
-});
-
 
 module.exports = router;

@@ -79,6 +79,7 @@ const Header: React.FC = () => {
                     <nav className={`space-x-4 ${isMenuOpen ? 'block' : 'hidden md:flex'}`}>
                         {username ? (
                             <>
+                                <NavLink href="/management"  text='Dashboard'/>
                                 <NavLink href="/profile"  text={username}/>
                                 <button 
                                     onClick={handleLogout} 
