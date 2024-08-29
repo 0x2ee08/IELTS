@@ -23,9 +23,6 @@ export default function Home() {
   };
   return (
     <div>
-<<<<<<< HEAD
-      
-=======
       <div className="flex flex-col min-h-screen bg-gradient-to-b from-zinc-200 via-white to-white dark:from-zinc-800 dark:via-black dark:to-black">
           <Head>
               <title>Virtual Staging AI</title>
@@ -46,7 +43,6 @@ export default function Home() {
           <br />
           <Footer />
       </div>
->>>>>>> 062bb6ef7c1a14eac178270f2e37492db4e3099c
     </div>
   );
 }
