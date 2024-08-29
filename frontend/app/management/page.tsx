@@ -43,10 +43,14 @@ const ManagementPage: React.FC = () => {
         }
     };
 
-    const handleSchoolChange = (selectedSchool: string) => {
-        setSchool(selectedSchool);
+    const handleSchoolChange = (newschool: string) => {
+        setSchool(newschool);
         setClass_(''); // Reset class selection when school changes
-        getClassList(selectedSchool); // Fetch classes for the selected school
+        getClassList(newschool); // Fetch classes for the selected school
+    };
+
+    const handleNewSchool = (newschool: string) => {
+        getSchoolList();
     };
 
     const handleClassChange = (processedClasses: string[]) => {
@@ -69,6 +73,7 @@ const ManagementPage: React.FC = () => {
                         school={school}
                         schoollist={schoollist}
                         onSchoolChange={handleSchoolChange}
+                        onNewSchool={handleNewSchool}
                     />
                 </div>
 

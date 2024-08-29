@@ -8,9 +8,10 @@ interface SchoolLeftSideProps {
     school: string;
     schoollist: any[];
     onSchoolChange: (school: string) => void;
+    onNewSchool: (school: string) => void;
 }
 
-const SchoolLeftSide: React.FC<SchoolLeftSideProps> = ({ school, schoollist, onSchoolChange }) => {
+const SchoolLeftSide: React.FC<SchoolLeftSideProps> = ({ school, schoollist, onSchoolChange, onNewSchool }) => {
     const [newschool, setNewschool] = useState('');
 
     const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -27,7 +28,6 @@ const SchoolLeftSide: React.FC<SchoolLeftSideProps> = ({ school, schoollist, onS
                     'Authorization': `Bearer ${token}`
                 }
             });
-            onSchoolChange(newschool);
             alert('Successfully save new school');
         } catch (error) {
             console.error('Error adding school:', error);
@@ -38,6 +38,8 @@ const SchoolLeftSide: React.FC<SchoolLeftSideProps> = ({ school, schoollist, onS
 
     const handleAddSchool = () => {
         addSchool(newschool);
+        onNewSchool(newschool);
+        setNewschool('');
     };
 
     return (
@@ -61,7 +63,7 @@ const SchoolLeftSide: React.FC<SchoolLeftSideProps> = ({ school, schoollist, onS
             </div>
             <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2">
-                    If your school doesn't exist on system, add a new one:
+                    Add a new school (maybe you need to reload the page):
                 </label>
                 <textarea
                     value={newschool}
