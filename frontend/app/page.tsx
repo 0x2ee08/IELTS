@@ -6,10 +6,7 @@ import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Footer from './components/Footer';
-<<<<<<< HEAD
-=======
 // import MainContent from './components/MainContent';
->>>>>>> refs/remotes/origin/main
 import Header from './components/Header';
 
 import Slider from "react-slick";
@@ -35,9 +32,6 @@ export default function Home() {
 
           <Header />
 
-<<<<<<< HEAD
-    
-=======
           <div style={{ width: '100%' }}>
             <Slider {...Slidersettings}>
                 <div className="image-container">
@@ -48,9 +42,8 @@ export default function Home() {
             </Slider>
           </div>
           <br />
-          <MainContent />
+          {/* <MainContent /> */}
           <br />
->>>>>>> refs/remotes/origin/main
           <Footer />
       </div>
     </div>

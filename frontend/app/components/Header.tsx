@@ -66,11 +66,7 @@ const Header: React.FC = () => {
                     {/* Logo and left-side menu button */}
                     <div className="flex items-center justify-start space-x-4">
                         <Link href="/">
-<<<<<<< HEAD
-                            <button className="text-2xl font-bold text-blue-900">IELTS</button>
-=======
                             <button className="text-5xl font-bold" style={{ color: '#03045E' }}>IELTS</button>
->>>>>>> refs/remotes/origin/main
                         </Link>
                         <button className="text-3xl md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                             &#9776;
