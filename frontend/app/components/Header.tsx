@@ -77,7 +77,7 @@ const Header: React.FC = () => {
                     <nav className={`md:flex md:space-x-4 ${isMenuOpen ? 'block' : 'hidden md:block'}`}>
                             <NavLink href="/contests" text="Contests" />
                             <NavLink href="/blogs" text="Blogs" />
-                            <NavLink href="/contests" text="Writing" />
+                            <NavLink href="/writing" text="Writing" />
                             <NavLink href="/contests" text="Flash cards" />
                             <NavLink href="/contests" text="Ted Talk" />
 
