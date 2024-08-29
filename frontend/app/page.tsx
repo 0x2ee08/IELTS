@@ -42,7 +42,7 @@ export default function Home() {
             </Slider>
           </div>
           <br />
-          <MainContent />
+          {/* <MainContent /> */}
           <br />
           <Footer />
       </div>
