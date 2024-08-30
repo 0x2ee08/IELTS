@@ -134,7 +134,7 @@ const ReadingRender: React.FC = () => {
                                     e.stopPropagation();
                                     deleteParagraph(pIndex);
                                 }} 
-                                className="bg-red-500 text-white px-2 rounded-md ml-2"
+                                className="px-2 rounded-md ml-2"
                             >
                                 x
                             </button>
@@ -166,7 +166,7 @@ const ReadingRender: React.FC = () => {
                                                     e.stopPropagation();
                                                     deleteSection(pIndex, sIndex);
                                                 }} 
-                                                className="bg-red-500 text-white px-2 rounded-md ml-2"
+                                                className=" px-2 rounded-md ml-2"
                                             >
                                                 x
                                             </button>
@@ -202,7 +202,7 @@ const ReadingRender: React.FC = () => {
                                                         />
                                                         <button 
                                                             onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
-                                                            className="bg-red-500 text-white px-2 rounded-md ml-2"
+                                                            className="px-2 rounded-md ml-2"
                                                         >
                                                             x
                                                         </button>
