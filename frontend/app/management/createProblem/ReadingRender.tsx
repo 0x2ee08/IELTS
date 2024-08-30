@@ -31,7 +31,9 @@ const ReadingRender: React.FC = () => {
             sections: [{ type: '', questions: [{ question: '', answer: '', explanation: '' }], isOpen: true }], 
             isOpen: true 
         }
-    ]);
+    ]);;
+
+    const [problemName, setProblemName] = useState('');
 
     const questionTypes = [
         "Choose a question type",
@@ -108,13 +110,17 @@ const ReadingRender: React.FC = () => {
     };
 
     const createProblem = () => {
+        console.log(problemName);
         console.log(paragraphs);
         fetch('/create_problem', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(paragraphs),
+            body: JSON.stringify({
+                paragraphs,
+                problemName
+            })
         })
         .then(response => response.json())
         .then(data => console.log(data))
@@ -123,6 +129,14 @@ const ReadingRender: React.FC = () => {
 
     const renderParagraphs = () => (
         <div className='py-4'>
+            <input 
+                type="text" 
+                placeholder='Name' 
+                className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
+                onChange={(e) => setProblemName(e.target.value)}
+                // value={paragraph.title} 
+                // onChange={(e) => handleInputChange(pIndex, 'title', e.target.value)}
+            />
             {paragraphs.map((paragraph, pIndex) => (
                 <div key={pIndex} className="border border-gray-300 rounded-md p-4 mb-4">
                     <div onClick={() => toggleParagraph(pIndex)} className="cursor-pointer flex justify-between items-center">
@@ -144,7 +158,7 @@ const ReadingRender: React.FC = () => {
                         <div>
                             <input 
                                 type="text" 
-                                placeholder='Title' 
+                                placeholder='Title / Topic' 
                                 className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
                                 value={paragraph.title} 
                                 onChange={(e) => handleInputChange(pIndex, 'title', e.target.value)}
