@@ -32,25 +32,23 @@ router.post('/get_blog', authenticateToken, async (req, res) => {
     res.json({id: result.insertedId, result});
 });
 
-router.post('/update_class_list', async (req, res) => {
+router.post('/update_emotion', async (req, res) => {
     // const { username } = req.user;
-    const { school, classlist } = req.body;
+    const { blog_id, like, dislike } = req.body;
     try {
         const db = await connectToDatabase();
-        const usersCollection = db.collection('school_list');
+        const usersCollection = db.collection('blogs');
 
         const result = await usersCollection.updateOne(
-            { name: school },
-            { $set: { class: classlist } }
+            { blog_id: blog_id },
+            { $set: { like: like } },
+            { $set: { dislike: dislike } }
         );
 
-        if (result.modifiedCount === 0) {
-            return res.status(500).json({ error: 'Not found' });
-        }
         res.json({ success: true });
     } catch (error) {
         console.error('Error updating user info:', error);
-        res.status(500).json({ error: 'Failed to update class list' });
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
