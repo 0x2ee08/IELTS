@@ -7,7 +7,7 @@ import Footer from '../components/Footer';
 import Header from '../components/Header';
 import SchoolLeftSide from './school';
 import ClassRightSide from './class';
-import AddContest from './contest';
+import AddProblem from './problem';
 
 const ManagementPage: React.FC = () => {
     const [school, setSchool] = useState('');
@@ -15,9 +15,9 @@ const ManagementPage: React.FC = () => {
     const [classstring, setClassstring] = useState('');
     const [schoollist, setSchoollist] = useState<any[]>([]);
     const [classlist, setClasslist] = useState<any[]>([]);
-    const [selectedOption, setSelectedOption] = useState<'school' | 'contest'>('school');
+    const [selectedOption, setSelectedOption] = useState<'school' | 'problem'>('school');
 
-    const handleOptionChange = (option: 'school' | 'contest') => {
+    const handleOptionChange = (option: 'school' | 'problem') => {
         setSelectedOption(option);
     };
 
@@ -82,10 +82,10 @@ const ManagementPage: React.FC = () => {
                         Add School
                     </div>
                     <div 
-                        className={`cursor-pointer p-2 ${selectedOption === 'contest' ? 'bg-blue-500 text-white' : 'text-black'}`}
-                        onClick={() => handleOptionChange('contest')}
+                        className={`cursor-pointer p-2 ${selectedOption === 'problem' ? 'bg-blue-500 text-white' : 'text-black'}`}
+                        onClick={() => handleOptionChange('problem')}
                     >
-                        Add Contest
+                        Add Problem
                     </div>
                 </div>
                 <div className="w-4/5 flex flex-row">
@@ -115,7 +115,7 @@ const ManagementPage: React.FC = () => {
                     ) : (
                         <div className="w-full container mx-2 my-4 p-4 border border-gray-300 rounded shadow-md ml-4">
                             {/* Add Contest Form or Component */}
-                            <AddContest />
+                            <AddProblem />
                         </div>
                     )}
                 </div>
