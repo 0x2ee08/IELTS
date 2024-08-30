@@ -42,7 +42,7 @@ const BlogsPage: React.FC = () => {
             <Header />
 
             {bloglist.map((blog, idx) => {
-                const link = `/load_blogs?id=${idlist[idx]}`;
+                const link = `/blog_loader?id=${idlist[idx]}`;
                 return (
                     <p key={idx}>
                         <a href={link} className="text-sm text-blue-500 hover:underline">

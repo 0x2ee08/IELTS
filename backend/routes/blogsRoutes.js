@@ -20,17 +20,16 @@ router.post('/get_bloglist', authenticateToken, async (req, res) => {
     res.json({ idlist: result2, bloglist: result});
 });
 
-router.post('/get_class_list', async (req, res) => {
-    const { school } = req.body;
+router.post('/get_blog', authenticateToken, async (req, res) => {
+    // const { username } = req.user;
+    const { blog_id } = req.body;
 
     const db = await connectToDatabase();
-    const tasksCollection = db.collection(`school_list`);
+    const blogsCollection = db.collection(`blogs`);
 
-    const result = await tasksCollection.findOne({name: school});
-    const lst = (result.class || []).sort();
-    if (!result) return;
+    const result = await blogsCollection.findOne({ blog_id: blog_id });
 
-    res.json({id: result.insertedId, classlist: lst});
+    res.json({id: result.insertedId, result});
 });
 
 router.post('/update_class_list', async (req, res) => {
