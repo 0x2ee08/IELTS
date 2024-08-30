@@ -7,12 +7,12 @@ const { secret } = require('../config/config');
 
 const router = express.Router();
 
-router.post('/get_prob_data', async (req, res) => {
+router.post('/get_writing_prob_data', async (req, res) => {
     // const { username } = req.user;
     const { prob_id } = req.body;
 
     const db = await connectToDatabase();
-    const tasksCollection = db.collection(`writing_tasks`);
+    const tasksCollection = db.collection(`tasks`);
 
     const result = await tasksCollection.findOne({ prob_id: prob_id });
 
