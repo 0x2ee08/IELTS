@@ -7,6 +7,7 @@ import Footer from '../components/Footer';
 import Header from '../components/Header';
 import SchoolLeftSide from './school';
 import ClassRightSide from './class';
+import AddContest from './contest';
 
 const ManagementPage: React.FC = () => {
     const [school, setSchool] = useState('');
@@ -14,6 +15,11 @@ const ManagementPage: React.FC = () => {
     const [classstring, setClassstring] = useState('');
     const [schoollist, setSchoollist] = useState<any[]>([]);
     const [classlist, setClasslist] = useState<any[]>([]);
+    const [selectedOption, setSelectedOption] = useState<'school' | 'contest'>('school');
+
+    const handleOptionChange = (option: 'school' | 'contest') => {
+        setSelectedOption(option);
+    };
 
     const getSchoolList = async () => {
         const token = localStorage.getItem('token');
@@ -67,25 +73,51 @@ const ManagementPage: React.FC = () => {
             <Header />
 
             <div className="flex flex-row">
-                {/* Left side of the page (school list) */}
-                <div className="w-1/2 container mx-2 my-4 p-4 border border-gray-300 rounded shadow-md ml-4">
-                    <SchoolLeftSide
-                        school={school}
-                        schoollist={schoollist}
-                        onSchoolChange={handleSchoolChange}
-                        onNewSchool={handleNewSchool}
-                    />
+                {/* Options Row */}
+                <div className="w-1/5 h-full container mx-2 my-4 p-4 border border-gray-300 rounded shadow-md">
+                    <div 
+                        className={`cursor-pointer p-2 ${selectedOption === 'school' ? 'bg-blue-500 text-white' : 'text-black'}`}
+                        onClick={() => handleOptionChange('school')}
+                    >
+                        Add School
+                    </div>
+                    <div 
+                        className={`cursor-pointer p-2 ${selectedOption === 'contest' ? 'bg-blue-500 text-white' : 'text-black'}`}
+                        onClick={() => handleOptionChange('contest')}
+                    >
+                        Add Contest
+                    </div>
                 </div>
+                <div className="w-4/5 flex flex-row">
+                    {selectedOption === 'school' ? (
+                        <div className="w-full flex flex-row">
+                            {/* Left side of the page (school list) */}
+                            <div className="w-1/2 container mx-2 my-4 p-4 border border-gray-300 rounded shadow-md ml-4">
+                                <SchoolLeftSide
+                                    school={school}
+                                    schoollist={schoollist}
+                                    onSchoolChange={handleSchoolChange}
+                                    onNewSchool={handleNewSchool}
+                                />
+                            </div>
 
-                {/* Right side of the page (class list) */}
-                <div className="w-1/2 container mx-2 my-4 p-4 border border-gray-300 rounded shadow-md mr-4">
-                    <ClassRightSide
-                        school={school}
-                        class_={class_}
-                        classlist={classlist}
-                        classstring={classlist.join(', ')}
-                        onClassChange={handleClassChange}
-                    />
+                            {/* Right side of the page (class list) */}
+                            <div className="w-1/2 container mx-2 my-4 p-4 border border-gray-300 rounded shadow-md mr-4">
+                                <ClassRightSide
+                                    school={school}
+                                    class_={class_}
+                                    classlist={classlist}
+                                    classstring={classlist.join(', ')}
+                                    onClassChange={handleClassChange}
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="w-full container mx-2 my-4 p-4 border border-gray-300 rounded shadow-md ml-4">
+                            {/* Add Contest Form or Component */}
+                            <AddContest />
+                        </div>
+                    )}
                 </div>
             </div>
 
