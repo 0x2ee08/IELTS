@@ -54,7 +54,7 @@ router.post('/update_class_list', async (req, res) => {
     }
 });
 
-router.post('/add_school', async (req, res) => {
+router.post('/add_school',authenticateToken, async (req, res) => {
     const { role, newschool } = req.body;
 
     const db = await connectToDatabase();
