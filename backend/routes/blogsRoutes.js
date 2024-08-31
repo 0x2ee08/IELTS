@@ -32,32 +32,32 @@ router.post('/get_blog', authenticateToken, async (req, res) => {
     res.json({id: result.insertedId, result});
 });
 
-router.post('/update_emotion', async (req, res) => {
+router.post('/update_blog', async (req, res) => {
     // const { username } = req.user;
-    const { blog_id, like, dislike } = req.body;
+    const { blog_id, like, dislike, view } = req.body;
     try {
         const db = await connectToDatabase();
         const usersCollection = db.collection('blogs');
 
         const result = await usersCollection.updateOne(
             { blog_id: blog_id },
-            { $set: { like: like, dislike: dislike } }
+            { $set: { like: like, dislike: dislike, view: view } }
         );
 
         res.json({ success: true });
     } catch (error) {
-        console.error('Error updating user info:', error);
+        console.error('Error updating blog:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-router.post('/get_user_emotion', authenticateToken, async (req, res) => {
+router.post('/get_user_blog_list', authenticateToken, async (req, res) => {
     const { username } = req.user;
     const { blog_id } = req.body; // Expecting blog_id in the request body
 
     try {
         const db = await connectToDatabase();
-        const userCollection = db.collection('user_emotion_list');
+        const userCollection = db.collection('user_blog_list');
 
         const result = await userCollection.findOne({ username: username });
 
@@ -81,14 +81,15 @@ router.post('/update_user_emotion', authenticateToken, async (req, res) => {
 
     try {
         const db = await connectToDatabase();
-        const userCollection = db.collection('user_emotion_list');
+        const userCollection = db.collection('user_blog_list');
         const result = await userCollection.findOne({ username });
 
         if (!result) {
             await userCollection.insertOne({
                 username,
                 like: action === 'like' ? [blog_id] : [],
-                dislike: action === 'dislike' ? [blog_id] : []
+                dislike: action === 'dislike' ? [blog_id] : [],
+                view: [],
             });
         } else {
             let update = {};
@@ -116,6 +117,40 @@ router.post('/update_user_emotion', authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/update_blog_view', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { blog_id } = req.body;
+
+    try {
+        const db = await connectToDatabase();
+        const userCollection = db.collection('user_blog_list');
+        const result = await userCollection.findOne({ username });
+
+        if (!result) {
+            await userCollection.insertOne({
+                username,
+                like: [],
+                dislike: [],
+                view: [ blog_id ],
+            });
+            res.json({ op: true });
+        } else {
+            let update = {};
+            let op = false;
+
+            if (!result.view.includes(blog_id)) {
+                update = { $addToSet: { view: blog_id } };
+                await userCollection.updateOne({ username }, update);
+                op = true;
+            }
+
+            res.json({ op: op });
+        }
+    } catch (error) {
+        console.error('Error updating blog view:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 
 module.exports = router;

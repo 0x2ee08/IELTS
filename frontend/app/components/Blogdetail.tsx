@@ -12,6 +12,7 @@ const Blogdetail: React.FC = () => {
     const [curdislike, setCurdislike] = useState(0);
     const [liked, setLiked] = useState(false);
     const [disliked, setDisliked] = useState(false);
+    const [view, setView] = useState(0);
 
     const get_blog = async () => {
         const token = localStorage.getItem('token');
@@ -29,6 +30,7 @@ const Blogdetail: React.FC = () => {
             setAuthor(result.author);
             setCurlike(Number(result.like));
             setCurdislike(Number(result.dislike));
+            setView(result.view);
 
         } catch (error) {
             console.error('Error fetching blog:', error);
@@ -36,11 +38,11 @@ const Blogdetail: React.FC = () => {
         }
     };
 
-    const get_user_emotion = async () => {
+    const get_user_blog_list = async () => {
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
-            const response = await axios.post(`${config.API_BASE_URL}api/get_user_emotion`, { blog_id }, {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_user_blog_list`, { blog_id }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -55,11 +57,11 @@ const Blogdetail: React.FC = () => {
         }
     }
 
-    const update_emotion = async (like: string, dislike: string) => {
+    const update_blog = async (like: string, dislike: string, view: number) => {
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
-            const response = await axios.post(`${config.API_BASE_URL}api/update_emotion`, { blog_id, like, dislike }, {
+            const response = await axios.post(`${config.API_BASE_URL}api/update_blog`, { blog_id, like, dislike, view }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -90,17 +92,17 @@ const Blogdetail: React.FC = () => {
 
     const handleLike = async () => {
         if (!liked) {
-            update_emotion(String(curlike + 1), String(curdislike));
+            update_blog(String(curlike + 1), String(curdislike), view);
             update_user_emotion('like');
             setLiked(true);
             if (disliked) {
                 setCurdislike(curdislike - 1);
-                update_emotion(String(curlike + 1), String(curdislike - 1));
+                update_blog(String(curlike + 1), String(curdislike - 1), view);
                 setDisliked(false);
             }
             setCurlike(curlike + 1);
         } else {
-            update_emotion(String(curlike - 1), String(curdislike));
+            update_blog(String(curlike - 1), String(curdislike), view);
             update_user_emotion('like');
             setCurlike(curlike - 1);
             setLiked(false);
@@ -109,34 +111,56 @@ const Blogdetail: React.FC = () => {
     
     const handleDislike = async () => {
         if (!disliked) {
-            update_emotion(String(curlike), String(curdislike + 1));
+            update_blog(String(curlike), String(curdislike + 1), view);
             update_user_emotion('dislike');
             setDisliked(true);
             if (liked) {
                 console.log(String(curdislike + 1));
                 setCurlike(curlike - 1);
-                update_emotion(String(curlike - 1), String(curdislike + 1));
+                update_blog(String(curlike - 1), String(curdislike + 1), view);
                 setLiked(false);
             }
             setCurdislike(curdislike + 1);
         } else {
-            update_emotion(String(curlike), String(curdislike - 1));
+            update_blog(String(curlike), String(curdislike - 1), view);
             update_user_emotion('dislike');
             setCurdislike(curdislike - 1);
             setDisliked(false);
         }
     };
     
+    const handle_update_view = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const blog_id = params.get("id");
+            const response = await axios.post(`${config.API_BASE_URL}api/update_blog_view`, { blog_id }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            const { op } = response.data;
+            if(op) {
+                update_blog(String(curlike), String(curdislike), view + 1);
+                setView(view + 1);
+            }
+        } catch (error) {
+            console.error('Error updating emotion:', error);
+            alert('Internal server error');
+        }
+    }
 
     useEffect(() => {
         get_blog();
-        get_user_emotion();
+        get_user_blog_list();
+        handle_update_view();
     }, []);
 
     return (
         <div>
             <p><strong>Title:</strong> {title}</p>
             <p><strong>Author:</strong> {author}</p>
+            <p><strong>View:</strong> {view}</p>
+            <p><strong>Time:</strong> </p>
             <p><strong>Content:</strong> {content}</p>
             <button 
                 onClick={handleLike}
