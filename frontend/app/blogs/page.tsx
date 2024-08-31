@@ -7,7 +7,8 @@ import config from '../config';
 import axios from 'axios';
 
 const BlogsPage: React.FC = () => {
-    const [bloglist, setBloglist] = useState([]);
+    const [bloglist, setBloglist] = useState<string[]>([]);
+    const [authorlist, setAuthorlist] = useState<string[]>([]);
     const [idlist, setIdlist] = useState([]);
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -25,13 +26,20 @@ const BlogsPage: React.FC = () => {
                 body: JSON.stringify({}),
             });
             const result = await response.json();
+            // for (let key in result.bloglist) {
+            //     result.bloglist[key] = result.bloglist[key]['title'];
+            // }
+            const tmpbloglist: string[] = [];
+            const tmpauthorlist: string[] = [];
             for (let key in result.bloglist) {
-                result.bloglist[key] = result.bloglist[key]['title'];
+                tmpbloglist.push(result.bloglist[key]['title']);
+                tmpauthorlist.push(result.bloglist[key]['author']);
             }
             for (let key in result.idlist) {
                 result.idlist[key] = result.idlist[key]['blog_id'];
             }
-            setBloglist(result.bloglist);
+            setBloglist(tmpbloglist);
+            setAuthorlist(tmpauthorlist);
             setIdlist(result.idlist);
         } catch (error) {
             console.error('Error getting list:', error);
@@ -61,6 +69,7 @@ const BlogsPage: React.FC = () => {
 
     useEffect(() => {
         get_blog_list();
+        console.log(bloglist);
     }, []);
 
     return (
@@ -70,14 +79,6 @@ const BlogsPage: React.FC = () => {
             <div className="container mx-auto p-4">
                 <h2>Create New Blog</h2>
                 <div className="mb-4">
-                <   textarea
-                        value={blog_id}
-                        onChange={(e) => setblog_id(e.target.value)}
-                        rows={1}
-                        cols={50}
-                        placeholder="Blog ID"
-                        className="border p-2 mb-2 w-full"
-                    />
                     <input
                         type="text"
                         value={title}
@@ -103,16 +104,16 @@ const BlogsPage: React.FC = () => {
             </div>
 
             <div className="container mx-auto p-4">
-            {bloglist.map((blog, idx) => {
-                const link = `/blog_loader?id=${idlist[idx]}`;
-                return (
-                    <p key={idx}>
-                        <a href={link} className="text-sm text-blue-500 hover:underline">
-                            [{idlist[idx]}] {blog}
-                        </a>
-                    </p>
-                );
-            })}
+                {bloglist.map((blog, idx) => {
+                    const link = `/blog_loader?id=${idlist[idx]}`;
+                    return (
+                        <p key={idx}>
+                            <a href={link} className="text-sm text-blue-500 hover:underline">
+                                [{authorlist[idx]}] {blog}
+                            </a>
+                        </p>
+                    );
+                })}
             </div>
 
             <Footer />

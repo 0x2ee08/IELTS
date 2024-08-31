@@ -14,7 +14,7 @@ router.post('/get_bloglist', authenticateToken, async (req, res) => {
     const db = await connectToDatabase();
     const blogsCollection = db.collection(`blogs`);
 
-    const result = await blogsCollection.find({}, { projection: { title: 1, _id: 0 } }).toArray();
+    const result = await blogsCollection.find({}, { projection: { author: 1, title: 1, _id: 0 } }).toArray();
     const result2 = await blogsCollection.find({}, { projection: { blog_id: 1, _id: 0 } }).toArray();
 
     res.json({ idlist: result2, bloglist: result});
@@ -29,7 +29,7 @@ router.post('/get_blog', authenticateToken, async (req, res) => {
 
     const result = await blogsCollection.findOne({ blog_id: blog_id });
 
-    res.json({id: result.insertedId, result});
+    res.json({ result });
 });
 
 router.post('/update_blog', async (req, res) => {
@@ -183,7 +183,7 @@ router.post('/add_comment', authenticateToken, async (req, res) => {
 });
 
 router.post('/create_blog', authenticateToken, async (req, res) => {
-    const { title, content, blog_id } = req.body;
+    const { title, content } = req.body;
     const { username } = req.user;
     const time_created = new Date();
 
@@ -191,17 +191,14 @@ router.post('/create_blog', authenticateToken, async (req, res) => {
         const db = await connectToDatabase();
         const blogsCollection = db.collection('blogs');
 
-        // Check if a blog with the same blog_id already exists
-        const existingBlog = await blogsCollection.findOne({ blog_id: blog_id });
+        const count = await blogsCollection.countDocuments();
+        const nextBlogId = count + 1;
 
-        if (existingBlog) {
-            return res.status(400).json({ success: false, message: 'Blog ID already exists' });
-        }
-
+        // Create a new blog
         const result = await blogsCollection.insertOne({
             title: title,
             content: content,
-            blog_id: blog_id,
+            blog_id: String(nextBlogId),
             author: username,
             time_created: time_created,
             like: 0,
@@ -210,13 +207,11 @@ router.post('/create_blog', authenticateToken, async (req, res) => {
             comments: []
         });
 
-        res.json({ success: true, message: 'Blog created successfully' });
+        res.json({ success: true, message: 'Blog created successfully', blog_id: nextBlogId });
     } catch (error) {
         console.error('Error creating blog:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-
-
 
 module.exports = router;

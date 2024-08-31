@@ -37,8 +37,8 @@ const Blogdetail: React.FC = () => {
             setTitle(result.title);
             setContent(result.content);
             setAuthor(result.author);
-            setCurlike(Number(result.like));
-            setCurdislike(Number(result.dislike));
+            setCurlike(result.like);
+            setCurdislike(result.dislike);
             setView(result.view);
             setTime_created(result.time);
             setComments(result.comments || []);
@@ -68,7 +68,7 @@ const Blogdetail: React.FC = () => {
         }
     }
 
-    const update_blog = async (like: string, dislike: string, view: number) => {
+    const update_blog = async (like: number, dislike: number, view: number) => {
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
@@ -101,17 +101,17 @@ const Blogdetail: React.FC = () => {
     
     const handleLike = async () => {
         if (!liked) {
-            update_blog(String(curlike + 1), String(curdislike), view);
+            update_blog(curlike + 1, curdislike, view);
             update_user_emotion('like');
             setLiked(true);
             if (disliked) {
                 setCurdislike(curdislike - 1);
-                update_blog(String(curlike + 1), String(curdislike - 1), view);
+                update_blog(curlike + 1, curdislike - 1, view);
                 setDisliked(false);
             }
             setCurlike(curlike + 1);
         } else {
-            update_blog(String(curlike - 1), String(curdislike), view);
+            update_blog(curlike - 1, curdislike, view);
             update_user_emotion('like');
             setCurlike(curlike - 1);
             setLiked(false);
@@ -120,17 +120,17 @@ const Blogdetail: React.FC = () => {
     
     const handleDislike = async () => {
         if (!disliked) {
-            update_blog(String(curlike), String(curdislike + 1), view);
+            update_blog(curlike, curdislike + 1, view);
             update_user_emotion('dislike');
             setDisliked(true);
             if (liked) {
                 setCurlike(curlike - 1);
-                update_blog(String(curlike - 1), String(curdislike + 1), view);
+                update_blog(curlike - 1, curdislike + 1, view);
                 setLiked(false);
             }
             setCurdislike(curdislike + 1);
         } else {
-            update_blog(String(curlike), String(curdislike - 1), view);
+            update_blog(curlike, curdislike - 1, view);
             update_user_emotion('dislike');
             setCurdislike(curdislike - 1);
             setDisliked(false);
@@ -148,7 +148,7 @@ const Blogdetail: React.FC = () => {
             });
             const { op } = response.data;
             if(op) {
-                update_blog(String(curlike), String(curdislike), view + 1);
+                update_blog(curlike, curdislike, view + 1);
                 setView(view + 1);
             }
         } catch (error) {
