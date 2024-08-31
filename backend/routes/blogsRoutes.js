@@ -152,5 +152,35 @@ router.post('/update_blog_view', authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/add_comment', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { blog_id, content } = req.body;
+
+    try {
+        const db = await connectToDatabase();
+        const blogsCollection = db.collection('blogs');
+
+        const newComment = {
+            username: username,
+            time_created: new Date(),
+            content: content,
+        };
+
+        const result = await blogsCollection.updateOne(
+            { blog_id: blog_id },
+            { $push: { comments: newComment } }
+        );
+
+        if (result.modifiedCount > 0) {
+            res.json({ success: true, message: 'Comment added successfully' });
+        } else {
+            res.status(404).json({ success: false, message: 'Blog not found' });
+        }
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 module.exports = router;

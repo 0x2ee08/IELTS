@@ -3,6 +3,12 @@ import axios from 'axios';
 import config from '../config';
 import { useSearchParams } from "next/navigation";
 
+interface Comment {
+    username: string;
+    time_created: string; // Use ISO string format for dates
+    content: string;
+}
+
 const Blogdetail: React.FC = () => {
     const params = useSearchParams();
     const [title, setTitle] = useState('');
@@ -13,6 +19,8 @@ const Blogdetail: React.FC = () => {
     const [liked, setLiked] = useState(false);
     const [disliked, setDisliked] = useState(false);
     const [view, setView] = useState(0);
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [newComment, setNewComment] = useState('');
 
     const get_blog = async () => {
         const token = localStorage.getItem('token');
@@ -31,6 +39,7 @@ const Blogdetail: React.FC = () => {
             setCurlike(Number(result.like));
             setCurdislike(Number(result.dislike));
             setView(result.view);
+            setComments(result.comments || []); // Set comments
 
         } catch (error) {
             console.error('Error fetching blog:', error);
@@ -53,7 +62,7 @@ const Blogdetail: React.FC = () => {
 
         } catch(error) {
             console.error('Error get user emotion:', error);
-            alert('Internal server error while updating lise/ dislike');
+            alert('Internal server error while updating like/dislike');
         }
     }
 
@@ -61,15 +70,14 @@ const Blogdetail: React.FC = () => {
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
-            const response = await axios.post(`${config.API_BASE_URL}api/update_blog`, { blog_id, like, dislike, view }, {
+            await axios.post(`${config.API_BASE_URL}api/update_blog`, { blog_id, like, dislike, view }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            const result = response.data.result;
 
         } catch (error) {
-            console.error('Error fetching blog:', error);
+            console.error('Error updating blog:', error);
             alert('Internal server error');
         }
     };
@@ -89,7 +97,6 @@ const Blogdetail: React.FC = () => {
         }
     };
     
-
     const handleLike = async () => {
         if (!liked) {
             update_blog(String(curlike + 1), String(curdislike), view);
@@ -115,7 +122,6 @@ const Blogdetail: React.FC = () => {
             update_user_emotion('dislike');
             setDisliked(true);
             if (liked) {
-                console.log(String(curdislike + 1));
                 setCurlike(curlike - 1);
                 update_blog(String(curlike - 1), String(curdislike + 1), view);
                 setLiked(false);
@@ -144,7 +150,24 @@ const Blogdetail: React.FC = () => {
                 setView(view + 1);
             }
         } catch (error) {
-            console.error('Error updating emotion:', error);
+            console.error('Error updating view:', error);
+            alert('Internal server error');
+        }
+    }
+
+    const handle_comment = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const blog_id = params.get("id");
+            await axios.post(`${config.API_BASE_URL}api/add_comment`, { blog_id, content: newComment }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            setNewComment('');
+            get_blog(); // Refresh the comments
+        } catch (error) {
+            console.error('Error adding comment:', error);
             alert('Internal server error');
         }
     }
@@ -160,8 +183,8 @@ const Blogdetail: React.FC = () => {
             <p><strong>Title:</strong> {title}</p>
             <p><strong>Author:</strong> {author}</p>
             <p><strong>View:</strong> {view}</p>
-            <p><strong>Time:</strong> </p>
             <p><strong>Content:</strong> {content}</p>
+
             <button 
                 onClick={handleLike}
                 className={`${
@@ -176,6 +199,39 @@ const Blogdetail: React.FC = () => {
                 } hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2 mr-4`}>
                 Dislike {curdislike}
             </button>
+
+            <div>
+                <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    rows={4}
+                    cols={50}
+                    placeholder="Write your comment here..."
+                    className="border p-2 mb-2 w-full"
+                />
+                <button
+                    onClick={handle_comment}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                >
+                    Submit Comment
+                </button>
+            </div>
+
+            <div>
+                <h3>Comments:</h3>
+                {comments.length > 0 ? (
+                    <ul>
+                        {comments.map((comment, index) => (
+                            <li key={index} className="border p-2 mb-2">
+                                <p><strong>{comment.username}</strong> <span className="text-gray-500">({new Date(comment.time_created).toLocaleString()})</span></p>
+                                <p>{comment.content}</p>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>No comments yet.</p>
+                )}
+            </div>
         </div>
     );
 };
