@@ -180,6 +180,41 @@ const ReadingRender: React.FC = () => {
         .catch(error => console.error('Error:', error));
     };
 
+    const handleGenerateYNNQuestion = (pIndex: number, title: string, content: string) => {
+
+    };
+
+    const handleGenerateTFNQuestion = (pIndex: number, title: string, content: string) => {
+        
+    };
+
+    const handleGenerateFillOneWordQuestion = (pIndex: number, title: string, content: string) => {
+
+    };
+
+    const handleGenerateFillTwoWordQuestion = (pIndex: number, title: string, content: string) => {
+        
+    };
+
+    const handleGenerateMatchingHeadingQuestion = (pIndex: number, title: string, content: string) => {
+        
+    };
+    
+    const handleGenerateMatchingParagraphInfoQuestion = (pIndex: number, title: string, content: string) => {
+        
+    };
+    
+    const handleGenerateMatchingFeaturesQuestion = (pIndex: number, title: string, content: string) => {
+        
+    };
+
+    const handleGenerateMatchingSentenceEndingQuestion = (pIndex: number, title: string, content: string) => {
+        
+    };
+
+    const handleGenerateMultipleChoiceQuestion = (pIndex: number, title: string, content: string) => {
+        
+    };
 
     const createProblem = () => {
         console.log(problemName);
