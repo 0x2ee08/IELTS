@@ -13,6 +13,7 @@ export interface Question {
 export interface Section {
     type: string;
     questions: Question[];
+    options: string[];
     isOpen: boolean;
 }
 
@@ -29,7 +30,7 @@ const ReadingRender: React.FC = () => {
         { 
             title: '', 
             content: '', 
-            sections: [{ type: '', questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], 
+            sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], 
             isOpen: true 
         }
     ]);;
@@ -38,6 +39,43 @@ const ReadingRender: React.FC = () => {
     const [accessUser, setAccessUser] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
+    const [newOption, setNewOption] = useState('');
+    const [globalOptions, setGlobalOptions] = useState<string[]>([]);
+
+    const handleAddGlobalOption = (pIndex: number, sIndex: number) => {
+        if (newOption.trim() !== '') {
+            const updatedParagraphs = [...paragraphs];
+            updatedParagraphs[pIndex].sections[sIndex].options.push(newOption.trim());
+            setParagraphs(updatedParagraphs);
+            setGlobalOptions([...globalOptions, newOption.trim()]);
+            setNewOption(''); // Clear the input after adding
+        }
+    };
+    // const handleDeleteGlobalOption = (optIndex: number) => {
+    //     setGlobalOptions(globalOptions.filter((_, index) => index !== optIndex));
+    // };
+
+    const handleDeleteGlobalOption = (optIndex: number) => {
+        const optionToDelete = globalOptions[optIndex];
+        
+        // Remove the option from globalOptions
+        const updatedGlobalOptions = globalOptions.filter((_, index) => index !== optIndex);
+        setGlobalOptions(updatedGlobalOptions);
+        
+        // Remove the option from each section's options array
+        const updatedParagraphs = paragraphs.map(paragraph => {
+            const updatedSections = paragraph.sections.map(section => ({
+                ...section,
+                options: section.options.filter(option => option !== optionToDelete),
+            }));
+            return {
+                ...paragraph,
+                sections: updatedSections,
+            };
+        });
+    
+        setParagraphs(updatedParagraphs);
+    };
 
     const questionTypes = [
         "Choose a question type",
@@ -81,12 +119,12 @@ const ReadingRender: React.FC = () => {
     };
 
     const addParagraph = () => {
-        setParagraphs([...paragraphs, { title: '', content: '', sections: [{ type: '', questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], isOpen: true }]);
+        setParagraphs([...paragraphs, { title: '', content: '', sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], isOpen: true }]);
     };
 
     const addSection = (pIndex: number) => {
         const newParagraphs = [...paragraphs];
-        newParagraphs[pIndex].sections.push({ type: '', questions: [{ question: '', answer: '', explanation: '', options:'' }], isOpen: true });
+        newParagraphs[pIndex].sections.push({ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options:'' }], isOpen: true });
         setParagraphs(newParagraphs);
     };
 
@@ -256,6 +294,47 @@ const ReadingRender: React.FC = () => {
                                                     Generate
                                                 </button>
                                             </div>
+
+                                            {section.type === 'Matching Heading' || section.type === 'Matching Paragraph Information' || section.type === 'Matching Features' || section.type === 'Matching Sentence Endings' ? (
+                                                <>
+                                                    <div className="my-4 flex">
+                                                        <input 
+                                                            type="text" 
+                                                            placeholder="Add new option" 
+                                                            className="border border-gray-300 px-4 py-2 rounded-md w-full mb-2"
+                                                            value={newOption}
+                                                            onChange={(e) => setNewOption(e.target.value)}
+                                                        />
+                                                        <button 
+                                                            onClick={() => handleAddGlobalOption(pIndex,sIndex)} 
+                                                            className=" rounded-md px-3"
+                                                        >
+                                                            Add
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="my-4">
+                                                        {globalOptions.map((option, optIndex) => (
+                                                            <div key={optIndex} className="flex items-center mb-2">
+                                                                <input 
+                                                                    type="text" 
+                                                                    className="border border-gray-300 px-4 py-2 rounded-md w-full ml-2" 
+                                                                    value={option} 
+                                                                    readOnly
+                                                                />
+                                                                <button 
+                                                                    onClick={() => handleDeleteGlobalOption(optIndex)} 
+                                                                    className="px-2 rounded-md ml-2 text-red-500"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            ):(
+                                                <></>
+                                            )}
                                             
                                             {section.questions.map((q, qIndex) => (
                                                 <div key={qIndex} className="my-2">
@@ -350,22 +429,33 @@ const ReadingRender: React.FC = () => {
                                                     </>
                                                     
                                                     ) : section.type === 'Matching Heading' || section.type === 'Matching Paragraph Information' || section.type === 'Matching Features' || section.type === 'Matching Sentence Endings' ? (
-                                                        <div>
-                                                            <input 
-                                                                type="text" 
-                                                                placeholder={`Question ${qIndex + 1}`} 
-                                                                className="border border-gray-300 px-4 py-2 rounded-md w-full mr-2" 
-                                                                value={q.question} 
-                                                                onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'question')}
-                                                            />
-                                                            <input 
-                                                                type="text" 
-                                                                placeholder="Answer" 
-                                                                className="border border-gray-300 px-4 py-2 rounded-md w-full" 
-                                                                value={q.answer} 
-                                                                onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
-                                                            />
-                                                        </div>
+                                                        <>
+                                                            <div className='flex'>
+                                                                <input 
+                                                                    type="text" 
+                                                                    placeholder={`Question ${qIndex + 1}`} 
+                                                                    className="border border-gray-300 px-4 py-2 rounded-md w-full mr-2" 
+                                                                    value={q.question} 
+                                                                    onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'question')}
+                                                                />
+                                                                <select 
+                                                                    className="border border-gray-300 px-4 py-2 rounded-md w-full" 
+                                                                    value={q.answer}
+                                                                    onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
+                                                                >
+                                                                    <option value="">Select an option</option>
+                                                                    {section.options.map((option, optIndex) => (
+                                                                        <option key={optIndex} value={option}>{option}</option>
+                                                                    ))}
+                                                                </select>
+                                                                <button 
+                                                                    onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
+                                                                    className="px-2 rounded-md ml-2 text-red-600"
+                                                                >
+                                                                    x
+                                                                </button>
+                                                            </div>
+                                                        </>
                                                     ) : section.type === 'Multiple Choice' ? (
                                                         <div>
                                                             <div className='flex'>
