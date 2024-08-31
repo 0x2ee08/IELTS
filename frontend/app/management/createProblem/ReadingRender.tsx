@@ -180,40 +180,129 @@ const ReadingRender: React.FC = () => {
         .catch(error => console.error('Error:', error));
     };
 
-    const handleGenerateYNNQuestion = (pIndex: number, title: string, content: string) => {
+    const handleGenerateYNNQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
+        // Retrieve token from localStorage
+        const token = localStorage.getItem('token');
+    
+        // Make an API request with the title and content
+        axios.post(`${config.API_BASE_URL}api/generateReadingYNN`, 
+            { title, content },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            const data = response.data;
+            const newParagraphs = [...paragraphs];
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+                // Ensure there is a question entry for this index
+                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                }
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
+            });
+
+            // Update the state with the new questions
+            setParagraphs(newParagraphs);
+        })
+        .catch(error => console.error('Error:', error));
+    };
+
+    const handleGenerateTFNQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
+        // Retrieve token from localStorage
+        const token = localStorage.getItem('token');
+    
+        // Make an API request with the title and content
+        axios.post(`${config.API_BASE_URL}api/generateReadingTFNG`, 
+            { title, content },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            const data = response.data;
+            const newParagraphs = [...paragraphs];
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+                // Ensure there is a question entry for this index
+                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                }
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
+            });
+
+            // Update the state with the new questions
+            setParagraphs(newParagraphs);
+        })
+        .catch(error => console.error('Error:', error)); 
+    };
+
+    const handleGenerateFillOneWordQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
 
     };
 
-    const handleGenerateTFNQuestion = (pIndex: number, title: string, content: string) => {
+    const handleGenerateFillTwoWordQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         
     };
 
-    const handleGenerateFillOneWordQuestion = (pIndex: number, title: string, content: string) => {
-
-    };
-
-    const handleGenerateFillTwoWordQuestion = (pIndex: number, title: string, content: string) => {
-        
-    };
-
-    const handleGenerateMatchingHeadingQuestion = (pIndex: number, title: string, content: string) => {
+    const handleGenerateMatchingHeadingQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         
     };
     
-    const handleGenerateMatchingParagraphInfoQuestion = (pIndex: number, title: string, content: string) => {
+    const handleGenerateMatchingParagraphInfoQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         
     };
     
-    const handleGenerateMatchingFeaturesQuestion = (pIndex: number, title: string, content: string) => {
+    const handleGenerateMatchingFeaturesQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         
     };
 
-    const handleGenerateMatchingSentenceEndingQuestion = (pIndex: number, title: string, content: string) => {
+    const handleGenerateMatchingSentenceEndingQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         
     };
 
-    const handleGenerateMultipleChoiceQuestion = (pIndex: number, title: string, content: string) => {
+    const handleGenerateMultipleChoiceQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         
+    };
+
+    const handleGenerateQuestion = (pIndex: number, sIndex: number) => {
+        const selectedParagraph = paragraphs[pIndex];
+        const selectedSection = selectedParagraph.sections[sIndex];
+        const title = selectedParagraph.title;
+        const content = selectedParagraph.content;
+    
+        switch (selectedSection.type) {
+            case 'Yes/No/Not given':
+                handleGenerateYNNQuestion(pIndex, sIndex, title, content);
+                break;
+            case 'True/False/Not Given':
+                handleGenerateTFNQuestion(pIndex, sIndex, title, content);
+                break;
+            case 'Fill in the Blank (One Word)':
+                handleGenerateFillOneWordQuestion(pIndex, sIndex, title, content);
+                break;
+            case 'Fill in the Blank (Two Words)':
+                handleGenerateFillTwoWordQuestion(pIndex, sIndex, title, content);
+                break;
+            case 'Matching Heading':
+                handleGenerateMatchingHeadingQuestion(pIndex, sIndex, title, content);
+                break;
+            case 'Matching Paragraph Information':
+                handleGenerateMatchingParagraphInfoQuestion(pIndex, sIndex, title, content);
+                break;
+            case 'Matching Features':
+                handleGenerateMatchingFeaturesQuestion(pIndex, sIndex, title, content);
+                break;
+            case 'Matching Sentence Endings':
+                handleGenerateMatchingSentenceEndingQuestion(pIndex, sIndex, title, content);
+                break;
+            case 'Multiple Choice':
+                handleGenerateMultipleChoiceQuestion(pIndex, sIndex, title, content);
+                break;
+            default:
+                console.error('Unknown question type:', selectedSection.type);
+        }
     };
 
     const createProblem = () => {
@@ -340,7 +429,7 @@ const ReadingRender: React.FC = () => {
                                                 </select>
 
                                                 <button 
-                                                    // onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
+                                                    onClick={() => handleGenerateQuestion(pIndex, sIndex)}
                                                     className="px-2 rounded-md ml-2"
                                                 >
                                                     Generate

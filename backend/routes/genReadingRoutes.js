@@ -39,10 +39,96 @@ router.post('/generateReadingParagraph', authenticateToken, async (req, res) => 
     var content_ = lines.slice(1).join('\n').trim();
 
     res.json({title: title_, content: content_});
+});
 
-    // const result = await blogsCollection.findOne({ blog_id: blog_id });
+function parseEvaluationType1(evaluation) {
+    const evaluationObject = {};
+    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
 
-    // res.json({id: result.insertedId, result});
+    questionBlocks.forEach((block, index) => {
+        const questionMatch = block.match(/\[QUESTION (\d+)\]\s*(.*)/);
+        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
+        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
+
+        if (questionMatch && answerMatch && explanationMatch) {
+            const questionIndex = index + 1;
+            evaluationObject[questionIndex] = {
+                question: questionMatch[2].trim(),
+                answer: answerMatch[2].trim(),
+                explanation: explanationMatch[2].trim(),
+            };
+        }
+    });
+
+    return evaluationObject;
+}
+
+router.post('/generateReadingYNN', authenticateToken, async(req, res) => {
+    const {title, content} = req.body;
+    
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{ role: 'system', content: `Give me 6 questions (Yes/No/Not Given [Each type should appear on at least 1 questions]) IELTS Reading task (THE QUESTION SHOULD BE PARAPHASED) base on this paragraph : "${content}" with the title "${title}".
+OUTPUT FORMAT:
+[QUESTION 1]
+[ANSWER 1]
+[EXPLAINATION 1]
+<END>
+[QUESTION 2]
+[ANSWER 2]
+[EXPLAINATION 2]
+<END>
+....
+[QUESTION 6]
+[ANSWER 6]
+[EXPALINATION 6]
+<END>`}],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    var evaluation = response.data.choices[0].message.content.trim();
+
+    const parsedEvaluation = parseEvaluationType1(evaluation);
+    res.json(parsedEvaluation);
+    console.log(parsedEvaluation);
+});
+
+router.post('/generateReadingTFNG', authenticateToken, async(req, res) => {
+    const {title, content} = req.body;
+    
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{ role: 'system', content: `Give me 6 questions (True/False/Not Given [Each type should appear on at least 1 questions]) IELTS Reading task (THE QUESTION SHOULD BE PARAPHASED) base on this paragraph : "${content}" with the title "${title}".
+OUTPUT FORMAT:
+[QUESTION 1]
+[ANSWER 1]
+[EXPLAINATION 1]
+<END>
+[QUESTION 2]
+[ANSWER 2]
+[EXPLAINATION 2]
+<END>
+....
+[QUESTION 6]
+[ANSWER 6]
+[EXPALINATION 6]
+<END>`}],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    var evaluation = response.data.choices[0].message.content.trim();
+
+    const parsedEvaluation = parseEvaluationType1(evaluation);
+    res.json(parsedEvaluation);
+    console.log(parsedEvaluation);
 });
 
 
