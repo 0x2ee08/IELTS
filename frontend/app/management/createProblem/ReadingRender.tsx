@@ -2,6 +2,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import axios from 'axios';
+import config from '../../config';
 
 export interface Question {
     question: string;
@@ -149,12 +151,7 @@ const ReadingRender: React.FC = () => {
         newParagraphs[pIndex].sections[sIndex].questions = newParagraphs[pIndex].sections[sIndex].questions.filter((_, i) => i !== qIndex);
         setParagraphs(newParagraphs);
     };
-    const handleGeneratePara = (pIndex: number, title: string) => {
-        const updatedParagraphs = paragraphs.map((para, index) => 
-          index === pIndex ? { ...para, title: 'test45', content: 'test234' } : para
-        );
-        setParagraphs(updatedParagraphs);
-    };
+
     const handleAccessUserChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value;
         
@@ -163,6 +160,26 @@ const ReadingRender: React.FC = () => {
 
         setAccessUser(value);
     };
+
+    const handleGeneratePara = (pIndex: number, title: string, content: string) => {
+        // Retrieve token from localStorage
+        const token = localStorage.getItem('token');
+    
+        // Make an API request with the title and content
+        axios.post(`${config.API_BASE_URL}api/generateReadingParagraph`, 
+            { title, content },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            // Update the paragraph with the API response data
+            const updatedParagraphs = paragraphs.map((para, index) => 
+                index === pIndex ? { ...para, title: response.data.title, content: response.data.content } : para
+            );
+            setParagraphs(updatedParagraphs);
+        })
+        .catch(error => console.error('Error:', error));
+    };
+
 
     const createProblem = () => {
         console.log(problemName);
@@ -243,7 +260,7 @@ const ReadingRender: React.FC = () => {
                                     onChange={(e) => handleInputChange(pIndex, 'title', e.target.value)}
                                 />
                                 <button 
-                                    onClick={() => handleGeneratePara(pIndex, paragraph.title)}
+                                    onClick={() => handleGeneratePara(pIndex, paragraph.title, paragraph.content)}
                                     // onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
                                     className="px-2 rounded-md ml-2"
                                 >
