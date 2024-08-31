@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 const MyPage: React.FC = () => {
@@ -8,6 +8,13 @@ const MyPage: React.FC = () => {
         { user: false, text: 'Hello. How can I help you?' },
         { user: true, text: 'Good morning.' }
     ]);
+    const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages]);
 
     const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setNotes(e.target.value);
@@ -174,6 +181,7 @@ const MyPage: React.FC = () => {
                                         </div>
                                     </div>
                                 ))}
+                                <div ref={messagesEndRef} />
                             </div>
                             <form onSubmit={handleChatSubmit} style={{ display: 'flex' }}>
                                 <input type="text" name="chatInput" placeholder="Type a message..." style={{ flex: 1, padding: '8px', borderRadius: '10px', border: '1px solid #ccc', outline: 'none', fontSize: '14px' }} />
