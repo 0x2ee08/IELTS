@@ -182,5 +182,33 @@ router.post('/add_comment', authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/create_blog', authenticateToken, async (req, res) => {
+    const { title, content, blog_id } = req.body;
+    const { username } = req.user;
+    const time_created = new Date();
+
+    try {
+        const db = await connectToDatabase();
+        const blogsCollection = db.collection('blogs');
+
+        const result = await blogsCollection.insertOne({
+            title: title,
+            content: content,
+            blog_id: blog_id,
+            author: username,
+            time: time_created,
+            like: 0,
+            dislike: 0,
+            view: 0,
+            comments: []
+        });
+
+        res.json({ success: true, message: 'Blog created successfully' });
+    } catch (error) {
+        console.error('Error creating blog:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 module.exports = router;
