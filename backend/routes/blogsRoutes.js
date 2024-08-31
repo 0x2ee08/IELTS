@@ -41,8 +41,7 @@ router.post('/update_emotion', async (req, res) => {
 
         const result = await usersCollection.updateOne(
             { blog_id: blog_id },
-            { $set: { like: like } },
-            { $set: { dislike: dislike } }
+            { $set: { like: like, dislike: dislike } }
         );
 
         res.json({ success: true });
@@ -52,22 +51,71 @@ router.post('/update_emotion', async (req, res) => {
     }
 });
 
-router.post('/add_school', async (req, res) => {
-    const { role, newschool } = req.body;
+router.post('/get_user_emotion', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { blog_id } = req.body; // Expecting blog_id in the request body
 
-    const db = await connectToDatabase();
-    const tasksCollection = db.collection(`school_list`);
+    try {
+        const db = await connectToDatabase();
+        const userCollection = db.collection('user_emotion_list');
 
-    const check = await tasksCollection.findOne({name: newschool});
-    if(check) return res.status(400).json({ error: 'This school has already inserted' });
+        const result = await userCollection.findOne({ username: username });
 
-    if(role !== 'admin' && role !== 'teacher') {
-        return res.status(400).json({ error: 'You have no permissions to do this.' });
-    } 
+        const likeArray = result.like || [];
+        const dislikeArray = result.dislike || [];
 
-    const result = await tasksCollection.insertOne({name: newschool, class: null});
+        // Check if the arrays contain the blog_id
+        const liked = likeArray.includes(blog_id);
+        const disliked = dislikeArray.includes(blog_id);
 
-    res.json({id: result.insertedId, result});
+        res.json({ liked: liked, disliked: disliked });
+    } catch (error) {
+        console.error('Error fetching user emotion:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
+
+router.post('/update_user_emotion', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { blog_id, action } = req.body;
+
+    try {
+        const db = await connectToDatabase();
+        const userCollection = db.collection('user_emotion_list');
+        const result = await userCollection.findOne({ username });
+
+        if (!result) {
+            await userCollection.insertOne({
+                username,
+                like: action === 'like' ? [blog_id] : [],
+                dislike: action === 'dislike' ? [blog_id] : []
+            });
+        } else {
+            let update = {};
+
+            if (action === 'like') {
+                if (result.like.includes(blog_id)) {
+                    update = { $pull: { like: blog_id } };
+                } else {
+                    update = { $addToSet: { like: blog_id }, $pull: { dislike: blog_id } };
+                }
+            } else if (action === 'dislike') {
+                if (result.dislike.includes(blog_id)) {
+                    update = { $pull: { dislike: blog_id } };
+                } else {
+                    update = { $addToSet: { dislike: blog_id }, $pull: { like: blog_id } };
+                }
+            }
+            await userCollection.updateOne({ username }, update);
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating user emotion:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
 
 module.exports = router;
