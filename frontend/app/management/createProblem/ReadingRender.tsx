@@ -89,7 +89,8 @@ const ReadingRender: React.FC = () => {
         "Matching Paragraph Information",
         "Matching Features",
         "Matching Sentence Endings",
-        "Multiple Choice",
+        "Multiple Choice One Answer",
+        "Multiple Choice Multiple Answer"
     ];
 
     const toggleParagraph = (index: number) => {
@@ -262,8 +263,44 @@ const ReadingRender: React.FC = () => {
         
     };
 
-    const handleGenerateMultipleChoiceQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        
+    const handleGenerateMultipleChoiceOneAnswerQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
+        // Retrieve token from localStorage
+        const token = localStorage.getItem('token');
+    
+        // Make an API request with the title and content
+        axios.post(`${config.API_BASE_URL}api/generateReadingMCQOA`, 
+            { title, content },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            const data = response.data;
+    
+            const newParagraphs = [...paragraphs];
+    
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+                // Ensure there is a question entry for this index
+                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                }
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question.trim();
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer.trim();
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options
+                .map((option: string) => option.trim())
+                .join(', ')
+                .replace(/\s*,\s*/g, ','); // Remove spaces after commas
+            });
+    
+            // Update the state with the new questions
+            setParagraphs(newParagraphs);
+        })
+        .catch(error => console.error('Error:', error));  
+    };
+    
+
+    const handleGenerateMultipleChoiceMultipleAnswerQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
+
     };
 
     const handleGenerateQuestion = (pIndex: number, sIndex: number) => {
@@ -297,8 +334,11 @@ const ReadingRender: React.FC = () => {
             case 'Matching Sentence Endings':
                 handleGenerateMatchingSentenceEndingQuestion(pIndex, sIndex, title, content);
                 break;
-            case 'Multiple Choice':
-                handleGenerateMultipleChoiceQuestion(pIndex, sIndex, title, content);
+            case 'Multiple Choice One Answer':
+                handleGenerateMultipleChoiceOneAnswerQuestion(pIndex, sIndex, title, content);
+                break;
+            case 'Multiple Choice Multiple Answer':
+                handleGenerateMultipleChoiceMultipleAnswerQuestion(pIndex, sIndex, title, content);
                 break;
             default:
                 console.error('Unknown question type:', selectedSection.type);
@@ -597,7 +637,7 @@ const ReadingRender: React.FC = () => {
                                                                 </button>
                                                             </div>
                                                         </>
-                                                    ) : section.type === 'Multiple Choice' ? (
+                                                    ) : section.type === 'Multiple Choice One Answer' || section.type === 'Multiple Choice Multiple Answer' ? (
                                                         <div>
                                                             <div className='flex'>
                                                                 <input 
@@ -608,46 +648,57 @@ const ReadingRender: React.FC = () => {
                                                                     onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'question')}
                                                                 />
                                                                 <button 
-                                                                        onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
-                                                                        className="px-2 rounded-md ml-2"
-                                                                    >
-                                                                        x
+                                                                    onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
+                                                                    className="px-2 rounded-md ml-2"
+                                                                >
+                                                                    x
                                                                 </button>
                                                             </div>
-                                                    
+                                                            
                                                             <div>
-                                                                {q.options.split(',').map((option, optIndex) => (
-                                                                    <div key={optIndex} className="flex items-center mb-2">
-                                                                        <input 
-                                                                            type="radio" 
-                                                                            name={`options-${pIndex}-${sIndex}-${qIndex}`} 
-                                                                            value={option}
-                                                                            checked={q.answer === option}
-                                                                            onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
-                                                                        />
-                                                                        <input 
-                                                                            type="text" 
-                                                                            placeholder={`Option ${optIndex + 1}`} 
-                                                                            className="border border-gray-300 px-4 py-2 rounded-md w-full ml-2" 
-                                                                            value={option} 
-                                                                            onChange={(e) => {
-                                                                                const updatedOptions = q.options.split(',');
-                                                                                updatedOptions[optIndex] = e.target.value;
-                                                                                handleQuestionChange(pIndex, sIndex, qIndex, updatedOptions.join(','), 'options');
-                                                                            }}
-                                                                        />
-                                                                        <button 
-                                                                            onClick={() => {
-                                                                                const updatedOptions = q.options.split(',');
-                                                                                updatedOptions.splice(optIndex, 1); // Remove the option at the current index
-                                                                                handleQuestionChange(pIndex, sIndex, qIndex, updatedOptions.join(','), 'options');
-                                                                            }} 
-                                                                            className="px-2 rounded-md ml-2 text-red-500"
-                                                                        >
-                                                                            Delete
-                                                                        </button>
-                                                                    </div>
-                                                                ))}
+                                                                {q.options.split(',').map((option, optIndex) => {
+                                                                    const selectedOptions = q.answer ? q.answer.split(',') : [];
+                                                                    return (
+                                                                        <div key={optIndex} className="flex items-center mb-2">
+                                                                            <input 
+                                                                                type="checkbox" 
+                                                                                name={`options-${pIndex}-${sIndex}-${qIndex}`} 
+                                                                                value={option}
+                                                                                checked={selectedOptions.includes(option)}
+                                                                                onChange={(e) => {
+                                                                                    let updatedAnswer = [...selectedOptions];
+                                                                                    if (e.target.checked) {
+                                                                                        updatedAnswer.push(option);
+                                                                                    } else {
+                                                                                        updatedAnswer = updatedAnswer.filter(ans => ans !== option);
+                                                                                    }
+                                                                                    handleQuestionChange(pIndex, sIndex, qIndex, updatedAnswer.join(','), 'answer');
+                                                                                }}
+                                                                            />
+                                                                            <input 
+                                                                                type="text" 
+                                                                                placeholder={`Option ${optIndex + 1}`} 
+                                                                                className="border border-gray-300 px-4 py-2 rounded-md w-full ml-2" 
+                                                                                value={option} 
+                                                                                onChange={(e) => {
+                                                                                    const updatedOptions = q.options.split(',');
+                                                                                    updatedOptions[optIndex] = e.target.value;
+                                                                                    handleQuestionChange(pIndex, sIndex, qIndex, updatedOptions.join(','), 'options');
+                                                                                }}
+                                                                            />
+                                                                            <button 
+                                                                                onClick={() => {
+                                                                                    const updatedOptions = q.options.split(',');
+                                                                                    updatedOptions.splice(optIndex, 1); // Remove the option at the current index
+                                                                                    handleQuestionChange(pIndex, sIndex, qIndex, updatedOptions.join(','), 'options');
+                                                                                }} 
+                                                                                className="px-2 rounded-md ml-2 text-red-500"
+                                                                            >
+                                                                                Delete
+                                                                            </button>
+                                                                        </div>
+                                                                    );
+                                                                })}
                                                                 <button 
                                                                     onClick={() => {
                                                                         const updatedOptions = q.options.split(',');
