@@ -191,12 +191,19 @@ router.post('/create_blog', authenticateToken, async (req, res) => {
         const db = await connectToDatabase();
         const blogsCollection = db.collection('blogs');
 
+        // Check if a blog with the same blog_id already exists
+        const existingBlog = await blogsCollection.findOne({ blog_id: blog_id });
+
+        if (existingBlog) {
+            return res.status(400).json({ success: false, message: 'Blog ID already exists' });
+        }
+
         const result = await blogsCollection.insertOne({
             title: title,
             content: content,
             blog_id: blog_id,
             author: username,
-            time: time_created,
+            time_created: time_created,
             like: 0,
             dislike: 0,
             view: 0,
@@ -209,6 +216,7 @@ router.post('/create_blog', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 
 module.exports = router;

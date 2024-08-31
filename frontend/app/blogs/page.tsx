@@ -42,7 +42,7 @@ const BlogsPage: React.FC = () => {
     const createBlog = async () => {
         const token = localStorage.getItem('token');
         try {
-            await axios.post(`${config.API_BASE_URL}api/create_blog`, { title, content, blog_id }, {
+            const response = await axios.post(`${config.API_BASE_URL}api/create_blog`, { title, content, blog_id }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -51,12 +51,13 @@ const BlogsPage: React.FC = () => {
             setTitle('');
             setContent('');
             setblog_id('');
-            get_blog_list(); // Refresh the blog list
+            get_blog_list();
         } catch (error) {
             console.error('Error creating blog:', error);
-            alert('Internal server error while creating blog');
+            alert('Error creating blog: ' + 'Blog ID already exists');
         }
     };
+    
 
     useEffect(() => {
         get_blog_list();
@@ -107,7 +108,7 @@ const BlogsPage: React.FC = () => {
                 return (
                     <p key={idx}>
                         <a href={link} className="text-sm text-blue-500 hover:underline">
-                            {blog}
+                            [{idlist[idx]}] {blog}
                         </a>
                     </p>
                 );
