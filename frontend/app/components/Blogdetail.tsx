@@ -21,6 +21,7 @@ const Blogdetail: React.FC = () => {
     const [view, setView] = useState(0);
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
+    const [time_created, setTime_created] = useState('');
 
     const get_blog = async () => {
         const token = localStorage.getItem('token');
@@ -39,7 +40,8 @@ const Blogdetail: React.FC = () => {
             setCurlike(Number(result.like));
             setCurdislike(Number(result.dislike));
             setView(result.view);
-            setComments(result.comments || []); // Set comments
+            setTime_created(result.time);
+            setComments(result.comments || []);
 
         } catch (error) {
             console.error('Error fetching blog:', error);
@@ -182,6 +184,7 @@ const Blogdetail: React.FC = () => {
         <div>
             <p><strong>Title:</strong> {title}</p>
             <p><strong>Author:</strong> {author}</p>
+            <p><strong>Time Created</strong> {new Date(time_created).toLocaleString()}</p>
             <p><strong>View:</strong> {view}</p>
             <p><strong>Content:</strong> {content}</p>
 
