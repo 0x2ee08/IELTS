@@ -36,6 +36,25 @@ const Blogdetail: React.FC = () => {
         }
     };
 
+    const get_user_emotion = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const blog_id = params.get("id");
+            const response = await axios.post(`${config.API_BASE_URL}api/get_user_emotion`, { blog_id }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            const { liked, disliked } = response.data; 
+            setLiked(liked);
+            setDisliked(disliked);
+
+        } catch(error) {
+            console.error('Error get user emotion:', error);
+            alert('Internal server error while updating lise/ dislike');
+        }
+    }
+
     const update_emotion = async (like: string, dislike: string) => {
         const token = localStorage.getItem('token');
         try {
@@ -53,40 +72,65 @@ const Blogdetail: React.FC = () => {
         }
     };
 
+    const update_user_emotion = async (action: string) => {
+        const token = localStorage.getItem('token');
+        try {
+            const blog_id = params.get("id");
+            await axios.post(`${config.API_BASE_URL}api/update_user_emotion`, { blog_id, action }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+        } catch (error) {
+            console.error('Error updating emotion:', error);
+            alert('Internal server error');
+        }
+    };
+    
+
     const handleLike = async () => {
         if (!liked) {
             update_emotion(String(curlike + 1), String(curdislike));
-            setCurlike(curlike + 1);
+            update_user_emotion('like');
             setLiked(true);
             if (disliked) {
                 setCurdislike(curdislike - 1);
+                update_emotion(String(curlike + 1), String(curdislike - 1));
                 setDisliked(false);
             }
+            setCurlike(curlike + 1);
         } else {
             update_emotion(String(curlike - 1), String(curdislike));
+            update_user_emotion('like');
             setCurlike(curlike - 1);
             setLiked(false);
         }
     };
-
+    
     const handleDislike = async () => {
         if (!disliked) {
             update_emotion(String(curlike), String(curdislike + 1));
-            setCurdislike(curdislike + 1);
+            update_user_emotion('dislike');
             setDisliked(true);
             if (liked) {
+                console.log(String(curdislike + 1));
                 setCurlike(curlike - 1);
+                update_emotion(String(curlike - 1), String(curdislike + 1));
                 setLiked(false);
             }
+            setCurdislike(curdislike + 1);
         } else {
             update_emotion(String(curlike), String(curdislike - 1));
+            update_user_emotion('dislike');
             setCurdislike(curdislike - 1);
             setDisliked(false);
         }
     };
+    
 
     useEffect(() => {
         get_blog();
+        get_user_emotion();
     }, []);
 
     return (
