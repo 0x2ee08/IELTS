@@ -16,12 +16,7 @@ router.post('/get_writing_prob_data', async (req, res) => {
 
     const result = await tasksCollection.findOne({ prob_id: prob_id });
 
-    res.json({
-            // id: result.insertedId, 
-            statement: result.task, 
-            questionlist: result.ques,
-            answerlist: result.ans,
-    });
+    res.json({ result });
 });
 
 // router.post('/get_class_list', async (req, res) => {

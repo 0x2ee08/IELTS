@@ -13,6 +13,7 @@ const userRoutes = require('./routes/userRoutes');
 const sendcodeRoutes = require('./routes/sendcodeRoutes');
 const schoolclassRoutes = require('./routes/schoolclassRoutes');
 const writingRoutes = require('./routes/writingRoutes');
+const blogsRoutes = require('./routes/blogsRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -33,6 +34,7 @@ app.use('/api', userRoutes);
 app.use('/api', sendcodeRoutes);
 app.use('/api', schoolclassRoutes);
 app.use('/api', writingRoutes);
+app.use('/api', blogsRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
