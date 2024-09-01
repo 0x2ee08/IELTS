@@ -206,6 +206,58 @@ OUTPUT FORMAT:
     console.log(parsedEvaluation);
 });
 
+router.post('/generateReadingMCQMA', authenticateToken, async(req, res) => {
+    const {title, content} = req.body;
+    
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{ role: 'system', content: `Give me 6 questions of Multiple Choice Question (AT LEAST TWO ANWER, FIVE or SIX Options[there should be no comma]) and corresponding answer [MUST WRITE IN CORRECT FORMAT, MUST HAVE [QUESTION x], [OPTION x], [ANSWER x] and [EXPLAINATION x]] for IELTS Reading task (THE QUESTION AND OPTION SHOULD BE PARAPHASED) base on this paragraph : "${content}" with the title "${title}. MUST HAVE THE [OPTION] TAG. MULTIPLE ANSWER, AT LEAST TWO ANSWER SEPERATED BY A COMMA, ANSWER SHOULD BE FULL TEXT FROM OPTIONS[]".
+OUTPUT FORMAT:
+[QUESTION 1]
+[OPTION 1]
+[OPTION 2]
+[OPTION 3]
+[OPTION 4]
+[OPTION 5]
+[OPTION 6]
+[ANSWER 1]
+[EXPLAINATION 1]
+<END>
+[QUESTION 2]
+[OPTION 1]
+[OPTION 2]
+[OPTION 3]
+[OPTION 4]
+[OPTION 5]
+[OPTION 6]
+[ANSWER 2]
+[EXPLAINATION 2]
+<END>
+....
+[QUESTION 6]
+[OPTION 1]
+[OPTION 2]
+[OPTION 3]
+[OPTION 4]
+[OPTION 5]
+[OPTION 6]
+[ANSWER 6]
+[EXPLAINATION 6]
+<END>`}],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    var evaluation = response.data.choices[0].message.content.trim();
+    console.log(evaluation)
+    const parsedEvaluation = parseEvaluationType2(evaluation);
+    res.json(parsedEvaluation);
+    console.log(parsedEvaluation);
+});
+
 
 
 module.exports = router;

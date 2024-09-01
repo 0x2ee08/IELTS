@@ -24,6 +24,7 @@ export interface Paragraph {
     content: string;
     sections: Section[];
     isOpen: boolean;
+    vocabularyIsOpen: boolean;
 }
 
 
@@ -33,7 +34,8 @@ const ReadingRender: React.FC = () => {
             title: '', 
             content: '', 
             sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], 
-            isOpen: true 
+            isOpen: true,
+            vocabularyIsOpen: false
         }
     ]);;
 
@@ -103,9 +105,73 @@ const ReadingRender: React.FC = () => {
         setParagraphs(newParagraphs);
     };
 
+    const toggleVocabulary = (pIndex: number) => {
+        const newParagraphs = [...paragraphs];
+        newParagraphs[pIndex].vocabularyIsOpen = !newParagraphs[pIndex].vocabularyIsOpen;
+        setParagraphs(newParagraphs);
+    };
+    
+    const [vocabLevels, setVocabLevels] = useState<VocabularyLevels>({
+        A1: [],
+        A2: [],
+        B1: [],
+        B2: [],
+        C1: [],
+        C2: []
+    });
+
+    const preprocessWord = (word: string) => {
+        return word.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    };
+
+    type VocabularyLevels = {
+        A1: string[];
+        A2: string[];
+        B1: string[];
+        B2: string[];
+        C1: string[];
+        C2: string[];
+    };
+
+    const determineWordLevel = (words: string) =>{
+        return "A1";
+    }
+    
+    
+    const categorizeVocabulary = (content: string) => {
+        const wordLevels: VocabularyLevels = {
+            A1: [],
+            A2: [],
+            B1: [],
+            B2: [],
+            C1: [],
+            C2: []
+        };
+    
+        const words = content.split(/\s+/).map(preprocessWord);
+    
+        words.forEach(word => {
+            const level = determineWordLevel(word); // This should return 'A1', 'A2', 'B1', etc.
+            if (level && wordLevels[level as keyof VocabularyLevels]) {
+                wordLevels[level as keyof VocabularyLevels].push(word);
+            }
+        });
+    
+        // Remove duplicates from each level
+        for (const level in wordLevels) {
+            if (wordLevels.hasOwnProperty(level)) {
+                wordLevels[level as keyof VocabularyLevels] = Array.from(new Set(wordLevels[level as keyof VocabularyLevels]));
+            }
+        }
+    
+        return wordLevels;
+    };
+    
+
     const handleInputChange = (pIndex: number, field: 'title' | 'content', value: string) => {
         const newParagraphs = [...paragraphs];
         newParagraphs[pIndex][field] = value;
+        setVocabLevels(categorizeVocabulary(value));
         setParagraphs(newParagraphs);
     };
 
@@ -122,7 +188,7 @@ const ReadingRender: React.FC = () => {
     };
 
     const addParagraph = () => {
-        setParagraphs([...paragraphs, { title: '', content: '', sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], isOpen: true }]);
+        setParagraphs([...paragraphs, { title: '', content: '', sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], isOpen: true, vocabularyIsOpen: false }]);
     };
 
     const addSection = (pIndex: number) => {
@@ -177,8 +243,10 @@ const ReadingRender: React.FC = () => {
                 index === pIndex ? { ...para, title: response.data.title, content: response.data.content } : para
             );
             setParagraphs(updatedParagraphs);
+            setVocabLevels(categorizeVocabulary(response.data.content));
         })
         .catch(error => console.error('Error:', error));
+
     };
 
     const handleGenerateYNNQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
@@ -300,7 +368,42 @@ const ReadingRender: React.FC = () => {
     
 
     const handleGenerateMultipleChoiceMultipleAnswerQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-
+        // Retrieve token from localStorage
+        const token = localStorage.getItem('token');
+    
+        // Make an API request with the title and content
+        axios.post(`${config.API_BASE_URL}api/generateReadingMCQMA`, 
+            { title, content },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            const data = response.data;
+    
+            const newParagraphs = [...paragraphs];
+            console.log("HEY");
+            Object.keys(data).forEach((key, qIndex) => {
+                console.log("HI");
+                const questionData = data[key];
+                console.log(questionData);
+                console.log(key);
+                // Ensure there is a question entry for this index
+                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                }
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question.trim();
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer.trim()                       // Removes space from the beginning and end of the string
+                .replace(/,\s+/g, ',');
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options
+                .map((option: string) => option.trim())
+                .join(', ')
+                .replace(/\s*,\s*/g, ','); // Remove spaces after commas
+            });
+    
+            // Update the state with the new questions
+            setParagraphs(newParagraphs);
+        })
+        .catch(error => console.error('Error:', error));  
     };
 
     const handleGenerateQuestion = (pIndex: number, sIndex: number) => {
@@ -308,7 +411,7 @@ const ReadingRender: React.FC = () => {
         const selectedSection = selectedParagraph.sections[sIndex];
         const title = selectedParagraph.title;
         const content = selectedParagraph.content;
-    
+        console.log(selectedSection.type);
         switch (selectedSection.type) {
             case 'Yes/No/Not given':
                 handleGenerateYNNQuestion(pIndex, sIndex, title, content);
@@ -365,6 +468,7 @@ const ReadingRender: React.FC = () => {
         .then(data => console.log(data))
         .catch(error => console.error('Error:', error));
     };
+
 
     const renderParagraphs = () => (
         <div className='py-4'>
@@ -438,6 +542,35 @@ const ReadingRender: React.FC = () => {
                                 value={paragraph.content} 
                                 onChange={(e) => handleInputChange(pIndex, 'content', e.target.value)}
                             ></textarea>
+
+                            <div className="border border-gray-300 rounded-md p-4 mb-4">
+                                <div 
+                                    onClick={() => toggleVocabulary(pIndex)} 
+                                    className="cursor-pointer flex justify-between items-center"
+                                >
+                                    <h4>Vocabulary</h4>
+                                    <span>{paragraph.vocabularyIsOpen ? '-' : '+'}</span>
+                                </div>
+                                {paragraph.vocabularyIsOpen && (
+                                    <table className="w-full mt-2">
+                                        <thead>
+                                            <tr>
+                                                <th className="text-left">Level</th>
+                                                <th className="text-left">Words</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Object.keys(vocabLevels).map(level => (
+                                                <tr key={level}>
+                                                    <td className="font-bold">{level}</td>
+                                                    <td>{vocabLevels[level as keyof VocabularyLevels].join(', ')}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+
                             {paragraph.sections.map((section, sIndex) => (
                                 <div key={sIndex} className="border border-gray-300 rounded-md p-4 mb-4">
                                     <div onClick={() => toggleSection(pIndex, sIndex)} className="cursor-pointer flex justify-between items-center">
