@@ -648,12 +648,15 @@ const ReadingRender: React.FC = () => {
             startTime,
             endTime,
             "type" : "Reading"
-        }, { headers: { 'Authorization': `Bearer ${token}` } })
+        }, 
+        { headers: { 'Authorization': `Bearer ${token}` } }
+        )
         .then(response => {
             const data = response.data;
+            alert(data['Status']);
             console.log(data);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => alert(error));
     };
 
 
