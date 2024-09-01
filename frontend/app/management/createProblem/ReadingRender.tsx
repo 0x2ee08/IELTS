@@ -636,23 +636,23 @@ const ReadingRender: React.FC = () => {
     };
 
     const createProblem = () => {
-        console.log(problemName);
-        console.log(paragraphs);
-        fetch('/create_problem', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                paragraphs,
-                problemName,
-                accessUser,
-                startTime,
-                endTime
-            })
+        // console.log(problemName);
+        // console.log(paragraphs);
+
+        const token = localStorage.getItem('token');
+    
+        axios.post(`${config.API_BASE_URL}api/createContest`, {
+            paragraphs,
+            problemName,
+            accessUser,
+            startTime,
+            endTime,
+            "type" : "Reading"
+        }, { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(response => {
+            const data = response.data;
+            console.log(data);
         })
-        .then(response => response.json())
-        .then(data => console.log(data))
         .catch(error => console.error('Error:', error));
     };
 
