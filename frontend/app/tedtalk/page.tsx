@@ -77,10 +77,6 @@ const TedTalkPage: React.FC = () => {
         };
     }, [loading]);
 
-    const handleVideoClick = (videoId: string) => {
-        router.push(`/ted_video_loader?id=${videoId}`);
-    };
-
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
@@ -91,10 +87,10 @@ const TedTalkPage: React.FC = () => {
                 <div className="overflow-y-auto h-full">
                     <div className="space-y-4">
                         {videos.map((video, index) => (
-                            <div
+                            <a
                                 key={index}
-                                className="flex items-start space-x-4 border-b pb-4 cursor-pointer"
-                                onClick={() => handleVideoClick(video._id)} // Handle click event
+                                href={`/ted_video_loader?id=${video._id}`} // Update this URL to match your routing structure
+                                className="flex items-start space-x-4 border-b pb-4 cursor-pointer text-decoration-none"
                             >
                                 <img
                                     src={video.thumbnail}
@@ -107,7 +103,8 @@ const TedTalkPage: React.FC = () => {
                                     <p className="text-sm">Views: {video.views}</p>
                                     <p className="text-sm">Likes: {video.likes}</p>
                                 </div>
-                            </div>
+                            </a>
+                        
                         ))}
                     </div>
                 </div>
