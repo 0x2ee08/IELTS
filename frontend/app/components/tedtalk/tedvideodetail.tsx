@@ -7,7 +7,6 @@ import YoutubeVideo from "./youtubevideo";
 import { useSearchParams } from "next/navigation";
 import { convertDuration } from '../../../../backend/utils/convertDuration';
 import { formatDistanceToNow, parseISO } from 'date-fns';
-import { useInstantTransition } from 'framer-motion';
 
 const TedVideoDetail: React.FC = () => {
     const params = useSearchParams();
@@ -28,11 +27,13 @@ const TedVideoDetail: React.FC = () => {
         likes: "",
     });
     const [dateString, setDateString] = useState('');
+    const [transcript, setTranscript] = useState<{ start: number, text: string }[]>([]);
+    const [currentTime, setCurrentTime] = useState<number>(0);
 
     const getVideo = async () => {
         const token = localStorage.getItem('token');
         try {
-            const response = await axios.post(`${config.API_BASE_URL}api/get_ted_video_by_id`, {videoId}, {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_ted_video_by_id`, { videoId }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -40,7 +41,9 @@ const TedVideoDetail: React.FC = () => {
 
             setVideo(response.data.video || []);
             const date = parseISO(response.data.video.publishDate.toString());
-            setDateString(formatDistanceToNow(date, { addSuffix: true })); 
+            setDateString(formatDistanceToNow(date, { addSuffix: true }));
+
+
         } catch (error) {
             console.error('Error fetching videos:', error);
         }
@@ -48,14 +51,7 @@ const TedVideoDetail: React.FC = () => {
 
     useEffect(() => {
         getVideo();
-
     }, []);
-
-    useEffect(() => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [messages]);
 
     const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setNotes(e.target.value);
@@ -70,15 +66,18 @@ const TedVideoDetail: React.FC = () => {
         }
     };
 
+    const handleTimeUpdate = (event: React.ChangeEvent<HTMLVideoElement>) => {
+        setCurrentTime(event.currentTarget.currentTime);
+    };
+
     return (
         <div className="flex flex-col min-h-screen">
-
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gridGap: '20px', padding: '20px', boxSizing: 'border-box' }}>
                 {/* Left Column */}
                 <div style={{ display: 'grid', gridTemplateRows: 'auto auto 1fr', gridGap: '20px' }}>
                     {/* Video Player */}
                     <div style={{ borderRadius: '10px', overflow: 'hidden', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-                        <YoutubeVideo embedId={videoId} />
+                        <YoutubeVideo embedId={videoId}/>
                     </div>
 
                     {/* Video Description */}
@@ -98,32 +97,27 @@ const TedVideoDetail: React.FC = () => {
                     </div>
 
                     {/* Personal Notes */}
-                    <div style={{ 
-                        padding: '10px', 
-                        position: 'relative', 
-                        borderRadius: '10px', 
-                        boxShadow: '0 0px 0px rgba(0, 0, 0, 0.1)' 
-                    }}>
+                    <div style={{padding: '10px', position: 'relative', borderRadius: '10px',boxShadow: '0 0px 0px rgba(0, 0, 0, 0.1)'}}>
                         <div style={{
                             backgroundImage: 'url(https://s3-alpha-sig.figma.com/img/6fcf/2061/ae4b0cd5da8149b7f430a7ad4198c1b0?Expires=1725840000&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=KlSDz23WBPGx-swvJTt6vSePBWBqPKZNh1XqvY61GynewD02VQ~~cNFXSmWsZmJH9Qq3P97PObKGr4louRFZPxUl2v4M~5TSgXrluDvZXaXYBzG3NiEi9MFNDlJteRirsvjTMufBgPLxfYmLUJJ4aGPQ-woEdOxNNYQdJSpftDB-Y4WFAZWyDqofTeFqXd-puaomrTMV-5bENz4yXrCWfe2HslcPuXmZXxHClt5weuijeFSsppeS6Mmaiq2GOun8JIoNQcxmYI~~y15DbRXBYnMlA45fhIBmmoH4woNUt5O7mTxmqrU9Jmhqu2C~~mBOBQElahpP38RYxJqDH2mctA__)',
-                            backgroundSize: 'contain', 
-                            borderRadius: '10px', 
-                            opacity: 0.2, 
-                            position: 'absolute', 
-                            top: 0, 
-                            left: 0, 
-                            right: 0, 
-                            bottom: 0, 
-                            zIndex: 1 
+                            backgroundSize: 'contain',
+                            borderRadius: '10px',
+                            opacity: 0.2,
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            zIndex: 1
                         }}></div>
-                        <div style={{ 
+                        <div style={{
                             position: 'relative',
-                            zIndex: 2 
+                            zIndex: 2
                         }}>
-                            <h3 style={{ 
-                                fontSize: '25px', 
+                            <h3 style={{
+                                fontSize: '25px',
                                 fontWeight: 'bold',
-                                color: '#00B4D8' 
+                                color: '#00B4D8'
                             }}>Personal note:</h3>
                             <textarea
                                 value={notes}
@@ -152,14 +146,16 @@ const TedVideoDetail: React.FC = () => {
                 {/* Right Column */}
                 <div style={{ display: 'grid', gridTemplateRows: '0fr 0fr', gridGap: '0px' }}>
                     {/* Transcript */}
-                    <div style={{width: '400px',
+                    <div style={{
+                        width: '600px',
                         padding: '20px',
                         backgroundColor: 'white',
                         borderRadius: '10px',
                         boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
-                        border: '1px solid #d9d9d9',}}>
+                        border: '1px solid #d9d9d9',
+                    }}>
                         <h1 style={{
-                            fontWeight: 'bold' ,
+                            fontWeight: 'bold',
                             textAlign: 'center' as const,
                             color: '#0077b6',
                             fontSize: '24px',
@@ -173,24 +169,15 @@ const TedVideoDetail: React.FC = () => {
                             maxHeight: '400px',
                             overflowY: 'auto' as const,
                         }}>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
-                            <p>knaslkdfn oansdfio nald ad ad asddsa sd sad fads fasd fsdf sd fad fasd fasd fa sdf ad fa dfa dfa sdf adsf</p>
+                            {transcript.filter(entry => entry.start <= currentTime).map((entry, index) => (
+                                <p key={index}>{entry.text}</p>
+                            ))}
                         </div>
                     </div>
                     <br></br>
                     {/* Chat Bot */}
                     <div style={{ padding: '10px', backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column' }}>
-                        <h3 style={{ fontSize: '20px' , fontWeight: 'bold' , margin: '0 0 10px 0', color: '#FFFFFF' }}>AI chat bot BETA</h3>
+                        <h3 style={{ fontSize: '20px', fontWeight: 'bold', margin: '0 0 10px 0', color: '#FFFFFF' }}>AI chat bot BETA</h3>
                         <div style={{ padding: '10px', backgroundColor: '#FFFFFF', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column' }}>
                             <div style={{ flex: 1, overflowY: 'auto' as const, marginBottom: '10px', paddingRight: '10px', maxHeight: '100px', }}>
                                 {messages.map((message, index) => (
@@ -203,9 +190,9 @@ const TedVideoDetail: React.FC = () => {
                                                 background: message.user ? '#E5E5E5' : '#00B4D8',
                                                 maxWidth: '70%',
                                                 wordWrap: 'break-word',
-                                                color: message.user? '#000000' :'#FFFFFF',
+                                                color: message.user ? '#000000' : '#FFFFFF',
                                             }}
-                                            >
+                                        >
                                             {message.text}
                                         </div>
                                     </div>
@@ -222,7 +209,6 @@ const TedVideoDetail: React.FC = () => {
                     </div>
                 </div>
             </div>
-
         </div>
     );
 };

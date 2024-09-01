@@ -8,17 +8,27 @@ const { secret } = require('../config/config');
 const router = express.Router();
 
 router.post('/get_bloglist', authenticateToken, async (req, res) => {
-    // const { username } = req.user;
-    // const { prob_id } = req.body;
+    try {
+        const db = await connectToDatabase();
+        const blogsCollection = db.collection('blogs');
 
-    const db = await connectToDatabase();
-    const blogsCollection = db.collection(`blogs`);
+        // Sort results by 'time_created' in descending order
+        const result = await blogsCollection.find({}, { projection: { author: 1, title: 1, _id: 0 } })
+            .sort({ time_created: -1 })  // Add sorting here
+            .toArray();
 
-    const result = await blogsCollection.find({}, { projection: { author: 1, title: 1, _id: 0 } }).toArray();
-    const result2 = await blogsCollection.find({}, { projection: { blog_id: 1, _id: 0 } }).toArray();
+        // Sort results by 'time_created' in descending order
+        const result2 = await blogsCollection.find({}, { projection: { blog_id: 1, _id: 0 } })
+            .sort({ time_created: -1 })  // Add sorting here
+            .toArray();
 
-    res.json({ idlist: result2, bloglist: result});
+        res.json({ idlist: result2, bloglist: result });
+    } catch (error) {
+        console.error('Error fetching blog list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
+
 
 router.post('/get_blog', authenticateToken, async (req, res) => {
     // const { username } = req.user;
