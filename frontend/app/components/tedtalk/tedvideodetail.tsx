@@ -1,15 +1,50 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import "./styles.css";
+import config from '../../config';
+import axios from 'axios';
 import YoutubeVideo from "./youtubevideo";
+import { useSearchParams } from "next/navigation";
 
-const MyPage: React.FC = () => {
+const TedVideoDetail: React.FC = () => {
+    const params = useSearchParams();
     const [notes, setNotes] = useState<string>('');
     const [messages, setMessages] = useState<{ user: boolean, text: string }[]>([
         { user: false, text: 'Hello. How can I help you?' },
         { user: true, text: 'Good morning.' }
     ]);
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
+    const videoId = params.get("id") || '';
+    const [video, setVideo] = useState({
+        title: "",
+        thumbnail: "",
+        publishDate: "",
+        channelId: "",
+        duration: "",
+        views: "",
+        likes: "",
+    });
+
+    const getVideo = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_ted_video_by_id`, {videoId}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            console.log('Fetched videos:', response.data);
+            setVideo(response.data.video || []);
+            console.log(response.data.video)
+        } catch (error) {
+            console.error('Error fetching videos:', error);
+        }
+    };
+
+    useEffect(() => {
+        getVideo();
+    }, []);
 
     useEffect(() => {
         if (messagesEndRef.current) {
@@ -38,12 +73,12 @@ const MyPage: React.FC = () => {
                 <div style={{ display: 'grid', gridTemplateRows: 'auto auto 1fr', gridGap: '20px' }}>
                     {/* Video Player */}
                     <div style={{ borderRadius: '10px', overflow: 'hidden', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-                        <YoutubeVideo embedId="EjNV6JwlV2s" />
+                        <YoutubeVideo embedId={videoId} />
                     </div>
 
                     {/* Video Description */}
                     <div style={{ padding: '10px', backgroundColor: '#fff', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-                        <strong>Tập Đầy Đủ 8 | My Deer Friend Nokotan | It's Anime</strong> <span style={{ color: '#888' }}>[Phụ Đề Đa Ngôn Ngữ]</span>
+                        <strong>{video.title}</strong>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
                             <span style={{ color: '#888' }}>Thời lượng: 30p | 3 ngày trước</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -190,4 +225,4 @@ const MyPage: React.FC = () => {
     );
 };
 
-export default MyPage;
+export default TedVideoDetail;
