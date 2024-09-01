@@ -9,21 +9,15 @@ const router = express.Router();
 const GOOGLE_CLOUD_API_KEY = process.env.GOOGLE_CLOUD_API_KEY; // Store your Google API key in .env file
 const RSS_FEED_URL = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCAuUUnT6oDeKwE6v1NGQxug';
 
-// Fetch and save videos from TED channel
 router.post('/fetch_and_save_ted_videos', authenticateToken, async (req, res) => {
     try {
-        // Fetch videos from the RSS feed
         const response = await axios.get(RSS_FEED_URL);
         const xml = response.data;
 
-        // Parse the RSS feed XML
         const result = await xml2js.parseStringPromise(xml);
         const entries = result.feed.entry || [];
-
-        // Extract video IDs
         const videoIds = entries.map(entry => entry['yt:videoId'][0]);
 
-        // Fetch detailed information for each video using YouTube Data API
         const detailsResponse = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
             params: {
                 key: GOOGLE_CLOUD_API_KEY,
@@ -32,7 +26,6 @@ router.post('/fetch_and_save_ted_videos', authenticateToken, async (req, res) =>
             }
         });
 
-        // Process the fetched video details
         const videos = detailsResponse.data.items.map(video => ({
             title: video.snippet.title,
             thumbnail: video.snippet.thumbnails.default.url,
@@ -44,7 +37,6 @@ router.post('/fetch_and_save_ted_videos', authenticateToken, async (req, res) =>
             likes: video.statistics.likeCount
         }));
 
-        // Connect to MongoDB and save the video details
         const db = await connectToDatabase();
         const collection = db.collection('ted_videos');
         await collection.insertMany(videos);
@@ -56,20 +48,18 @@ router.post('/fetch_and_save_ted_videos', authenticateToken, async (req, res) =>
     }
 });
 
-// Get videos from MongoDB
 router.get('/get_ted_videos', authenticateToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
         const collection = db.collection('ted_videos');
 
-        // Aggregate to remove duplicates and sort by publish date
         const videos = await collection.aggregate([
             {
-                $sort: { publishDate: -1 } // Sort by publishDate in descending order
+                $sort: { publishDate: -1 }
             },
             {
                 $group: {
-                    _id: "$videoId", // Group by videoId
+                    _id: "$videoId",
                     title: { $first: "$title" },
                     thumbnail: { $first: "$thumbnail" },
                     publishDate: { $first: "$publishDate" },
@@ -80,7 +70,7 @@ router.get('/get_ted_videos', authenticateToken, async (req, res) => {
                 }
             },
             {
-                $sort: { publishDate: -1 } // Sort by publishDate in descending order again
+                $sort: { publishDate: -1 }
             }
         ]).toArray();
 
@@ -98,7 +88,6 @@ router.post('/get_ted_video_by_id', authenticateToken, async (req, res) => {
         const db = await connectToDatabase();
         const collection = db.collection('ted_videos');
 
-        // Find the video by its ID
         const video = await collection.findOne({ videoId: videoId });
 
         if (!video) {
