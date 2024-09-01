@@ -5,6 +5,9 @@ import config from '../../config';
 import axios from 'axios';
 import YoutubeVideo from "./youtubevideo";
 import { useSearchParams } from "next/navigation";
+import { convertDuration } from '../../../../backend/utils/convertDuration';
+import { formatDistanceToNow, parseISO } from 'date-fns';
+import { useInstantTransition } from 'framer-motion';
 
 const TedVideoDetail: React.FC = () => {
     const params = useSearchParams();
@@ -24,6 +27,7 @@ const TedVideoDetail: React.FC = () => {
         views: "",
         likes: "",
     });
+    const [dateString, setDateString] = useState('');
 
     const getVideo = async () => {
         const token = localStorage.getItem('token');
@@ -34,9 +38,9 @@ const TedVideoDetail: React.FC = () => {
                 },
             });
 
-            console.log('Fetched videos:', response.data);
             setVideo(response.data.video || []);
-            console.log(response.data.video)
+            const date = parseISO(response.data.video.publishDate.toString());
+            setDateString(formatDistanceToNow(date, { addSuffix: true })); 
         } catch (error) {
             console.error('Error fetching videos:', error);
         }
@@ -44,6 +48,7 @@ const TedVideoDetail: React.FC = () => {
 
     useEffect(() => {
         getVideo();
+
     }, []);
 
     useEffect(() => {
@@ -80,16 +85,13 @@ const TedVideoDetail: React.FC = () => {
                     <div style={{ padding: '10px', backgroundColor: '#fff', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
                         <strong>{video.title}</strong>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                            <span style={{ color: '#888' }}>Thời lượng: 30p | 3 ngày trước</span>
+                            <span style={{ color: '#888' }}>Thời lượng: {convertDuration(video.duration)} | {dateString}</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                 <span style={{ display: 'flex', alignItems: 'center', color: '#009bdb' }}>
-                                    <img src="/path_to_eye_icon.png" alt="Views" style={{ marginRight: '5px' }} /> 2405
+                                    <img src="/path_to_eye_icon.png" alt="Views" style={{ marginRight: '5px' }} /> {video.views}
                                 </span>
                                 <span style={{ display: 'flex', alignItems: 'center', color: '#009bdb' }}>
-                                    <img src="/path_to_heart_icon.png" alt="Likes" style={{ marginRight: '5px' }} /> 23
-                                </span>
-                                <span style={{ display: 'flex', alignItems: 'center', color: '#009bdb' }}>
-                                    <img src="/path_to_bookmark_icon.png" alt="Bookmarks" style={{ marginRight: '5px' }} /> 2
+                                    <img src="/path_to_heart_icon.png" alt="Likes" style={{ marginRight: '5px' }} /> {video.likes}
                                 </span>
                             </div>
                         </div>

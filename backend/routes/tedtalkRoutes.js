@@ -94,7 +94,6 @@ router.get('/get_ted_videos', authenticateToken, async (req, res) => {
 router.post('/get_ted_video_by_id', authenticateToken, async (req, res) => {
     const { videoId } = req.body; 
 
-    console.log(videoId);
     try {
         const db = await connectToDatabase();
         const collection = db.collection('ted_videos');
