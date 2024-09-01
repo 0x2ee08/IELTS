@@ -258,6 +258,77 @@ OUTPUT FORMAT:
     console.log(parsedEvaluation);
 });
 
+router.post('/generateReadingFillOneWord', authenticateToken, async (req, res) => {
+    const { title, content } = req.body;
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{
+            role: 'system',
+            content: `Generate 6 Fill in the Blanks (THE BLANK REPRESENT AS "........") question for IELTS READING TASK (ANSWER HAVE ONE WORD ONLY, 6 question SHOULD BE 6 OR MORE SENTENCE OF A PARAGRAPH) (question must be paraphased) (the given paragraph must contain answer word) with the following format: 
+            [QUESTION 1]
+            [ANSWER 1]
+            [EXPLANATION 1]
+            <END>
+            [QUESTION 2]
+            [ANSWER 2]
+            [EXPLANATION 2]
+            <END>
+            ...
+            [QUESTION 6]
+            [ANSWER 6]
+            [EXPLANATION 6]
+            <END>
+            based on the paragraph with title "${title}" and content "${content}"`
+        }],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    var evaluation = response.data.choices[0].message.content.trim();
+    const parsedEvaluation = parseEvaluationType1(evaluation);
+    res.json(parsedEvaluation);
+});
+
+router.post('/generateReadingFillTwoWords', authenticateToken, async (req, res) => {
+    const { title, content } = req.body;
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{
+            role: 'system',
+            content: `Generate 6 Fill in the Blanks (THE BLANK REPRESENT AS "........") question for IELTS READING TASK (ANSWER HAVE NO MORE THAN TWO WORD ,AT LEAST ONE QUESTION HAVE AN ANSWER CONTAIN TWO WORDS, 6 question SHOULD BE 6 OR MORE SENTENCE OF A PARAGRAPH) (question must be paraphased) (THE GIVEN PARAGRAPH MUST CONTAIN ANSWER WORDS) with the following format: 
+            [QUESTION 1]
+            [ANSWER 1]
+            [EXPLANATION 1]
+            <END>
+            [QUESTION 2]
+            [ANSWER 2]
+            [EXPLANATION 2]
+            <END>
+            ...
+            [QUESTION 6]
+            [ANSWER 6]
+            [EXPLANATION 6]
+            <END>
+            based on the paragraph with title "${title}" and content "${content}"`
+        }],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    var evaluation = response.data.choices[0].message.content.trim();
+    const parsedEvaluation = parseEvaluationType1(evaluation);
+    res.json(parsedEvaluation);
+});
+
+
 
 
 module.exports = router;

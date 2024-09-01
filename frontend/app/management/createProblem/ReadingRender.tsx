@@ -308,28 +308,165 @@ const ReadingRender: React.FC = () => {
     };
 
     const handleGenerateFillOneWordQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-
+        const token = localStorage.getItem('token');
+    
+        axios.post(`${config.API_BASE_URL}api/generateReadingFillOneWord`, 
+            { title, content },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            const data = response.data;
+            const newParagraphs = [...paragraphs];
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                }
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
+            });
+    
+            setParagraphs(newParagraphs);
+        })
+        .catch(error => console.error('Error:', error));
     };
+    
 
     const handleGenerateFillTwoWordQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        
+        const token = localStorage.getItem('token');
+    
+        axios.post(`${config.API_BASE_URL}api/generateReadingFillTwoWords`, 
+            { title, content },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            const data = response.data;
+            const newParagraphs = [...paragraphs];
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                }
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer.trim()                       // Removes space from the beginning and end of the string
+                .replace(/,\s+/g, ',');
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
+            });
+    
+            setParagraphs(newParagraphs);
+        })
+        .catch(error => console.error('Error:', error));
     };
+    
 
     const handleGenerateMatchingHeadingQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        
+        const token = localStorage.getItem('token');
+    
+        axios.post(`${config.API_BASE_URL}api/generateReadingMatchingHeading`, 
+            { title, content },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            const data = response.data;
+            const newParagraphs = [...paragraphs];
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                }
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options.join(', ');
+            });
+    
+            setParagraphs(newParagraphs);
+        })
+        .catch(error => console.error('Error:', error));
     };
+    
     
     const handleGenerateMatchingParagraphInfoQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        
+        const token = localStorage.getItem('token');
+    
+        axios.post(`${config.API_BASE_URL}api/generateReadingMatchingParagraphInfo`, 
+            { title, content },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            const data = response.data;
+            const newParagraphs = [...paragraphs];
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                }
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options.join(', ');
+            });
+    
+            setParagraphs(newParagraphs);
+        })
+        .catch(error => console.error('Error:', error));
     };
     
+    
     const handleGenerateMatchingFeaturesQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        
+        const token = localStorage.getItem('token');
+    
+        axios.post(`${config.API_BASE_URL}api/generateReadingMatchingFeatures`, 
+            { title, content },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            const data = response.data;
+            const newParagraphs = [...paragraphs];
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                }
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options.join(', ');
+            });
+    
+            setParagraphs(newParagraphs);
+        })
+        .catch(error => console.error('Error:', error));
     };
+    
 
     const handleGenerateMatchingSentenceEndingQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        
+        const token = localStorage.getItem('token');
+    
+        axios.post(`${config.API_BASE_URL}api/generateReadingMatchingSentenceEnding`, 
+            { title, content },
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            const data = response.data;
+            const newParagraphs = [...paragraphs];
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                }
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
+                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options.join(', ');
+            });
+    
+            setParagraphs(newParagraphs);
+        })
+        .catch(error => console.error('Error:', error));
     };
+    
 
     const handleGenerateMultipleChoiceOneAnswerQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
@@ -419,10 +556,10 @@ const ReadingRender: React.FC = () => {
             case 'True/False/Not Given':
                 handleGenerateTFNQuestion(pIndex, sIndex, title, content);
                 break;
-            case 'Fill in the Blank (One Word)':
+            case 'Fill in the blank with one word only':
                 handleGenerateFillOneWordQuestion(pIndex, sIndex, title, content);
                 break;
-            case 'Fill in the Blank (Two Words)':
+            case 'Fill in the blank with no more than two words':
                 handleGenerateFillTwoWordQuestion(pIndex, sIndex, title, content);
                 break;
             case 'Matching Heading':
@@ -543,7 +680,7 @@ const ReadingRender: React.FC = () => {
                                 onChange={(e) => handleInputChange(pIndex, 'content', e.target.value)}
                             ></textarea>
 
-                            <div className="border border-gray-300 rounded-md p-4 mb-4">
+                            {/* <div className="border border-gray-300 rounded-md p-4 mb-4">
                                 <div 
                                     onClick={() => toggleVocabulary(pIndex)} 
                                     className="cursor-pointer flex justify-between items-center"
@@ -569,7 +706,7 @@ const ReadingRender: React.FC = () => {
                                         </tbody>
                                     </table>
                                 )}
-                            </div>
+                            </div> */}
 
                             {paragraph.sections.map((section, sIndex) => (
                                 <div key={sIndex} className="border border-gray-300 rounded-md p-4 mb-4">
