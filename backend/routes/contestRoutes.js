@@ -24,6 +24,10 @@ router.post('/createContestReading', authenticateToken, async (req, res) => {
     //nhớ thêm 1 phần kiểm tra tất cả các từ trong paragraphs thuộc trình độ CEFR nào
     // rồi add vào 1 cái mảng vocab nào đấy để lưu vào db
 
+    //nhớ thêm phần check bắt buộc phải có đầy đủ name, started date, end date, 
+    //paragraph phải có đủ nội dung, mỗi bài có đủ nội dung câu hỏi, câu trả lời, explain thì có thể ko cần
+    //nếu thiếu thì return error "Missing content."
+
     res.json({"Status" : "Success"});
 });
 
