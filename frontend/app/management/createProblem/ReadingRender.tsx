@@ -641,7 +641,7 @@ const ReadingRender: React.FC = () => {
 
         const token = localStorage.getItem('token');
     
-        axios.post(`${config.API_BASE_URL}api/createContest`, {
+        axios.post(`${config.API_BASE_URL}api/createContestReading`, {
             paragraphs,
             problemName,
             accessUser,

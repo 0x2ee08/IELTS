@@ -12,7 +12,7 @@ const model = MODEL_NAME;
 const openRouterApiKey = OPENROUTER_API_KEY
 const router = express.Router();
 
-router.post('/createContest', authenticateToken, async (req, res) => {
+router.post('/createContestReading', authenticateToken, async (req, res) => {
     const { type, accessUser, startTime, endTime, problemName,  paragraphs} = req.body;
 
     const db = await connectToDatabase();
