@@ -22,7 +22,7 @@ router.post('/generateReadingParagraph', authenticateToken, async (req, res) => 
 
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: model,
-        messages: [{ role: 'system', content: `Give me a paragraph of IELTS Reading around 800 words with this topic "${title}"(if empty then random) and some of first line content: "${content}"(if empty then random) [ONLY GIVE THE TITLE AND THE PARAGRAPH, DO NOT SAY ANYTHING ELSE, HAVE AT LEAST 3 SMALLER SECTION, 800 WORD MINIMUM, DO NOT HAVE TITLE FOR EACH SECTION]`}],
+        messages: [{ role: 'system', content: `Give me a paragraph of IELTS Reading around 800 words, 6 sections with this topic "${title}"(if empty then random) and some of first line content: "${content}"(if empty then random) [ONLY GIVE THE TITLE AND THE PARAGRAPH, DO NOT SAY ANYTHING ELSE, HAVE EXACTLY 6 SMALLER SECTION, 800 WORD MINIMUM, DO NOT HAVE TITLE FOR EACH SECTION]`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -47,6 +47,99 @@ function parseEvaluationType1(evaluation) {
 
     questionBlocks.forEach((block, index) => {
         const questionMatch = block.match(/\[QUESTION (\d+)\]\s*(.*)/);
+        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
+        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
+
+        if (questionMatch && answerMatch && explanationMatch) {
+            const questionIndex = index + 1;
+            evaluationObject[questionIndex] = {
+                question: questionMatch[2].trim(),
+                answer: answerMatch[2].trim(),
+                explanation: explanationMatch[2].trim(),
+            };
+        }
+    });
+
+    return evaluationObject;
+}
+
+function parseEvaluationType3(evaluation) {
+    const evaluationObject = {
+        options: [],
+    };
+    
+    // Extract options
+    const optionMatches = [...evaluation.matchAll(/\[OPTION \d+\]\s*(.*)/g)];
+    optionMatches.forEach(option => {
+        evaluationObject.options.push(option[1].trim());
+    });
+
+    // Extract questions, answers, and explanations
+    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
+    questionBlocks.forEach((block, index) => {
+        const questionMatch = block.match(/\[QUESTION (\d+)\]\s*(.*)/);
+        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
+        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
+
+        if (questionMatch && answerMatch && explanationMatch) {
+            const questionIndex = index + 1;
+            evaluationObject[questionIndex] = {
+                question: questionMatch[2].trim(),
+                answer: answerMatch[2].trim(),
+                explanation: explanationMatch[2].trim(),
+            };
+        }
+    });
+
+    return evaluationObject;
+}
+
+function parseEvaluationType4(evaluation) {
+    const evaluationObject = {
+        options: [],
+    };
+    
+    // Extract options
+    const optionMatches = [...evaluation.matchAll(/\[OPTION \d+\]\s*(.*)/g)];
+    optionMatches.forEach(option => {
+        evaluationObject.options.push(option[1].trim());
+    });
+
+    // Extract questions, answers, and explanations
+    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
+    questionBlocks.forEach((block, index) => {
+        const questionMatch = block.match(/\[FEATURE (\d+)\]\s*(.*)/);
+        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
+        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
+
+        if (questionMatch && answerMatch && explanationMatch) {
+            const questionIndex = index + 1;
+            evaluationObject[questionIndex] = {
+                question: questionMatch[2].trim(),
+                answer: answerMatch[2].trim(),
+                explanation: explanationMatch[2].trim(),
+            };
+        }
+    });
+
+    return evaluationObject;
+}
+
+function parseEvaluationType5(evaluation) {
+    const evaluationObject = {
+        options: [],
+    };
+    
+    // Extract options
+    const optionMatches = [...evaluation.matchAll(/\[OPTION \d+\]\s*(.*)/g)];
+    optionMatches.forEach(option => {
+        evaluationObject.options.push(option[1].trim());
+    });
+
+    // Extract questions, answers, and explanations
+    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
+    questionBlocks.forEach((block, index) => {
+        const questionMatch = block.match(/\[SENTENCE (\d+)\]\s*(.*)/);
         const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
         const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
 
@@ -329,6 +422,179 @@ router.post('/generateReadingFillTwoWords', authenticateToken, async (req, res) 
 });
 
 
+router.post('/generateReadingMatchingHeading', authenticateToken, async (req, res) => {
+    const { title, content } = req.body;
 
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{
+            role: 'system',
+            content: `Generate a Matching Heading problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
+            [OPTION 1]
+            [OPTION 2]
+            [OPTION 3]
+            [OPTION 4]
+            ...
+            [OPTION 8]
+            [QUESTION 1]
+            Section 1
+            [ANSWER 1]
+            [EXPLANATION 1]
+            <END>
+            [QUESTION 2]
+            Section 2
+            [ANSWER 2]
+            [EXPLANATION 2]
+            <END>
+            ...
+            [QUESTION 6]
+            Section 6
+            [ANSWER 6]
+            [EXPLANATION 6]
+            <END>
+            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 QUESTION and 8 OPTIONS"`
+        }],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    var evaluation = response.data.choices[0].message.content.trim();
+    // console.log(evaluation)
+    const parsedEvaluation = parseEvaluationType3(evaluation);
+    res.json(parsedEvaluation);
+});
+
+
+router.post('/generateReadingMatchingParagraphInfo', authenticateToken, async (req, res) => {
+    const { title, content } = req.body;
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{
+            role: 'system',
+            content: `Generate a Matching Paragraph Information problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
+            [OPTION 1]
+            [OPTION 2]
+            [OPTION 3]
+            [OPTION 4]
+            ...
+            [OPTION 8]
+            [QUESTION 1]
+            Section 1
+            [ANSWER 1]
+            [EXPLANATION 1]
+            <END>
+            [QUESTION 2]
+            Section 2
+            [ANSWER 2]
+            [EXPLANATION 2]
+            <END>
+            ...
+            [QUESTION 6]
+            Section 6
+            [ANSWER 6]
+            [EXPLANATION 6]
+            <END>
+            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 QUESTION and 8 OPTIONS"`
+        }],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    var evaluation = response.data.choices[0].message.content.trim();
+    // console.log(evaluation)
+    const parsedEvaluation = parseEvaluationType3(evaluation);
+    res.json(parsedEvaluation);
+});
+
+router.post('/generateReadingMatchingFeatures', authenticateToken, async (req, res) => {
+    const { title, content } = req.body;
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{
+            role: 'system',
+            content: `Generate a Matching Features problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
+            [OPTION 1]
+            [OPTION 2]
+            [OPTION 3]
+            [OPTION 4]
+            ...
+            [OPTION 8]
+            [FEATURE 1]
+            [ANSWER 1]
+            [EXPLANATION 1]
+            <END>
+            [FEATURE 2]
+            [ANSWER 2]
+            [EXPLANATION 2]
+            <END>
+            ...
+            [FEATURE 6]
+            [ANSWER 6]
+            [EXPLANATION 6]
+            <END>
+            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 FEATURE and 8 OPTIONS"`
+        }],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    var evaluation = response.data.choices[0].message.content.trim();
+    console.log(evaluation)
+    const parsedEvaluation = parseEvaluationType4(evaluation);
+    res.json(parsedEvaluation);
+});
+
+router.post('/generateReadingMatchingSentenceEnding', authenticateToken, async (req, res) => {
+    const { title, content } = req.body;
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{
+            role: 'system',
+            content: `Generate a Matching Sentence Ending problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
+            [OPTION 1]
+            [OPTION 2]
+            [OPTION 3]
+            [OPTION 4]
+            ...
+            [OPTION 8]
+            [SENTENCE 1]
+            [ANSWER 1]
+            [EXPLANATION 1]
+            <END>
+            [SENTENCE 2]
+            [ANSWER 2]
+            [EXPLANATION 2]
+            <END>
+            ...
+            [SENTENCE 6]
+            [ANSWER 6]
+            [EXPLANATION 6]
+            <END>
+            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 SENTENCE and 8 OPTIONS (ENDING)"`
+        }],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    var evaluation = response.data.choices[0].message.content.trim();
+    console.log(evaluation)
+    const parsedEvaluation = parseEvaluationType5(evaluation);
+    res.json(parsedEvaluation);
+});
 
 module.exports = router;

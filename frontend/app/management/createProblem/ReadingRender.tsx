@@ -363,28 +363,42 @@ const ReadingRender: React.FC = () => {
     const handleGenerateMatchingHeadingQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         const token = localStorage.getItem('token');
     
-        axios.post(`${config.API_BASE_URL}api/generateReadingMatchingHeading`, 
+        axios.post(
+            `${config.API_BASE_URL}api/generateReadingMatchingHeading`, 
             { title, content },
             { headers: { 'Authorization': `Bearer ${token}` } }
         )
         .then(response => {
             const data = response.data;
             const newParagraphs = [...paragraphs];
+    
+            // Iterate over the keys in the response data (e.g., "1", "2", etc.)
             Object.keys(data).forEach((key, qIndex) => {
-                const questionData = data[key];
-                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                if (key !== "options") { // Skip the "options" key
+                    const questionData = data[key];
+    
+                    // Update the corresponding question in the state
+                    const newQuestion: Question = {
+                        question: questionData.question,
+                        answer: questionData.answer,
+                        explanation: questionData.explanation,
+                        options: ''  // This field might not be needed if options are handled differently
+                    };
+    
+                    // Update the section with the new question
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = newQuestion;
+                } else {
+                    // Update the options in the section
+                    newParagraphs[pIndex].sections[sIndex].options = data[key];
                 }
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options.join(', ');
             });
     
+            // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
         .catch(error => console.error('Error:', error));
     };
+    
     
     
     const handleGenerateMatchingParagraphInfoQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
@@ -397,17 +411,29 @@ const ReadingRender: React.FC = () => {
         .then(response => {
             const data = response.data;
             const newParagraphs = [...paragraphs];
+    
+            // Iterate over the keys in the response data (e.g., "1", "2", etc.)
             Object.keys(data).forEach((key, qIndex) => {
-                const questionData = data[key];
-                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                if (key !== "options") { // Skip the "options" key
+                    const questionData = data[key];
+    
+                    // Update the corresponding question in the state
+                    const newQuestion: Question = {
+                        question: questionData.question,
+                        answer: questionData.answer,
+                        explanation: questionData.explanation,
+                        options: ''  // This field might not be needed if options are handled differently
+                    };
+    
+                    // Update the section with the new question
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = newQuestion;
+                } else {
+                    // Update the options in the section
+                    newParagraphs[pIndex].sections[sIndex].options = data[key];
                 }
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options.join(', ');
             });
     
+            // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
         .catch(error => console.error('Error:', error));
@@ -424,17 +450,29 @@ const ReadingRender: React.FC = () => {
         .then(response => {
             const data = response.data;
             const newParagraphs = [...paragraphs];
+    
+            // Iterate over the keys in the response data (e.g., "1", "2", etc.)
             Object.keys(data).forEach((key, qIndex) => {
-                const questionData = data[key];
-                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                if (key !== "options") { // Skip the "options" key
+                    const questionData = data[key];
+    
+                    // Update the corresponding question in the state
+                    const newQuestion: Question = {
+                        question: questionData.question,
+                        answer: questionData.answer,
+                        explanation: questionData.explanation,
+                        options: ''  // This field might not be needed if options are handled differently
+                    };
+    
+                    // Update the section with the new question
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = newQuestion;
+                } else {
+                    // Update the options in the section
+                    newParagraphs[pIndex].sections[sIndex].options = data[key];
                 }
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options.join(', ');
             });
     
+            // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
         .catch(error => console.error('Error:', error));
@@ -451,17 +489,29 @@ const ReadingRender: React.FC = () => {
         .then(response => {
             const data = response.data;
             const newParagraphs = [...paragraphs];
+    
+            // Iterate over the keys in the response data (e.g., "1", "2", etc.)
             Object.keys(data).forEach((key, qIndex) => {
-                const questionData = data[key];
-                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
+                if (key !== "options") { // Skip the "options" key
+                    const questionData = data[key];
+    
+                    // Update the corresponding question in the state
+                    const newQuestion: Question = {
+                        question: questionData.question,
+                        answer: questionData.answer,
+                        explanation: questionData.explanation,
+                        options: ''  // This field might not be needed if options are handled differently
+                    };
+    
+                    // Update the section with the new question
+                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = newQuestion;
+                } else {
+                    // Update the options in the section
+                    newParagraphs[pIndex].sections[sIndex].options = data[key];
                 }
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options.join(', ');
             });
     
+            // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
         .catch(error => console.error('Error:', error));
