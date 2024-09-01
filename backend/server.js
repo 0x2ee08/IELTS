@@ -15,6 +15,7 @@ const schoolclassRoutes = require('./routes/schoolclassRoutes');
 const writingRoutes = require('./routes/writingRoutes');
 const blogsRoutes = require('./routes/blogsRoutes');
 const tedtalkRoutes = require('./routes/tedtalkRoutes');
+const generateReadingParagraphRoutes = require('./routes/genReadingRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -37,6 +38,7 @@ app.use('/api', schoolclassRoutes);
 app.use('/api', writingRoutes);
 app.use('/api', blogsRoutes);
 app.use('/api', tedtalkRoutes);
+app.use('/api', generateReadingParagraphRoutes)
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
