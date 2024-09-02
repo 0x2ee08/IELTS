@@ -1,7 +1,8 @@
-'use client'
+'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import Link from 'next/link';
 import config from '../config';
 import { useSearchParams } from "next/navigation";
 
@@ -16,6 +17,7 @@ const Blogdetail: React.FC = () => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [author, setAuthor] = useState('');
+    const [authorId, setAuthorId] = useState(''); // Add state for author ID or username
     const [curlike, setCurlike] = useState(0);
     const [curdislike, setCurdislike] = useState(0);
     const [liked, setLiked] = useState(false);
@@ -26,7 +28,6 @@ const Blogdetail: React.FC = () => {
     const [time_created, setTime_created] = useState('');
     const [loadingLike, setLoadingLike] = useState(false);
     const [loadingDislike, setLoadingDislike] = useState(false);
-    const [count, setCount] = useState(0);
     const [isCommentVisible, setIsCommentVisible] = useState(false);
 
     const handleLineClick = () => {
@@ -56,6 +57,7 @@ const Blogdetail: React.FC = () => {
             setTitle(result.title);
             setContent(result.content);
             setAuthor(result.author);
+            setAuthorId(result.authorId); // Set author ID or username
             setCurlike(result.like || 0);
             setCurdislike(result.dislike || 0);
             setView(result.view);
@@ -79,7 +81,7 @@ const Blogdetail: React.FC = () => {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            const { liked, disliked, op } = response.data; 
+            const { liked, disliked, op } = response.data;
             setLiked(liked);
             setDisliked(disliked);
             if(op) {
@@ -123,7 +125,7 @@ const Blogdetail: React.FC = () => {
             alert('Internal server error');
         }
     };
-    
+
     const handleLike = async () => {
         if (loadingLike || loadingDislike) return;
         setLoadingLike(true);
@@ -148,7 +150,7 @@ const Blogdetail: React.FC = () => {
             setLoadingLike(false);
         }
     };
-    
+
     const handleDislike = async () => {
         if (loadingLike || loadingDislike) return;
         setLoadingDislike(true);
@@ -196,7 +198,14 @@ const Blogdetail: React.FC = () => {
         <div className="flex-grow flex items-center justify-center p-8">
             <div className="bg-white w-full max-w-6xl"> 
                 <p className="text-[#0077B6] text-3xl text-bold mb-2">{title}</p>
-                <p className="mb-4"><strong>By: </strong> {author} , {new Date(time_created).toLocaleString()}</p>
+                {/* Updated author link */}
+                <p className="mb-4">
+                    <strong>By: </strong>
+                    <Link href={`/profile/${authorId}`}>
+                        <span className="text-blue-600 hover:underline cursor-pointer">{author}</span>
+                    </Link>
+                    , {new Date(time_created).toLocaleString()}
+                </p>
                 <p className="border-l-4 border-gray-500 p-2 mb-4">{content}</p>
                 <div className="bg-white border border-black rounded-md mb-2">
                     <div className="flex items-center justify-between mb-2 mt-2">
@@ -219,7 +228,14 @@ const Blogdetail: React.FC = () => {
                         <span className="mr-2">{view} &#128100;</span>
                     </div>
                 </div>
-                {!isCommentVisible && (<p className="flex justify-end text-blue-700 underline decoration-blue-700" onClick={handleLineClick}> Write comment ?</p>)}
+                {!isCommentVisible && (
+                    <p 
+                        className="flex justify-end text-blue-700 underline decoration-blue-700" 
+                        onClick={handleLineClick}
+                    > 
+                        Write comment?
+                    </p>
+                )}
                 {isCommentVisible && (
                     <div>
                         <textarea
