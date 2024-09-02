@@ -100,51 +100,54 @@ const SendEmailPage: React.FC = () => {
 
     return (
         <div className="flex flex-col min-h-screen">
-            <Header /> {/* Header at the top */}
-            <div className="flex-grow flex justify-center items-center bg-gray-100">
-                <div className="bg-white p-6 rounded shadow-md w-full max-w-sm">
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your Gmail:</label>
-                        <input
-                            type="text"
-                            className="border border-gray-300 px-3 py-2 rounded-md w-full"
-                            value={to}
-                            onChange={(e) => setTo(e.target.value)}
-                        />
+            <Header />
+            <div className="flex-grow flex justify-center items-center bg-gray-200">
+                <div className="bg-gray-100 p-6 rounded shadow-md w-full max-w-sm justify-center items-center">
+                    <div className= "p-10">
+                        <div className= "mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your Gmail:</label>
+                            <input
+                                type="text"
+                                className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                                value={to}
+                                onChange={(e) => setTo(e.target.value)}
+                            />
+                        </div>
+                        <button
+                            className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            onClick={handleSendEmail}
+                        >
+                            Send Code
+                        </button>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your Code Received: (check in spam too)</label>
+                            <input
+                                className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                                value={usercode}
+                                onChange={(e) => setUsercode(e.target.value)}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your New Password</label>
+                            <input
+                                type="password"
+                                className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                                value={newpassword}
+                                onChange={(e) => setNewpassword(e.target.value)}
+                            />
+                        </div>
+                        <button
+                            className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                            onClick={handleChangePass}
+                        >
+                            Change Password
+                        </button>
                     </div>
-                    <button
-                        className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        onClick={handleSendEmail}
-                    >
-                        Send Code
-                    </button>
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your Code Received: (check in spam too)</label>
-                        <input
-                            className="border border-gray-300 px-3 py-2 rounded-md w-full"
-                            value={usercode}
-                            onChange={(e) => setUsercode(e.target.value)}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your New Password</label>
-                        <input
-                            type="password"
-                            className="border border-gray-300 px-3 py-2 rounded-md w-full"
-                            value={newpassword}
-                            onChange={(e) => setNewpassword(e.target.value)}
-                        />
-                    </div>
-                    <button
-                        className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        onClick={handleChangePass}
-                    >
-                        Change Password
-                    </button>
                 </div>
             </div>
-            <Footer /> {/* Footer at the bottom */}
+            <Footer />
         </div>
+
     );
 };
 

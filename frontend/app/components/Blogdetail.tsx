@@ -27,6 +27,11 @@ const Blogdetail: React.FC = () => {
     const [loadingLike, setLoadingLike] = useState(false);
     const [loadingDislike, setLoadingDislike] = useState(false);
     const [count, setCount] = useState(0);
+    const [isCommentVisible, setIsCommentVisible] = useState(false);
+
+    const handleLineClick = () => {
+        setIsCommentVisible(!isCommentVisible);
+    };
 
     const hasInitialized = useRef(false);
 
@@ -178,6 +183,7 @@ const Blogdetail: React.FC = () => {
                     'Authorization': `Bearer ${token}`,
                 },
             });
+            setIsCommentVisible(!isCommentVisible);
             setNewComment('');
             get_blog();
         } catch (error) {
@@ -187,59 +193,74 @@ const Blogdetail: React.FC = () => {
     }
 
     return (
-        <div>
-            <p><strong>Title:</strong> {title}</p>
-            <p><strong>Author:</strong> {author}</p>
-            <p><strong>Time Created</strong> {new Date(time_created).toLocaleString()}</p>
-            <p><strong>View:</strong> {view}</p>
-            <p><strong>Content:</strong> {content}</p>
-
-            <button 
-                onClick={handleLike}
-                className={`${
-                    liked ? 'bg-blue-800' : 'bg-blue-500'
-                } hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-4 mr-2`}>
-                Like {curlike}
-            </button>
-            <button 
-                onClick={handleDislike}
-                className={`${
-                    disliked ? 'bg-blue-800' : 'bg-blue-500'
-                } hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2 mr-4`}>
-                Dislike {curdislike}
-            </button>
-
-            <div>
-                <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    rows={4}
-                    cols={50}
-                    placeholder="Write your comment here..."
-                    className="border p-2 mb-2 w-full"
-                />
-                <button
-                    onClick={handle_comment}
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                    Submit Comment
-                </button>
-            </div>
-
-            <div>
-                <h3>Comments:</h3>
-                {comments.length > 0 ? (
-                    <ul>
-                        {comments.map((comment, index) => (
-                            <li key={index} className="border p-2 mb-2">
-                                <p><strong>{comment.username}</strong> <span className="text-gray-500">({new Date(comment.time_created).toLocaleString()})</span></p>
-                                <p>{comment.content}</p>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No comments yet.</p>
+        <div className="flex-grow flex items-center justify-center p-8">
+            <div className="bg-white w-full max-w-6xl"> 
+                <p className="text-[#0077B6] text-3xl text-bold mb-2">{title}</p>
+                <p className="mb-4"><strong>By: </strong> {author} , {new Date(time_created).toLocaleString()}</p>
+                <p className="border-l-4 border-gray-500 p-2 mb-4">{content}</p>
+                <div className="bg-white border border-black rounded-md mb-2">
+                    <div className="flex items-center justify-between mb-2 mt-2">
+                        <div className="flex items-center">
+                            <button 
+                                onClick={handleLike}
+                                className={`${
+                                    liked ? 'bg-[#0077B6]' : 'bg-[#6baed6]'
+                                } hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-4 mr-2`}>
+                                Like {curlike}
+                            </button>
+                            <button 
+                                onClick={handleDislike}
+                                className={`${
+                                    disliked ? 'bg-[#0077B6]' : 'bg-[#6baed6]'
+                                } hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2 mr-4`}>
+                                Dislike {curdislike}
+                            </button>
+                        </div>
+                        <span className="mr-2">{view} &#128100;</span>
+                    </div>
+                </div>
+                {!isCommentVisible && (<p className="flex justify-end text-blue-700 underline decoration-blue-700" onClick={handleLineClick}> Write comment ?</p>)}
+                {isCommentVisible && (
+                    <div>
+                        <textarea
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            rows={4}
+                            cols={50}
+                            placeholder="Write your comment here..."
+                            className="border border-black rounded-md p-2 mb-2 w-full"
+                        />
+                        <div className="flex justify-end space-x-2">
+                            <button
+                                onClick={handle_comment}
+                                className="bg-[#6baed6] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            >
+                                Post
+                            </button>
+                            <button
+                                onClick={handleLineClick}
+                                className="bg-[#6baed6] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
                 )}
+                <div>
+                    <h3>Comments:</h3>
+                    {comments.length > 0 ? (
+                        <ul>
+                            {comments.map((comment, index) => (
+                                <li key={index} className="border p-2 mb-2">
+                                    <p><strong>{comment.username}</strong> <span className="text-gray-500">({new Date(comment.time_created).toLocaleString()})</span></p>
+                                    <p>{comment.content}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No comments yet.</p>
+                    )}
+                </div>
             </div>
         </div>
     );
