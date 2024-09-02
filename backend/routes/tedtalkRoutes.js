@@ -8,9 +8,9 @@ const router = express.Router();
 
 // YouTube Data API credentials
 const GOOGLE_CLOUD_API_KEY = process.env.GOOGLE_CLOUD_API_KEY; // Store your Google API key in .env file
-const RSS_FEED_URL = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCAuUUnT6oDeKwE6v1NGQxug';
+const RSS_FEED_URL = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCsooa4yRKGN_zEE8iknghZA';
 
-router.post('/fetch_and_save_ted_videos', authenticateToken, async (req, res) => {
+router.post('/fetch_and_save_ted_videos', async (req, res) => {
     try {
         const response = await axios.get(RSS_FEED_URL);
         const xml = response.data;
