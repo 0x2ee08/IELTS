@@ -29,6 +29,22 @@ router.post('/get_bloglist', authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/get_home_page_bloglist', async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const blogsCollection = db.collection('blogs');
+
+        const blogs = await blogsCollection.find({ })
+            .sort({ time_created: -1 })
+            .toArray();
+
+        res.json({ blogs });
+    } catch (error) {
+        console.error('Error fetching blog list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 router.post('/get_blog', authenticateToken, async (req, res) => {
     // const { username } = req.user;
