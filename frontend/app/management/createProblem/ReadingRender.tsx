@@ -702,7 +702,8 @@ const ReadingRender: React.FC = () => {
     const createProblem = () => {
         // console.log(problemName);
         // console.log(paragraphs);
-
+        
+        //add contest id
         setIsLoading(true);
 
         const token = localStorage.getItem('token');
@@ -721,6 +722,7 @@ const ReadingRender: React.FC = () => {
             const data = response.data;
             alert(data['status']);
             console.log(data);
+            window.location.reload();
         })
         .catch(error => alert(error.response.data.error))
         .finally(() => {
