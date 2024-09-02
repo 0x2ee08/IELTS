@@ -86,24 +86,34 @@ router.post('/get_user_blog_list', authenticateToken, async (req, res) => {
         const userCollection = db.collection('user_blog_list');
 
         const result = await userCollection.findOne({ username: username });
+        let op = false;
 
         if (!result) {
             await userCollection.insertOne({
                 username,
                 like: [],
                 dislike: [],
-                view: [],
+                view: [blog_id],
             });
-            res.json({ liked: false, disliked: false });
+            res.json({ liked: false, disliked: false, op: true });
         } else {
             const likeArray = result.like || [];
             const dislikeArray = result.dislike || [];
+            const viewArray = result.view || [];
 
             // Check if the arrays contain the blog_id
             const liked = likeArray.includes(blog_id);
             const disliked = dislikeArray.includes(blog_id);
+            op = viewArray.includes(blog_id);
 
-            res.json({ liked: liked, disliked: disliked });
+            if (!op) {
+                await userCollection.updateOne(
+                    { username: username },
+                    { $push: { view: blog_id, }}
+                )
+            }
+
+            res.json({ liked: liked, disliked: disliked, op: !op });
         }
     } catch (error) {
         console.error('Error fetching user emotion:', error);
@@ -120,70 +130,26 @@ router.post('/update_user_emotion', authenticateToken, async (req, res) => {
         const userCollection = db.collection('user_blog_list');
         const result = await userCollection.findOne({ username });
 
-        if (!result) {
-            await userCollection.insertOne({
-                username,
-                like: action === 'like' ? [blog_id] : [],
-                dislike: action === 'dislike' ? [blog_id] : [],
-                view: [],
-            });
-        } else {
-            let update = {};
+        let update = {};
 
-            if (action === 'like') {
-                if (result.like.includes(blog_id)) {
-                    update = { $pull: { like: blog_id } };
-                } else {
-                    update = { $addToSet: { like: blog_id }, $pull: { dislike: blog_id } };
-                }
-            } else if (action === 'dislike') {
-                if (result.dislike.includes(blog_id)) {
-                    update = { $pull: { dislike: blog_id } };
-                } else {
-                    update = { $addToSet: { dislike: blog_id }, $pull: { like: blog_id } };
-                }
+        if (action === 'like') {
+            if (result.like.includes(blog_id)) {
+                update = { $pull: { like: blog_id } };
+            } else {
+                update = { $addToSet: { like: blog_id }, $pull: { dislike: blog_id } };
             }
-            await userCollection.updateOne({ username }, update);
+        } else if (action === 'dislike') {
+            if (result.dislike.includes(blog_id)) {
+                update = { $pull: { dislike: blog_id } };
+            } else {
+                update = { $addToSet: { dislike: blog_id }, $pull: { like: blog_id } };
+            }
         }
+        await userCollection.updateOne({ username }, update);
 
         res.json({ success: true });
     } catch (error) {
         console.error('Error updating user emotion:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-router.post('/update_blog_view', authenticateToken, async (req, res) => {
-    const { username } = req.user;
-    const { blog_id } = req.body;
-
-    try {
-        const db = await connectToDatabase();
-        const userCollection = db.collection('user_blog_list');
-        const result = await userCollection.findOne({ username });
-
-        if (!result) {
-            await userCollection.insertOne({
-                username,
-                like: [],
-                dislike: [],
-                view: [ blog_id ],
-            });
-            res.json({ op: true });
-        } else {
-            let update = {};
-            let op = false;
-
-            if (!result.view.includes(blog_id)) {
-                update = { $addToSet: { view: blog_id } };
-                await userCollection.updateOne({ username }, update);
-                op = true;
-            }
-
-            res.json({ op: op });
-        }
-    } catch (error) {
-        console.error('Error updating blog view:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });

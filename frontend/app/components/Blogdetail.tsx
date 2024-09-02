@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+'use client'
+
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import config from '../config';
 import { useSearchParams } from "next/navigation";
@@ -24,6 +26,7 @@ const Blogdetail: React.FC = () => {
     const [time_created, setTime_created] = useState('');
     const [loadingLike, setLoadingLike] = useState(false);
     const [loadingDislike, setLoadingDislike] = useState(false);
+    const [count, setCount] = useState(0);
 
     const get_blog = async () => {
         const token = localStorage.getItem('token');
@@ -45,13 +48,15 @@ const Blogdetail: React.FC = () => {
             setTime_created(result.time_created);
             setComments(result.comments || []);
 
+            get_user_blog_list(Number(result.view));
+
         } catch (error) {
             console.error('Error fetching blog:', error);
             alert('Internal server error');
         }
     };
 
-    const get_user_blog_list = async () => {
+    const get_user_blog_list = async (view: number) => {
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
@@ -60,9 +65,13 @@ const Blogdetail: React.FC = () => {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            const { liked, disliked } = response.data; 
+            const { liked, disliked, op } = response.data; 
             setLiked(liked);
             setDisliked(disliked);
+            if(op) {
+                update_blog(curlike, curdislike, view + 1);
+                setView(view + 1);
+            }
 
         } catch(error) {
             console.error('Error get user emotion:', error);
@@ -150,26 +159,6 @@ const Blogdetail: React.FC = () => {
             setLoadingDislike(false);
         }
     };
-    
-    const handle_update_view = async () => {
-        const token = localStorage.getItem('token');
-        try {
-            const blog_id = params.get("id");
-            const response = await axios.post(`${config.API_BASE_URL}api/update_blog_view`, { blog_id }, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            const { op } = response.data;
-            if(op) {
-                update_blog(curlike, curdislike, view + 1);
-                setView(view + 1);
-            }
-        } catch (error) {
-            console.error('Error updating view:', error);
-            alert('Internal server error');
-        }
-    }
 
     const handle_comment = async () => {
         const token = localStorage.getItem('token');
@@ -181,18 +170,18 @@ const Blogdetail: React.FC = () => {
                 },
             });
             setNewComment('');
-            get_blog(); // Refresh the comments
+            get_blog();
         } catch (error) {
             console.error('Error adding comment:', error);
             alert('Internal server error');
         }
     }
 
-    useEffect(() => {
-        get_blog();
-        get_user_blog_list();
-        handle_update_view();
-    }, []);
+    const hasInitialized = useRef(false);
+    if (!hasInitialized.current) {
+        hasInitialized.current = true;
+        get_blog(); 
+    }
 
     return (
         <div>
