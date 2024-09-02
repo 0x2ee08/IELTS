@@ -106,7 +106,9 @@ router.post('/get_transcript', async (req, res) => {
     const { videoId } = req.body;
 
     try {
-        const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+        const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
+            lang: 'en'
+        });
 
         if (!transcript || transcript.length === 0) {
             return res.status(404).json({ message: 'Transcript not available' });

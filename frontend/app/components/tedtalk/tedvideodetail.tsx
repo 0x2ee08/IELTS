@@ -4,7 +4,6 @@ import YouTube from 'react-youtube';
 import "./styles.css";
 import config from '../../config';
 import axios from 'axios';
-import {decode} from 'html-entities';
 import { useSearchParams } from "next/navigation";
 import { convertDuration } from '../../../../backend/utils/convertDuration';
 import { formatDistanceToNow, parseISO } from 'date-fns';
@@ -23,11 +22,18 @@ const convertSecondsToReadable = (seconds: number): string => {
 };
 
 const decodeHtmlEntities = (text: string): string => {
-  const textarea = document.createElement('textarea');
-  textarea.innerHTML = text;
-  return textarea.value;
-};
-
+    const entities: { [key: string]: string } = {
+      '&amp;': '&',
+      '&lt;': '<',
+      '&gt;': '>',
+      '&quot;': '"',
+      '&#39;': "'",
+      '&apos;': "'"
+    };
+  
+    return text.replace(/&[#A-Za-z0-9]+;/g, (entity) => entities[entity] || entity);
+  };
+  
 const TedVideoDetail: React.FC = () => {
     const params = useSearchParams();
     const [notes, setNotes] = useState<string>('');
@@ -50,6 +56,7 @@ const TedVideoDetail: React.FC = () => {
     const [player, setPlayer] = useState<YT.Player | null>(null);
     const [currentTime, setCurrentTime] = useState<number>(0);
     const [transcript, setTranscript] = useState<any[]>([]);
+    const transcriptRef = useRef<HTMLDivElement | null>(null);
 
     const getVideo = async () => {
         const token = localStorage.getItem('token');
@@ -79,7 +86,11 @@ const TedVideoDetail: React.FC = () => {
           },
         });
         const result = response.data;
-        setTranscript(result.transcript);
+        const decodedTranscript = result.transcript.map((item: any) => ({
+            ...item,
+            text: decodeHtmlEntities(item.text),
+        }));
+        setTranscript(decodedTranscript);
 
       } catch (error) {
         console.error('Error fetching transcript:', error);
@@ -91,6 +102,12 @@ const TedVideoDetail: React.FC = () => {
         getVideo();
         fetch_transcript();
     }, []);
+
+    useEffect(() => {
+        if (transcriptRef.current) {
+          transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
+        }
+      }, [currentTime, transcript]);
 
     const onReady = useCallback((event: { target: YT.Player }) => {
       setPlayer(event.target);
@@ -122,8 +139,8 @@ const TedVideoDetail: React.FC = () => {
     };
 
     const opts = {
-      height: '390',
-      width: '640',
+      height: '676',
+      width: '1202',
       playerVars: {
         autoplay: 1,
       },
@@ -139,7 +156,7 @@ const TedVideoDetail: React.FC = () => {
                     {/* Video Player */}
                     <div style={{ borderRadius: '10px', overflow: 'hidden', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
                       <YouTube
-                        videoId="EjNV6JwlV2s"
+                        videoId={videoId}
                         opts={opts}
                         onReady={onReady}
                         onStateChange={onStateChange}
@@ -228,13 +245,16 @@ const TedVideoDetail: React.FC = () => {
                             margin: '0',
                         }}>TRANSCRIPT</h1>
                         <div className="border-b border-blue-500 mt-2"></div>
-                        <div style={{
-                            color: '#555',
-                            fontSize: '14px',
-                            lineHeight: '1.6',
-                            maxHeight: '400px',
-                            overflowY: 'auto' as const,
-                        }}>
+                        <div 
+                            ref={transcriptRef}
+                            style={{
+                              color: '#555',
+                              fontSize: '14px',
+                              lineHeight: '1.6',
+                              maxHeight: '400px',
+                              overflowY: 'auto',
+                            }}
+                        >
                           {filteredTranscript.map((item, index) => (
                             <div key={index}>
                               <p><strong>{convertSecondsToReadable(Math.floor(item.offset))}: </strong> {decodeHtmlEntities(item.text)}</p>
