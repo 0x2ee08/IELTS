@@ -5,7 +5,7 @@ import "./styles.css";
 import config from '../../config';
 import axios from 'axios';
 import { useSearchParams } from "next/navigation";
-import { convertDuration } from '../../../../backend/utils/convertDuration';
+import { convertDuration } from './convertDuration';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 
 const convertSecondsToReadable = (seconds: number): string => {
