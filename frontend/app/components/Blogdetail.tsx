@@ -28,6 +28,15 @@ const Blogdetail: React.FC = () => {
     const [loadingDislike, setLoadingDislike] = useState(false);
     const [count, setCount] = useState(0);
 
+    const hasInitialized = useRef(false);
+
+    useEffect(() => {
+        if (!hasInitialized.current) {
+            hasInitialized.current = true;
+            get_blog();
+        }
+    }, []);
+
     const get_blog = async () => {
         const token = localStorage.getItem('token');
         try {
@@ -175,12 +184,6 @@ const Blogdetail: React.FC = () => {
             console.error('Error adding comment:', error);
             alert('Internal server error');
         }
-    }
-
-    const hasInitialized = useRef(false);
-    if (!hasInitialized.current) {
-        hasInitialized.current = true;
-        get_blog(); 
     }
 
     return (
