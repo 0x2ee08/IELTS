@@ -87,14 +87,24 @@ router.post('/get_user_blog_list', authenticateToken, async (req, res) => {
 
         const result = await userCollection.findOne({ username: username });
 
-        const likeArray = result.like || [];
-        const dislikeArray = result.dislike || [];
+        if (!result) {
+            await userCollection.insertOne({
+                username,
+                like: [],
+                dislike: [],
+                view: [],
+            });
+            res.json({ liked: false, disliked: false });
+        } else {
+            const likeArray = result.like || [];
+            const dislikeArray = result.dislike || [];
 
-        // Check if the arrays contain the blog_id
-        const liked = likeArray.includes(blog_id);
-        const disliked = dislikeArray.includes(blog_id);
+            // Check if the arrays contain the blog_id
+            const liked = likeArray.includes(blog_id);
+            const disliked = dislikeArray.includes(blog_id);
 
-        res.json({ liked: liked, disliked: disliked });
+            res.json({ liked: liked, disliked: disliked });
+        }
     } catch (error) {
         console.error('Error fetching user emotion:', error);
         res.status(500).json({ error: 'Internal server error' });

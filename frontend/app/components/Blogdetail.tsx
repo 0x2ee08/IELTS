@@ -22,6 +22,8 @@ const Blogdetail: React.FC = () => {
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
     const [time_created, setTime_created] = useState('');
+    const [loadingLike, setLoadingLike] = useState(false);
+    const [loadingDislike, setLoadingDislike] = useState(false);
 
     const get_blog = async () => {
         const token = localStorage.getItem('token');
@@ -37,10 +39,10 @@ const Blogdetail: React.FC = () => {
             setTitle(result.title);
             setContent(result.content);
             setAuthor(result.author);
-            setCurlike(result.like);
-            setCurdislike(result.dislike);
+            setCurlike(result.like || 0);
+            setCurdislike(result.dislike || 0);
             setView(result.view);
-            setTime_created(result.time);
+            setTime_created(result.time_created);
             setComments(result.comments || []);
 
         } catch (error) {
@@ -100,40 +102,52 @@ const Blogdetail: React.FC = () => {
     };
     
     const handleLike = async () => {
-        if (!liked) {
-            update_blog(curlike + 1, curdislike, view);
-            update_user_emotion('like');
-            setLiked(true);
-            if (disliked) {
-                setCurdislike(curdislike - 1);
-                update_blog(curlike + 1, curdislike - 1, view);
-                setDisliked(false);
+        if (loadingLike || loadingDislike) return;
+        setLoadingLike(true);
+        try {
+            if (!liked) {
+                await update_blog(curlike + 1, curdislike, view);
+                await update_user_emotion('like');
+                setLiked(true);
+                if (disliked) {
+                    setCurdislike(curdislike - 1);
+                    await update_blog(curlike + 1, curdislike - 1, view);
+                    setDisliked(false);
+                }
+                setCurlike(curlike + 1);
+            } else {
+                await update_blog(curlike - 1, curdislike, view);
+                await update_user_emotion('like');
+                setCurlike(curlike - 1);
+                setLiked(false);
             }
-            setCurlike(curlike + 1);
-        } else {
-            update_blog(curlike - 1, curdislike, view);
-            update_user_emotion('like');
-            setCurlike(curlike - 1);
-            setLiked(false);
+        } finally {
+            setLoadingLike(false);
         }
     };
     
     const handleDislike = async () => {
-        if (!disliked) {
-            update_blog(curlike, curdislike + 1, view);
-            update_user_emotion('dislike');
-            setDisliked(true);
-            if (liked) {
-                setCurlike(curlike - 1);
-                update_blog(curlike - 1, curdislike + 1, view);
-                setLiked(false);
+        if (loadingLike || loadingDislike) return;
+        setLoadingDislike(true);
+        try {
+            if (!disliked) {
+                await update_blog(curlike, curdislike + 1, view);
+                await update_user_emotion('dislike');
+                setDisliked(true);
+                if (liked) {
+                    setCurlike(curlike - 1);
+                    await update_blog(curlike - 1, curdislike + 1, view);
+                    setLiked(false);
+                }
+                setCurdislike(curdislike + 1);
+            } else {
+                await update_blog(curlike, curdislike - 1, view);
+                await update_user_emotion('dislike');
+                setCurdislike(curdislike - 1);
+                setDisliked(false);
             }
-            setCurdislike(curdislike + 1);
-        } else {
-            update_blog(curlike, curdislike - 1, view);
-            update_user_emotion('dislike');
-            setCurdislike(curdislike - 1);
-            setDisliked(false);
+        } finally {
+            setLoadingDislike(false);
         }
     };
     
