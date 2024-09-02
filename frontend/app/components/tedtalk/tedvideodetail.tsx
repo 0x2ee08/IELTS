@@ -7,7 +7,8 @@ import axios from 'axios';
 import { useSearchParams } from "next/navigation";
 import { convertDuration } from './convertDuration';
 import { formatDistanceToNow, parseISO } from 'date-fns';
-
+import eyeIcon from './eye_icon.png';
+import heartIcon from './heart_icon.png';
 const convertSecondsToReadable = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -176,12 +177,12 @@ const TedVideoDetail: React.FC = () => {
                         <strong>{video.title}</strong>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
                             <span style={{ color: '#888' }}>Thời lượng: {convertDuration(video.duration)} | {dateString}</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '100%px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
                                 <span style={{ display: 'flex', alignItems: 'center', color: '#009bdb' }}>
-                                    <img src="/path_to_eye_icon.png" alt="Views" style={{ marginRight: '5px' }} /> {video.views}
+                                    <img src={eyeIcon.src} alt="Views" style={{ width: '20px', height: '20px', marginRight: '5px' }} /> {video.views}
                                 </span>
                                 <span style={{ display: 'flex', alignItems: 'center', color: '#009bdb' }}>
-                                    <img src="/path_to_heart_icon.png" alt="Likes" style={{ marginRight: '5px' }} /> {video.likes}
+                                    <img src={heartIcon.src} alt="Likes" style={{ width: '20px', height: '20px', marginRight: '5px' }} /> {video.likes}
                                 </span>
                             </div>
                         </div>
