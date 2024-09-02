@@ -189,6 +189,10 @@ router.post('/create_blog', authenticateToken, async (req, res) => {
     const { username } = req.user;
     const time_created = new Date();
 
+    if (!title || title.trim().length === 0) {
+        return res.status(400).json({ error: 'Title cannot be empty' });
+    }
+
     try {
         const db = await connectToDatabase();
         const blogsCollection = db.collection('blogs');

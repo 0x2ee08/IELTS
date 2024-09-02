@@ -49,20 +49,23 @@ const BlogsPage: React.FC = () => {
 
     const createBlog = async () => {
         const token = localStorage.getItem('token');
-        try {
-            const response = await axios.post(`${config.API_BASE_URL}api/create_blog`, { title, content, blog_id }, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
+        const response = await fetch(`${config.API_BASE_URL}api/create_blog`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ title, content, blog_id }),
+        });
+        const result = await response.json();
+        if (response.ok) {
             alert('Blog created successfully');
             setTitle('');
             setContent('');
             setblog_id('');
             get_blog_list();
-        } catch (error) {
-            console.error('Error creating blog:', error);
-            alert('Error creating blog: ' + 'Blog ID already exists');
+        } else {
+            alert('Error creating blog: ' + result.error);
         }
     };
     
@@ -83,7 +86,7 @@ const BlogsPage: React.FC = () => {
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Title"
+                        placeholder="Title (cannot be empty)"
                         className="border p-2 mb-2 w-full"
                     />
                     <textarea
