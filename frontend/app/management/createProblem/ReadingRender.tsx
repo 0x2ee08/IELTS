@@ -249,7 +249,7 @@ const ReadingRender: React.FC = () => {
             setParagraphs(updatedParagraphs);
             setVocabLevels(categorizeVocabulary(response.data.content));
         })
-        .catch(error => console.error('Error:', error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
@@ -283,7 +283,7 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new questions
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
@@ -316,7 +316,7 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new questions
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
@@ -347,7 +347,7 @@ const ReadingRender: React.FC = () => {
     
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
@@ -380,7 +380,7 @@ const ReadingRender: React.FC = () => {
     
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
@@ -424,7 +424,7 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
@@ -468,7 +468,7 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
@@ -512,7 +512,7 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
@@ -557,7 +557,7 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
@@ -599,7 +599,7 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new questions
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
@@ -645,7 +645,7 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new questions
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
@@ -719,10 +719,10 @@ const ReadingRender: React.FC = () => {
         )
         .then(response => {
             const data = response.data;
-            alert(data['Status']);
+            alert(data['status']);
             console.log(data);
         })
-        .catch(error => alert(error))
+        .catch(error => alert(error.response.data.error))
         .finally(() => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);

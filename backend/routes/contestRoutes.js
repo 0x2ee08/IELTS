@@ -13,22 +13,63 @@ const openRouterApiKey = OPENROUTER_API_KEY
 const router = express.Router();
 
 router.post('/createContestReading', authenticateToken, async (req, res) => {
-    const { type, accessUser, startTime, endTime, problemName,  paragraphs} = req.body;
+    try {
+        const { type, accessUser, startTime, endTime, problemName, paragraphs } = req.body;
 
-    const db = await connectToDatabase();
-    const contestCollection = db.collection(`contest`);
+        // Check for missing fields
+        if (!problemName || !startTime || !endTime || !paragraphs || paragraphs.length === 0) {
+            return res.status(400).json({ error: "Missing content." });
+        }
 
-    console.log(paragraphs)
-    //paragraph là toàn bộ đề (gồm 3 secontion, mỗi section có 3 bài...)
-    //xem file json t gửi trên discord để bt thêm)
-    //nhớ thêm 1 phần kiểm tra tất cả các từ trong paragraphs thuộc trình độ CEFR nào
-    // rồi add vào 1 cái mảng vocab nào đấy để lưu vào db
+        // Validate each paragraph, section, and question
+        for (let paragraph of paragraphs) {
+            if (!paragraph.content || !paragraph.sections || paragraph.sections.length === 0) {
+                return res.status(400).json({ error: "Missing content in paragraphs." });
+            }
 
-    //nhớ thêm phần check bắt buộc phải có đầy đủ name, started date, end date, 
-    //paragraph phải có đủ nội dung, mỗi bài có đủ nội dung câu hỏi, câu trả lời, explain thì có thể ko cần
-    //nếu thiếu thì return error "Missing content."
+            for (let section of paragraph.sections) {
+                // if (!section.content || !section.questions || section.questions.length === 0) {
+                //     return res.status(400).json({ error: "Missing content in sections." });
+                // }
 
-    res.json({"Status" : "Success"});
+                for (let question of section.questions) {
+                    // console.log(question);
+                    if (!question.question || !question.answer) {
+                        return res.status(400).json({ error: "Missing content in questions." });
+                    }
+                }
+            }
+        }
+
+        // Categorize vocabulary for all paragraphs
+        let vocab = [];
+        // for (let paragraph of paragraphs) {
+        //     let words = paragraph.content.split(/\s+/); // Split content into words
+        //     let categorizedWords = categorizeVocabulary(words);
+        //     vocab.push(...categorizedWords); // Add to the vocab array
+        // }
+
+        // Connect to the database
+        const db = await connectToDatabase();
+        const contestCollection = db.collection('contest');
+
+        // Save the contest data to the database
+        const newContest = {
+            type,
+            accessUser,
+            startTime,
+            endTime,
+            problemName,
+            paragraphs,
+            vocab
+        };
+        await contestCollection.insertOne(newContest);
+
+        res.json({ status: "Success" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error." });
+    }
 });
 
 module.exports = router;
