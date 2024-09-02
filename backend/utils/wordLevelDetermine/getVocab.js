@@ -1,8 +1,61 @@
-var lemmatize = require('wink-lemmatizer');
+const axios = require('axios');
 const fs = require('fs');
-const csv = require('csv-parser');
 const path = require('path');
+const lemmatize = require('wink-lemmatizer');
+const csv = require('csv-parser');
 
+// Define the cache file path
+const cacheFilePath = path.join(__dirname, 'word_cache.json');
+
+// Load cache from file
+const loadCache = () => {
+    if (fs.existsSync(cacheFilePath)) {
+        const data = fs.readFileSync(cacheFilePath, 'utf8');
+        return JSON.parse(data);
+    }
+    return {};
+};
+
+// Save cache to file
+const saveCache = (cache) => {
+    fs.writeFileSync(cacheFilePath, JSON.stringify(cache, null, 2), 'utf8');
+};
+
+// Function to fetch word details from Dictionary API
+const fetchWordDetails = async (word) => {
+    const cache = loadCache();
+    // Check if the word is in the cache
+    if (cache[word]) {
+        // console.log(`Cache hit for word: ${word}`);
+        return cache[word];
+    }
+
+    try {
+        // console.log(`Fetching details for word: ${word}`);
+        const response = await axios.get(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        const { phonetic = 'none', meanings = [] } = response.data[0] || {};
+        const firstMeaning = meanings.length > 0 ? meanings[0].definitions[0].definition : null;
+        const wordDetails = { phonetic, definition: firstMeaning };
+
+        // Update cache with the new response
+        const updatedCache = { ...cache, [word]: wordDetails };
+        saveCache(updatedCache);
+
+        // console.log("Details fetched and cache updated.");
+        return wordDetails;
+    } catch (error) {
+        // console.log(error);
+        if (error.response && error.response.data.title === "No Definitions Found") {
+            // Update cache with no definition
+            const updatedCache = { ...cache, [word]: { phonetic: 'none', definition: null } };
+            saveCache(updatedCache);
+            return { phonetic: 'none', definition: null };
+        }
+        throw error;
+    }
+};
+
+// Load CEFR data from CSV file
 const loadCEFRData = () => {
     return new Promise((resolve, reject) => {
         const cefrMap = {};
@@ -21,10 +74,13 @@ const loadCEFRData = () => {
     });
 };
 
+// Utility function to add delay
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Function to get vocabulary from content
 const getVocab = async (content) => {
     const cefrMap = await loadCEFRData();
-
-    let vocab = {
+    const vocab = {
         "A1": [],
         "A2": [],
         "B1": [],
@@ -67,6 +123,14 @@ const getVocab = async (content) => {
         if (commonWords.has(fword)) continue;
 
         const cefrLevel = cefrMap[fword] || 'undefined';
+        
+        // Add a delay before fetching details
+        await delay(200); // Adjust the delay as needed (e.g., 200ms)
+
+        const wordDetails = await fetchWordDetails(_word);
+
+        // Skip the word if no definition is found
+        if (wordDetails.definition === null) continue;
 
         let currentLevelIndex = cefrLevels.indexOf(cefrLevel);
         let existingLevelIndex = cefrLevels.length;
@@ -82,13 +146,15 @@ const getVocab = async (content) => {
             if (existingLevelIndex < cefrLevels.length) {
                 vocab[cefrLevels[existingLevelIndex]] = vocab[cefrLevels[existingLevelIndex]].filter(w => w.word !== _word);
             }
-            vocab[cefrLevel].push({'word': _word, 'lemmatizer' : fword});
+
+            vocab[cefrLevel].push({
+                'word': _word,
+                'lemmatizer': fword,
+                'phonetic': wordDetails.phonetic,
+                'definition': wordDetails.definition
+            });
         }
-
-        // console.log(`${_word} -> ${fword} (CEFR: ${cefrLevel})`);
     }
-
-    // console.log(vocab);
 
     return vocab;
 };

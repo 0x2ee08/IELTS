@@ -33,7 +33,7 @@ function generateRandomString(length) {
 
 router.post('/createContestReading', authenticateToken, async (req, res) => {
     try {
-        const { type, accessUser, startTime, endTime, problemName, paragraphs } = req.body;
+        const { type, accessUser, startTime, endTime, problemName, paragraphs, useVocab } = req.body;
         const { username } = req.user;
 
         //created by and contest id
@@ -70,7 +70,8 @@ router.post('/createContestReading', authenticateToken, async (req, res) => {
         }
 
         try {
-            let vocab = await getVocab(content);
+            let vocab = [];
+            if(useVocab) vocab = await getVocab(content);
             const db = await connectToDatabase();
             const contestCollection = db.collection('contest');
 
