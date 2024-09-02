@@ -43,6 +43,7 @@ router.post('/createContestReading', authenticateToken, async (req, res) => {
 
         // Categorize vocabulary for all paragraphs
         let vocab = [];
+        //convert all verb to normal form (s/es, --ing, --ed, vPii, vPiii)
         // for (let paragraph of paragraphs) {
         //     let words = paragraph.content.split(/\s+/); // Split content into words
         //     let categorizedWords = categorizeVocabulary(words);
