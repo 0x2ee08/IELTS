@@ -42,6 +42,14 @@ const TedVideoDetail: React.FC = () => {
         { user: true, text: 'Good morning.' }
     ]);
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const parentContainer = messagesEndRef.current?.parentElement;
+        if (parentContainer) {
+            parentContainer.scrollTop = parentContainer.scrollHeight;
+        }
+    }, [messages]);
+
     const videoId = params.get("id") || '';
     const [video, setVideo] = useState({
         title: "",
@@ -150,9 +158,9 @@ const TedVideoDetail: React.FC = () => {
 
     return (
         <div className="flex flex-col min-h-screen">
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gridGap: '20px', padding: '20px', boxSizing: 'border-box' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 0.352518fr', gridGap: '40px', padding: '20px', boxSizing: 'border-box' }}>
                 {/* Left Column */}
-                <div style={{ display: 'grid', gridTemplateRows: 'auto auto 1fr', gridGap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateRows: '1fr 0.125fr 0.5fr', gridGap: '20px' }}>
                     {/* Video Player */}
                     <div style={{ borderRadius: '10px', overflow: 'hidden', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
                       <YouTube
@@ -168,7 +176,7 @@ const TedVideoDetail: React.FC = () => {
                         <strong>{video.title}</strong>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
                             <span style={{ color: '#888' }}>Thời lượng: {convertDuration(video.duration)} | {dateString}</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '100%px' }}>
                                 <span style={{ display: 'flex', alignItems: 'center', color: '#009bdb' }}>
                                     <img src="/path_to_eye_icon.png" alt="Views" style={{ marginRight: '5px' }} /> {video.views}
                                 </span>
@@ -195,6 +203,7 @@ const TedVideoDetail: React.FC = () => {
                         }}></div>
                         <div style={{
                             position: 'relative',
+                            height: '83%',
                             zIndex: 2
                         }}>
                             <h3 style={{
@@ -207,7 +216,7 @@ const TedVideoDetail: React.FC = () => {
                                 onChange={handleNoteChange}
                                 style={{
                                     width: '100%',
-                                    height: '110px',
+                                    height: '100%',
                                     border: 'none',
                                     outline: 'none',
                                     padding: '10px',
@@ -227,10 +236,11 @@ const TedVideoDetail: React.FC = () => {
                 </div>
 
                 {/* Right Column */}
-                <div style={{ display: 'grid', gridTemplateRows: '0fr 0fr', gridGap: '0px' }}>
+                <div style={{ display: 'grid', gridTemplateRows: '1fr 0.675fr', gridGap: '20px' }}>
                     {/* Transcript */}
                     <div style={{
-                        width: '600px',
+                        height: '100%',
+                        width: '100%',
                         padding: '20px',
                         backgroundColor: 'white',
                         borderRadius: '10px',
@@ -262,12 +272,11 @@ const TedVideoDetail: React.FC = () => {
                           ))}
                         </div>
                     </div>
-                    <br></br>
                     {/* Chat Bot */}
-                    <div style={{ padding: '10px', backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column' }}>
-                        <h3 style={{ fontSize: '20px', fontWeight: 'bold', margin: '0 0 10px 0', color: '#FFFFFF' }}>AI chat bot BETA</h3>
-                        <div style={{ padding: '10px', backgroundColor: '#FFFFFF', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column' }}>
-                            <div style={{ flex: 1, overflowY: 'auto' as const, marginBottom: '10px', paddingRight: '10px', maxHeight: '100px', }}>
+                    <div style={{ padding: '1px', backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height:'100%'}}>
+                        <h3 style={{ padding: '10px', fontSize: '20px', fontWeight: 'bold', color: '#FFFFFF' }}>AI chat bot BETA</h3>
+                        <div style={{ padding: '10px', backgroundColor: '#FFFFFF', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height: '100%', overflow: 'hidden' }}>
+                            <div style={{ flex: 1, overflowY: 'auto' as const, marginBottom: '10px', paddingRight: '10px', wordWrap: 'break-word' }}>
                                 {messages.map((message, index) => (
                                     <div key={index} style={{ textAlign: message.user ? 'right' : 'left', marginBottom: '10px' }}>
                                         <div
@@ -276,7 +285,8 @@ const TedVideoDetail: React.FC = () => {
                                                 padding: '8px',
                                                 borderRadius: '10px',
                                                 background: message.user ? '#E5E5E5' : '#00B4D8',
-                                                maxWidth: '70%',
+                                                maxWidth: '100%',
+                                                maxHeight:'100%',
                                                 wordWrap: 'break-word',
                                                 color: message.user ? '#000000' : '#FFFFFF',
                                             }}

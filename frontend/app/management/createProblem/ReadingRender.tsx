@@ -47,6 +47,7 @@ const ReadingRender: React.FC = () => {
     const [newOption, setNewOption] = useState('');
     const [globalOptions, setGlobalOptions] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [useVocab, setUseVocab] = useState(false);
 
     const handleAddGlobalOption = (pIndex: number, sIndex: number) => {
         if (newOption.trim() !== '') {
@@ -703,6 +704,7 @@ const ReadingRender: React.FC = () => {
         // console.log(problemName);
         // console.log(paragraphs);
 
+        //add contest id
         setIsLoading(true);
 
         const token = localStorage.getItem('token');
@@ -713,6 +715,7 @@ const ReadingRender: React.FC = () => {
             accessUser,
             startTime,
             endTime,
+            useVocab,
             "type" : "Reading"
         }, 
         { headers: { 'Authorization': `Bearer ${token}` } }
@@ -721,6 +724,7 @@ const ReadingRender: React.FC = () => {
             const data = response.data;
             alert(data['status']);
             console.log(data);
+            window.location.reload();
         })
         .catch(error => alert(error.response.data.error))
         .finally(() => {
@@ -758,6 +762,36 @@ const ReadingRender: React.FC = () => {
                     className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
                     onChange={(e) => setEndTime(e.target.value)}
                 />
+            </div>
+            <div className="my-4 space-x-4">
+                <div className="my-4 flex  space-x-4">
+                    <p className="font-semibold mb-0">Use Vocabulary (For students to learn through flashcards):</p>
+                    <div className="flex items-center space-x-4 ml-4">
+                        <label className="flex items-center space-x-2">
+                            <input 
+                                type="radio" 
+                                name="useVocab" 
+                                value="yes" 
+                                checked={useVocab} 
+                                onChange={() => setUseVocab(true)}
+                            />
+                            <span>Yes</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                            <input 
+                                type="radio" 
+                                name="useVocab" 
+                                value="no" 
+                                checked={!useVocab} 
+                                onChange={() => setUseVocab(false)}
+                            />
+                            <span>No</span>
+                        </label>
+                    </div>
+                </div>
+                {useVocab && (
+                    <p className="text-red-600 ">Warning: Creating the contest may take an insanely long time (5 to 15 minutes) due to vocabulary processing.</p>
+                )}
             </div>
 
             {paragraphs.map((paragraph, pIndex) => (
