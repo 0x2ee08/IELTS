@@ -23,7 +23,7 @@ const loadCEFRData = () => {
 
 const getVocab = async (content) => {
     const cefrMap = await loadCEFRData();
-    
+
     let vocab = {
         "A1": [],
         "A2": [],
@@ -41,10 +41,12 @@ const getVocab = async (content) => {
     ]);
 
     let all_words = content.split(/\s+/)
-    .map(word => word.toLowerCase().replace(/[^\w\s]|[\d]/g, '').trim())
-    .filter(word => word !== '' && !commonWords.has(word));
-    
+        .map(word => word.toLowerCase().replace(/[^\w\s]|[\d]/g, '').trim())
+        .filter(word => word !== '' && !commonWords.has(word));
+
     all_words = Array.from(new Set(all_words));
+
+    const cefrLevels = ["A1", "A2", "B1", "B2", "C1", "C2", "undefined"];
 
     for (let _word of all_words) {
         let l1 = lemmatize.adjective(_word);
@@ -66,7 +68,22 @@ const getVocab = async (content) => {
 
         const cefrLevel = cefrMap[fword] || 'undefined';
 
-        vocab[cefrLevel].push({'word': _word, 'lemmatizer' : fword});
+        let currentLevelIndex = cefrLevels.indexOf(cefrLevel);
+        let existingLevelIndex = cefrLevels.length;
+
+        for (let level of cefrLevels) {
+            if (vocab[level].find(w => w.word === _word)) {
+                existingLevelIndex = cefrLevels.indexOf(level);
+                break;
+            }
+        }
+
+        if (currentLevelIndex < existingLevelIndex) {
+            if (existingLevelIndex < cefrLevels.length) {
+                vocab[cefrLevels[existingLevelIndex]] = vocab[cefrLevels[existingLevelIndex]].filter(w => w.word !== _word);
+            }
+            vocab[cefrLevel].push({'word': _word, 'lemmatizer' : fword});
+        }
 
         // console.log(`${_word} -> ${fword} (CEFR: ${cefrLevel})`);
     }
