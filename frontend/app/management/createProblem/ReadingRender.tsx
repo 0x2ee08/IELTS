@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../config';
+import { TopologyDescription } from 'mongodb';
 
 export interface Question {
     question: string;
@@ -45,6 +46,7 @@ const ReadingRender: React.FC = () => {
     const [endTime, setEndTime] = useState('');
     const [newOption, setNewOption] = useState('');
     const [globalOptions, setGlobalOptions] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleAddGlobalOption = (pIndex: number, sIndex: number) => {
         if (newOption.trim() !== '') {
@@ -230,8 +232,10 @@ const ReadingRender: React.FC = () => {
 
     const handleGeneratePara = (pIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
+        setIsLoading(true);
+        // console.log(isLoading);
+
         const token = localStorage.getItem('token');
-    
         // Make an API request with the title and content
         axios.post(`${config.API_BASE_URL}api/generateReadingParagraph`, 
             { title, content },
@@ -245,14 +249,18 @@ const ReadingRender: React.FC = () => {
             setParagraphs(updatedParagraphs);
             setVocabLevels(categorizeVocabulary(response.data.content));
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
 
     };
 
     const handleGenerateYNNQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-    
+        setIsLoading(true);
         // Make an API request with the title and content
         axios.post(`${config.API_BASE_URL}api/generateReadingYNN`, 
             { title, content },
@@ -275,13 +283,17 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new questions
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
     };
 
     const handleGenerateTFNQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-    
+        setIsLoading(true);
         // Make an API request with the title and content
         axios.post(`${config.API_BASE_URL}api/generateReadingTFNG`, 
             { title, content },
@@ -304,11 +316,17 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new questions
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error)); 
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
     };
 
     const handleGenerateFillOneWordQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         const token = localStorage.getItem('token');
+
+        setIsLoading(true);
     
         axios.post(`${config.API_BASE_URL}api/generateReadingFillOneWord`, 
             { title, content },
@@ -329,12 +347,18 @@ const ReadingRender: React.FC = () => {
     
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
     };
     
 
     const handleGenerateFillTwoWordQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         const token = localStorage.getItem('token');
+
+        setIsLoading(true);
     
         axios.post(`${config.API_BASE_URL}api/generateReadingFillTwoWords`, 
             { title, content },
@@ -356,13 +380,17 @@ const ReadingRender: React.FC = () => {
     
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
     };
     
 
     const handleGenerateMatchingHeadingQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         const token = localStorage.getItem('token');
-    
+        setIsLoading(true);
         axios.post(
             `${config.API_BASE_URL}api/generateReadingMatchingHeading`, 
             { title, content },
@@ -396,14 +424,18 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
     };
     
     
     
     const handleGenerateMatchingParagraphInfoQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         const token = localStorage.getItem('token');
-    
+        setIsLoading(true);
         axios.post(`${config.API_BASE_URL}api/generateReadingMatchingParagraphInfo`, 
             { title, content },
             { headers: { 'Authorization': `Bearer ${token}` } }
@@ -436,12 +468,17 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
     };
     
     
     const handleGenerateMatchingFeaturesQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         const token = localStorage.getItem('token');
+        setIsLoading(true);
     
         axios.post(`${config.API_BASE_URL}api/generateReadingMatchingFeatures`, 
             { title, content },
@@ -475,12 +512,18 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
     };
     
 
     const handleGenerateMatchingSentenceEndingQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         const token = localStorage.getItem('token');
+
+        setIsLoading(true);
     
         axios.post(`${config.API_BASE_URL}api/generateReadingMatchingSentenceEnding`, 
             { title, content },
@@ -514,13 +557,19 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new paragraphs
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
     };
     
 
     const handleGenerateMultipleChoiceOneAnswerQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
+
+        setIsLoading(true);
     
         // Make an API request with the title and content
         axios.post(`${config.API_BASE_URL}api/generateReadingMCQOA`, 
@@ -550,13 +599,19 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new questions
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error));  
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
     };
     
 
     const handleGenerateMultipleChoiceMultipleAnswerQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
+
+        setIsLoading(true);
     
         // Make an API request with the title and content
         axios.post(`${config.API_BASE_URL}api/generateReadingMCQMA`, 
@@ -590,15 +645,23 @@ const ReadingRender: React.FC = () => {
             // Update the state with the new questions
             setParagraphs(newParagraphs);
         })
-        .catch(error => console.error('Error:', error));  
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
     };
 
     const handleGenerateQuestion = (pIndex: number, sIndex: number) => {
+        if (!paragraphs[pIndex].title || !paragraphs[pIndex].content){
+            alert("Paragraph is empty");
+            return;
+        }
         const selectedParagraph = paragraphs[pIndex];
         const selectedSection = selectedParagraph.sections[sIndex];
         const title = selectedParagraph.title;
         const content = selectedParagraph.content;
-        console.log(selectedSection.type);
+        // console.log(selectedSection.type);
         switch (selectedSection.type) {
             case 'Yes/No/Not given':
                 handleGenerateYNNQuestion(pIndex, sIndex, title, content);
@@ -633,14 +696,17 @@ const ReadingRender: React.FC = () => {
             default:
                 console.error('Unknown question type:', selectedSection.type);
         }
+        
     };
 
     const createProblem = () => {
         // console.log(problemName);
         // console.log(paragraphs);
 
+        setIsLoading(true);
+
         const token = localStorage.getItem('token');
-    
+
         axios.post(`${config.API_BASE_URL}api/createContestReading`, {
             paragraphs,
             problemName,
@@ -656,7 +722,11 @@ const ReadingRender: React.FC = () => {
             alert(data['Status']);
             console.log(data);
         })
-        .catch(error => alert(error));
+        .catch(error => alert(error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
     };
 
 
@@ -716,11 +786,13 @@ const ReadingRender: React.FC = () => {
                                     className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
                                     value={paragraph.title} 
                                     onChange={(e) => handleInputChange(pIndex, 'title', e.target.value)}
+                                    disabled = {isLoading}
                                 />
                                 <button 
                                     onClick={() => handleGeneratePara(pIndex, paragraph.title, paragraph.content)}
                                     // onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
                                     className="px-2 rounded-md ml-2"
+                                    disabled={isLoading}
                                 >
                                     Generate
                                 </button>
@@ -731,6 +803,7 @@ const ReadingRender: React.FC = () => {
                                 className="border border-gray-300 px-4 py-2 rounded-md w-full h-64 my-2" 
                                 value={paragraph.content} 
                                 onChange={(e) => handleInputChange(pIndex, 'content', e.target.value)}
+                                disabled = {isLoading}
                             ></textarea>
 
                             {/* <div className="border border-gray-300 rounded-md p-4 mb-4">
@@ -794,6 +867,7 @@ const ReadingRender: React.FC = () => {
                                                 <button 
                                                     onClick={() => handleGenerateQuestion(pIndex, sIndex)}
                                                     className="px-2 rounded-md ml-2"
+                                                    disabled={!paragraph.title || !paragraph.content || isLoading}
                                                 >
                                                     Generate
                                                 </button>
@@ -1091,6 +1165,7 @@ const ReadingRender: React.FC = () => {
             <button 
                 onClick={createProblem} 
                 className="bg-green-500 text-white px-4 py-2 rounded-md mt-4"
+                disabled={isLoading}
             >
                 Create Problem
             </button>
