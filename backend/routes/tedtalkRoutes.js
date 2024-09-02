@@ -3,6 +3,7 @@ const axios = require('axios');
 const xml2js = require('xml2js');
 const { connectToDatabase } = require('../utils/mongodb');
 const { authenticateToken } = require('../middleware/authMiddleware');
+const { YoutubeTranscript } = require('youtube-transcript');
 const router = express.Router();
 
 // YouTube Data API credentials
@@ -98,6 +99,23 @@ router.post('/get_ted_video_by_id', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error fetching video from MongoDB:', error.message);
         res.status(500).json({ message: 'Error fetching video' });
+    }
+});
+
+router.post('/get_transcript', async (req, res) => {
+    const { videoId } = req.body;
+
+    try {
+        const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+
+        if (!transcript || transcript.length === 0) {
+            return res.status(404).json({ message: 'Transcript not available' });
+        }
+
+        res.json({ transcript });
+    } catch (error) {
+        console.error('Error fetching transcript:', error.message);
+        res.status(500).json({ message: 'Error fetching transcript' });
     }
 });
 
