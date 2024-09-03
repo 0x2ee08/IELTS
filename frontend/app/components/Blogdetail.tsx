@@ -253,7 +253,7 @@ const Blogdetail: React.FC = () => {
             const comment = comments.find(c => c.comment_id === commentId);
             if (!comment) return null;
 
-            const isVisible = visibleComments.has(commentId);
+            const isVisible = !visibleComments.has(commentId);
             const toggleSymbol = isVisible ? '-' : '+';
             let ml_value = 5;
 
