@@ -9,6 +9,8 @@ const router = express.Router();
 // YouTube Data API credentials
 const GOOGLE_CLOUD_API_KEY = process.env.GOOGLE_CLOUD_API_KEY; // Store your Google API key in .env file
 const RSS_FEED_URL = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCsooa4yRKGN_zEE8iknghZA';
+const MODEL_CHATBOT_NAME = process.env.MODEL_CHATBOT_NAME;
+const openRouterApiKey = process.env.OPENROUTER_API_KEY;
 
 router.post('/fetch_and_save_ted_videos', async (req, res) => {
     try {
@@ -119,6 +121,24 @@ router.post('/get_transcript', async (req, res) => {
         console.error('Error fetching transcript:', error.message);
         res.status(500).json({ message: 'Error fetching transcript' });
     }
+});
+
+router.post('/send_chat', authenticateToken, async (req, res) => {
+    const { message } = req.body;
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: MODEL_CHATBOT_NAME,
+        messages: [
+            { message }
+        ],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    res.json({ message: data.choices[0]?.message?.content });
 });
 
 module.exports = router;

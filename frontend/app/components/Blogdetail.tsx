@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useReducer } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import config from '../config';
@@ -64,7 +64,6 @@ const Blogdetail: React.FC = () => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [author, setAuthor] = useState('');
-    const [authorId, setAuthorId] = useState('');
     const [upvote, setUpvote] = useState(0);
     const [downvote, setDownvote] = useState(0);
     const [liked, setLiked] = useState(false);
@@ -107,14 +106,15 @@ const Blogdetail: React.FC = () => {
         setNewReply({ ...newReply, [commentId]: content });
     };
 
-    const hasInitialized = useRef(false);
+    const hasInitialize = useRef(false);
 
     useEffect(() => {
-        if (!hasInitialized.current) {
-            hasInitialized.current = true;
+        if (!hasInitialize.current) {
             get_blog();
+            hasInitialize.current = true;
         }
     }, []);
+
 
     const get_blog = async () => {
         const token = localStorage.getItem('token');
@@ -129,16 +129,15 @@ const Blogdetail: React.FC = () => {
             const sortedComments = (result.comments || []).sort((a: Comment, b: Comment) =>
                 new Date(b.time_created).getTime() - new Date(a.time_created).getTime()
             );
-
+                // day la mang lag thoi
             setTitle(result.title);
             setContent(result.content);
             setAuthor(result.author);
-            setAuthorId(result.authorId);
             setUpvote(result.like || 0);
             setDownvote(result.dislike || 0);
             setView(result.view);
             setTime_created(result.time_created);
-            setComments(sortedComments);
+            setComments(result.comments);
             setRootComments(sortedComments.filter((comment: Comment) => comment.parent === -1));
 
             get_user_blog_list(Number(result.view));
@@ -150,6 +149,7 @@ const Blogdetail: React.FC = () => {
     };
 
     const get_user_blog_list = async (view: number) => {
+        get_blog();
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
@@ -173,6 +173,7 @@ const Blogdetail: React.FC = () => {
     }
 
     const update_blog = async (like: number, dislike: number, view: number) => {
+        get_blog();
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
@@ -189,6 +190,7 @@ const Blogdetail: React.FC = () => {
     };
 
     const update_user_emotion = async (action: string) => {
+        get_blog();
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
@@ -258,6 +260,7 @@ const Blogdetail: React.FC = () => {
     };
 
     const handle_comment = async () => {
+        get_blog();
         if (!newComment || newComment.trim().length === 0) {
             alert('Comment cannot be empty' );
             return;
@@ -286,6 +289,7 @@ const Blogdetail: React.FC = () => {
     }
 
     const handleReply = async (parent: number) => {
+        get_blog();
         if (!newReply[parent] || newReply[parent].trim().length === 0) {
             alert('Comment cannot be empty' );
             return;
@@ -319,7 +323,7 @@ const Blogdetail: React.FC = () => {
             const toggleSymbol = isVisible ? '-' : '+';
     
             // Determine margin based on depth
-            const marginClass = depth > 5 ? 'ml-0' : 'ml-4';
+            const marginClass = depth > 5 ? '' : 'ml-4';
     
             return (
                 <li key={comment.comment_id} className={`mb-2 ${marginClass}`}>
@@ -387,7 +391,7 @@ const Blogdetail: React.FC = () => {
                 <p className="text-[#0077B6] text-3xl font-bold mb-2">{title}</p>
                 <p className="mb-4">
                     <strong>By: </strong>
-                    <Link href={`/profile/${authorId}`}>
+                    <Link href={`/profile`}>
                         <span className="text-blue-600 hover:underline cursor-pointer">{author}</span>
                     </Link>
                     , {new Date(time_created).toLocaleString()}

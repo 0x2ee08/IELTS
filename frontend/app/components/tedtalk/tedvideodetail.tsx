@@ -150,7 +150,7 @@ const TedVideoDetail: React.FC = () => {
 
     const opts = {
       height: '676',
-      width: '1202',
+      width: '1202',    
       playerVars: {
         autoplay: 1,
       },
@@ -297,6 +297,7 @@ const TedVideoDetail: React.FC = () => {
                           ))}
                         </div>
                     </div>
+
                     {/* Chat Bot */}
                     <div style={{ padding: '1px', backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height:'100%'}}>
                         <h3 style={{ padding: '10px', fontSize: '20px', fontWeight: 'bold', color: '#FFFFFF' }}>AI chat bot BETA</h3>
