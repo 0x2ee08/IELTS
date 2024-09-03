@@ -22,8 +22,8 @@ const Blogdetail: React.FC = () => {
     const [content, setContent] = useState('');
     const [author, setAuthor] = useState('');
     const [authorId, setAuthorId] = useState('');
-    const [curlike, setCurlike] = useState(0);
-    const [curdislike, setCurdislike] = useState(0);
+    const [upvote, setUpvote] = useState(0);
+    const [downvote, setDownvote] = useState(0);
     const [liked, setLiked] = useState(false);
     const [disliked, setDisliked] = useState(false);
     const [view, setView] = useState(0);
@@ -49,8 +49,8 @@ const Blogdetail: React.FC = () => {
     };
 
     // New states for replies
-    const [newReply, setNewReply] = useState<{[key: number]: string}>({});
-    const [replyVisible, setReplyVisible] = useState<{[key: number]: boolean}>({});
+    const [newReply, setNewReply] = useState<{ [key: number]: string }>({});
+    const [replyVisible, setReplyVisible] = useState<{ [key: number]: boolean }>({});
 
     const handleLineClick = () => {
         setIsCommentVisible(!isCommentVisible);
@@ -83,7 +83,7 @@ const Blogdetail: React.FC = () => {
                 },
             });
             const result = response.data.result;
-            const sortedComments = (result.comments || []).sort((a: Comment, b: Comment) => 
+            const sortedComments = (result.comments || []).sort((a: Comment, b: Comment) =>
                 new Date(b.time_created).getTime() - new Date(a.time_created).getTime()
             );
 
@@ -91,8 +91,8 @@ const Blogdetail: React.FC = () => {
             setContent(result.content);
             setAuthor(result.author);
             setAuthorId(result.authorId);
-            setCurlike(result.like || 0);
-            setCurdislike(result.dislike || 0);
+            setUpvote(result.like || 0);
+            setDownvote(result.dislike || 0);
             setView(result.view);
             setTime_created(result.time_created);
             setComments(sortedComments);
@@ -118,12 +118,12 @@ const Blogdetail: React.FC = () => {
             const { liked, disliked, op } = response.data;
             setLiked(liked);
             setDisliked(disliked);
-            if(op) {
-                update_blog(curlike, curdislike, view + 1);
+            if (op) {
+                update_blog(upvote, downvote, view + 1);
                 setView(view + 1);
             }
 
-        } catch(error) {
+        } catch (error) {
             console.error('Error get user emotion:', error);
             alert('Internal server error while updating like/dislike');
         }
@@ -160,24 +160,24 @@ const Blogdetail: React.FC = () => {
         }
     };
 
-    const handleLike = async () => {
+    const handleUpvote = async () => {
         if (loadingLike || loadingDislike) return;
         setLoadingLike(true);
         try {
             if (!liked) {
-                await update_blog(curlike + 1, curdislike, view);
+                await update_blog(upvote + 1, downvote, view);
                 await update_user_emotion('like');
                 setLiked(true);
                 if (disliked) {
-                    setCurdislike(curdislike - 1);
-                    await update_blog(curlike + 1, curdislike - 1, view);
+                    setDownvote(downvote - 1);
+                    await update_blog(upvote + 1, downvote - 1, view);
                     setDisliked(false);
                 }
-                setCurlike(curlike + 1);
+                setUpvote(upvote + 1);
             } else {
-                await update_blog(curlike - 1, curdislike, view);
+                await update_blog(upvote - 1, downvote, view);
                 await update_user_emotion('like');
-                setCurlike(curlike - 1);
+                setUpvote(upvote - 1);
                 setLiked(false);
             }
         } finally {
@@ -185,29 +185,33 @@ const Blogdetail: React.FC = () => {
         }
     };
 
-    const handleDislike = async () => {
+    const handleDownvote = async () => {
         if (loadingLike || loadingDislike) return;
         setLoadingDislike(true);
         try {
             if (!disliked) {
-                await update_blog(curlike, curdislike + 1, view);
+                await update_blog(upvote, downvote + 1, view);
                 await update_user_emotion('dislike');
                 setDisliked(true);
                 if (liked) {
-                    setCurlike(curlike - 1);
-                    await update_blog(curlike - 1, curdislike + 1, view);
+                    setUpvote(upvote - 1);
+                    await update_blog(upvote - 1, downvote + 1, view);
                     setLiked(false);
                 }
-                setCurdislike(curdislike + 1);
+                setDownvote(downvote + 1);
             } else {
-                await update_blog(curlike, curdislike - 1, view);
+                await update_blog(upvote, downvote - 1, view);
                 await update_user_emotion('dislike');
-                setCurdislike(curdislike - 1);
+                setDownvote(downvote - 1);
                 setDisliked(false);
             }
         } finally {
             setLoadingDislike(false);
         }
+    };
+
+    const calculateContribution = () => {
+        return upvote - downvote;
     };
 
     const handle_comment = async () => {
@@ -239,8 +243,8 @@ const Blogdetail: React.FC = () => {
                 },
             });
             // Clear the reply input and refresh the comments
-            setNewReply({...newReply, [parent]: ''});
-            setReplyVisible({...replyVisible, [parent]: false});
+            setNewReply({ ...newReply, [parent]: '' });
+            setReplyVisible({ ...replyVisible, [parent]: false });
             get_blog();
         } catch (error) {
             console.error('Error adding reply:', error);
@@ -252,16 +256,12 @@ const Blogdetail: React.FC = () => {
         return commentIds.map((commentId) => {
             const comment = comments.find(c => c.comment_id === commentId);
             if (!comment) return null;
-        
+    
             const isVisible = !visibleComments.has(commentId);
             const toggleSymbol = isVisible ? '-' : '+';
     
             // Determine margin based on depth
-            const marginClass = depth > 5 ? 'ml-0' : 'ml-4'; 
-
-            console.log(comment);
-
-            console.log(depth);
+            const marginClass = depth > 5 ? 'ml-0' : 'ml-4';
     
             return (
                 <li key={comment.comment_id} className={`mb-2 ${marginClass}`}>
@@ -277,7 +277,7 @@ const Blogdetail: React.FC = () => {
                                     </button>
                                 )}
                                 <p>
-                                    <strong>{comment.username}</strong> 
+                                    <strong>{comment.username}</strong>
                                     <span className="text-gray-500">
                                         ({new Date(comment.time_created).toLocaleString()})
                                     </span>
@@ -313,7 +313,7 @@ const Blogdetail: React.FC = () => {
                         </div>
                     </div>
                     {isVisible && comment.children && comment.children.length > 0 && (
-                        <ul className="pl-6">
+                        <ul className="pl-6" style={{ marginTop: '10px', marginBottom: '10px' }}> 
                             {renderComments(comment.children, depth + 1)}
                         </ul>
                     )}
@@ -322,16 +322,11 @@ const Blogdetail: React.FC = () => {
         });
     };
     
-    
-    
-    
-    
-    
 
     return (
         <div className="flex-grow flex items-center justify-center p-8">
             <div className="bg-white w-full max-w-6xl">
-                <p className="text-[#0077B6] text-3xl text-bold mb-2">{title}</p>
+                <p className="text-[#0077B6] text-3xl font-bold mb-2">{title}</p>
                 <p className="mb-4">
                     <strong>By: </strong>
                     <Link href={`/profile/${authorId}`}>
@@ -340,32 +335,33 @@ const Blogdetail: React.FC = () => {
                     , {new Date(time_created).toLocaleString()}
                 </p>
                 <p className="border-l-4 border-gray-500 p-2 mb-4">{content}</p>
-                <div className="bg-white border border-black rounded-md mb-2">
-                    <div className="flex items-center justify-between mb-2 mt-2">
-                        <div className="flex items-center">
-                            <button 
-                                onClick={handleLike}
+                <div className="bg-white border border-black rounded-md mb-2 p-2 flex justify-between items-center">
+                    <div className="flex flex-col items-start">
+                        <span className="text-lg font-semibold mb-1">Contribution: {calculateContribution()}</span>
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={handleUpvote}
                                 className={`${
                                     liked ? 'bg-[#0077B6]' : 'bg-[#6baed6]'
-                                } hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-4 mr-2`}>
-                                Like {curlike}
+                                } hover:bg-blue-700 text-white font-bold text-sm py-1 px-2 rounded focus:outline-none focus:shadow-outline`}>
+                                Upvote {upvote}
                             </button>
-                            <button 
-                                onClick={handleDislike}
+                            <button
+                                onClick={handleDownvote}
                                 className={`${
                                     disliked ? 'bg-[#0077B6]' : 'bg-[#6baed6]'
-                                } hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2 mr-4`}>
-                                Dislike {curdislike}
+                                } hover:bg-blue-700 text-white font-bold text-sm py-1 px-2 rounded focus:outline-none focus:shadow-outline`}>
+                                Downvote {downvote}
                             </button>
                         </div>
-                        <span className="mr-2">{view} &#128100;</span>
                     </div>
+                    <span className="text-sm">{view} &#128100;</span>
                 </div>
                 {!isCommentVisible && (
-                    <p 
-                        className="flex justify-end text-blue-700 underline decoration-blue-700" 
+                    <p
+                        className="flex justify-end text-blue-700 underline decoration-blue-700 cursor-pointer"
                         onClick={handleLineClick}
-                    > 
+                    >
                         Write comment?
                     </p>
                 )}
@@ -396,7 +392,7 @@ const Blogdetail: React.FC = () => {
                     </div>
                 )}
                 <div>
-                    <h3>Comments:</h3>
+                    <h3 className="mb-10">Comments :</h3>
                     {comments.length > 0 ? (
                         <ul>
                             {renderComments(rootComments.map(comment => comment.comment_id))}
