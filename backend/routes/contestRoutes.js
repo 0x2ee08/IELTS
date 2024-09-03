@@ -5,7 +5,7 @@ const axios = require('axios');
 
 const { connectToDatabase } = require('../utils/mongodb');
 const { getVocab } = require('../utils/wordLevelDetermine/getVocab');
-const { authenticateToken, authorizeTeacher } = require('../middleware/authMiddleware');
+const { authenticateToken, authorizeTeacher, authenticateTokenCheck } = require('../middleware/authMiddleware');
 const { secret } = require('../config/config');
 const { MODEL_NAME, OPENROUTER_API_KEY } = require('../config/config');
 
@@ -31,7 +31,7 @@ function generateRandomString(length) {
 }
 
 
-router.post('/createContestReading', authenticateToken, async (req, res) => {
+router.post('/createContestReading', authenticateToken, authorizeTeacher, async (req, res) => {
     try {
         const { type, accessUser, startTime, endTime, problemName, paragraphs, useVocab } = req.body;
         const { username } = req.user;
@@ -96,6 +96,66 @@ router.post('/createContestReading', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Internal server error." });
+    }
+});
+
+
+router.get('/getAllContest', async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const contestCollection = db.collection('contest');
+
+        let username = null;
+        try {
+            const user = await authenticateTokenCheck(req, res);
+            if (req.user['username']) {
+                username = req.user['username'];
+            }
+        } catch (err) {
+            // Handle error in authentication (e.g., invalid token), but don't send a response yet
+            username = null;
+        }
+
+        let query = { accessUser: "" }; // Public contests
+        // console.log(username);
+        if (username) {
+            // For authenticated users, create a query to find contests either public or accessible by this user
+            query = {
+                $or: [
+                    { accessUser: "" }, // Public contests
+                    { accessUser: { $regex: `(^|,)${username}(,|$)` } } // Private contests accessible to the user
+                ]
+            };
+        }
+
+        const availableContests = await contestCollection.find(query).toArray();
+
+        // console.log(availableContests);
+
+        let response = {};
+        availableContests.forEach((contest, index) => {
+            response[index + 1] = {
+                id: contest.id,
+                type: contest.type,
+                startTime: contest.startTime,
+                endTime: contest.endTime,
+                created_by: contest.created_by,
+                access: contest.accessUser ? "Private" : "Public",
+                registerUser: contest.accessUser ? 1 : 0
+            };
+        });
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(200).json(response);
+        }
+    } catch (error) {
+        console.error("Error retrieving contests:", error);
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Error retrieving contests" });
+        }
     }
 });
 

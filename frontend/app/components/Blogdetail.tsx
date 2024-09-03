@@ -258,6 +258,11 @@ const Blogdetail: React.FC = () => {
     };
 
     const handle_comment = async () => {
+        if (!newComment || newComment.trim().length === 0) {
+            alert('Comment cannot be empty' );
+            return;
+        }
+
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
@@ -270,12 +275,22 @@ const Blogdetail: React.FC = () => {
             setNewComment('');
             get_blog();
         } catch (error) {
-            console.error('Error adding comment:', error);
-            alert('Internal server error');
+            if (axios.isAxiosError(error)) {
+                const errorMessage = error.response?.data?.message || 'An unexpected error occurred';
+                alert('Error while commenting: ' + errorMessage);
+            } else {
+                console.error('Error adding comment:', error);
+                alert('Error while commenting: An unexpected error occurred');
+            }
         }
     }
 
     const handleReply = async (parent: number) => {
+        if (!newReply[parent] || newReply[parent].trim().length === 0) {
+            alert('Comment cannot be empty' );
+            return;
+        }
+
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
