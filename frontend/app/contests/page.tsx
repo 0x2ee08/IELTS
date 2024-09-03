@@ -24,44 +24,13 @@ const ContestPage: React.FC = () => {
     const [writingContest, setWritingContest] = useState<Record<string, Contest> | null>(null);
 
     useEffect(() => {
-        axios.post(`${config.API_BASE_URL}api/getAllContest`)
+        const token = localStorage.getItem('token');
+        axios.get(`${config.API_BASE_URL}api/getAllContest`, { headers: { 'Authorization': `Bearer ${token}` } })
             .then(response => {
                 setUpcomingContest(response.data);
             })
             .catch(error => {
                 console.error('Error fetching upcoming contest:', error);
-            });
-
-        axios.get(`${config.API_BASE_URL}api/getReadingContest`)
-            .then(response => {
-                setReadingContest(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching reading contest:', error);
-            });
-
-        axios.get(`${config.API_BASE_URL}api/getListeningContest`)
-            .then(response => {
-                setListeningContest(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching listening contest:', error);
-            });
-
-        axios.get(`${config.API_BASE_URL}api/getSpeakingContest`)
-            .then(response => {
-                setSpeakingContest(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching speaking contest:', error);
-            });
-
-        axios.get(`${config.API_BASE_URL}api/getWritingContest`)
-            .then(response => {
-                setWritingContest(response.data);
-            })
-            .catch(error => {
-                console.error('Error fetching writing contest:', error);
             });
     }, []);
 

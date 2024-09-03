@@ -5,7 +5,7 @@ const axios = require('axios');
 
 const { connectToDatabase } = require('../utils/mongodb');
 const { getVocab } = require('../utils/wordLevelDetermine/getVocab');
-const { authenticateToken, authorizeTeacher } = require('../middleware/authMiddleware');
+const { authenticateToken, authorizeTeacher, authenticateTokenCheck } = require('../middleware/authMiddleware');
 const { secret } = require('../config/config');
 const { MODEL_NAME, OPENROUTER_API_KEY } = require('../config/config');
 
@@ -100,16 +100,16 @@ router.post('/createContestReading', authenticateToken, authorizeTeacher, async 
 });
 
 
-router.post('/getAllContest', async (req, res) => {
+router.get('/getAllContest', async (req, res) => {
     try {
         const db = await connectToDatabase();
         const contestCollection = db.collection('contest');
 
-        let username;
+        let username = null;
         try {
             const user = await authenticateTokenCheck(req, res);
-            if (user) {
-                username = user.username;
+            if (req.user['username']) {
+                username = req.user['username'];
             }
         } catch (err) {
             // Handle error in authentication (e.g., invalid token), but don't send a response yet
@@ -117,17 +117,20 @@ router.post('/getAllContest', async (req, res) => {
         }
 
         let query = { accessUser: "" }; // Public contests
-
+        // console.log(username);
         if (username) {
+            // For authenticated users, create a query to find contests either public or accessible by this user
             query = {
                 $or: [
-                    { accessUser: "" },             // Public contests
-                    { accessUser: username }        // Private contests for this user
+                    { accessUser: "" }, // Public contests
+                    { accessUser: { $regex: `(^|,)${username}(,|$)` } } // Private contests accessible to the user
                 ]
             };
         }
 
         const availableContests = await contestCollection.find(query).toArray();
+
+        // console.log(availableContests);
 
         let response = {};
         availableContests.forEach((contest, index) => {

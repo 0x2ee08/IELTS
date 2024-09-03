@@ -29,23 +29,21 @@ const authenticateToken = (req, res, next) => {
 const authenticateTokenCheck = (req, res, next) => {
     try{
         // const authHeader = req.body['headers']['Authorization'];
+
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
-        // console.log(req);
-        // console.log(token)
 
-        if (!token || token == "null") return next();
-        // console.log("OK");
+        if (!token || token == "null") return null;
         jwt.verify(token, secret, (err, user) => {
             // console.log("OK");
             // console.log(err);
-            if (err) next();
+            if (err) return null;
             req.user = user;
-            // console.log("OK");
-            next();
+            return req.user['username'];
+            // next();
         });
     }
-    catch (error) {next();}
+    catch (error) {return null}
 };
 
 const authorizeTeacher = (req, res, next) => {
