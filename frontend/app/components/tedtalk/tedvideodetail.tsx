@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect, use } from 'react';
 import YouTube from 'react-youtube';
 import "./styles.css";
 import config from '../../config';
@@ -38,6 +38,7 @@ const decodeHtmlEntities = (text: string): string => {
 const TedVideoDetail: React.FC = () => {
     const params = useSearchParams();
     const [notes, setNotes] = useState<string>('');
+    const [message, setMessage] = useState<string>('')
     const [messages, setMessages] = useState<{ user: boolean, text: string }[]>([
         { user: false, text: 'Hello. How can I help you?' },
         { user: true, text: 'Good morning.' }
@@ -139,6 +140,44 @@ const TedVideoDetail: React.FC = () => {
         setNotes(e.target.value);
     };
 
+    const handleSaveNote = async (video_id: string, content: string) => {
+        const token = localStorage.getItem('token');
+        
+        try {
+            // Step 1: Delete the existing note for this video_id (skip if it doesn't exist)
+            const deleteResponse = await axios.delete(`${config.API_BASE_URL}api/delete_note`, {
+                data: { video_id },
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+    
+            // Checking for a successful delete or skip response
+            if (deleteResponse.status === 200 && deleteResponse.data.success) {
+            } else {
+                setMessage('Failed to delete existing note');
+                return;
+            }
+    
+            // Step 2: Save the new note
+            const response = await axios.post(`${config.API_BASE_URL}api/save_note`, { video_id, content }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+    
+            if (response.status === 200 && response.data.success) {
+                setMessage('Note saved!');
+            } else {
+                setMessage('Failed to save note');
+            }
+        } catch (error) {
+            setMessage('Failed to save note due to a network error.');
+        }
+    };
+    
+    
+    
     const handleChatSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const input = e.currentTarget.elements.namedItem('chatInput') as HTMLInputElement;
@@ -237,6 +276,11 @@ const TedVideoDetail: React.FC = () => {
                                 }}
                                 placeholder="Write your notes here..."
                             ></textarea>
+                            <button
+                                onClick = {() => handleSaveNote(videoId,notes)}
+                            >
+                                Save note
+                            </button>
                         </div>
                     </div>
                 </div>
