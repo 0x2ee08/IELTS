@@ -9,7 +9,8 @@ import { useSearchParams } from "next/navigation";
 interface Comment {
     username: string;
     time_created: string;
-    par: number;
+    children: number[]; // Changed from Comment[] to number[]
+    parent: number;
     comment_id: number;
     content: string;
     replies?: Comment[];
@@ -27,6 +28,7 @@ const Blogdetail: React.FC = () => {
     const [disliked, setDisliked] = useState(false);
     const [view, setView] = useState(0);
     const [comments, setComments] = useState<Comment[]>([]);
+    const [rootComments, setRootComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
     const [time_created, setTime_created] = useState('');
     const [loadingLike, setLoadingLike] = useState(false);
@@ -81,8 +83,7 @@ const Blogdetail: React.FC = () => {
             setView(result.view);
             setTime_created(result.time_created);
             setComments(sortedComments);
-
-
+            setRootComments(sortedComments.filter((comment: Comment) => comment.parent === -1));
 
             get_user_blog_list(Number(result.view));
 
@@ -214,19 +215,19 @@ const Blogdetail: React.FC = () => {
         }
     }
 
-    const handleReply = async (commentId: number) => {
+    const handleReply = async (parent: number) => {
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
-            const replyContent = newReply[commentId];
-            await axios.post(`${config.API_BASE_URL}api/add_reply`, { blog_id, commentId, content: replyContent }, {
+            const replyContent = newReply[parent];
+            await axios.post(`${config.API_BASE_URL}api/add_reply`, { blog_id, parent, content: replyContent }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             });
             // Clear the reply input and refresh the comments
-            setNewReply({...newReply, [commentId]: ''});
-            setReplyVisible({...replyVisible, [commentId]: false});
+            setNewReply({...newReply, [parent]: ''});
+            setReplyVisible({...replyVisible, [parent]: false});
             get_blog();
         } catch (error) {
             console.error('Error adding reply:', error);
@@ -234,20 +235,55 @@ const Blogdetail: React.FC = () => {
         }
     };
 
-    const renderReplies = (replies: Comment[], parentIndex: number) => {
-        return replies.map((reply, index) => (
-            <li key={`${parentIndex}-${index}`} className="border p-2 mb-2 ml-4">
-                <p><strong>{reply.username}</strong> <span className="text-gray-500">({new Date(reply.time_created).toLocaleString()})</span></p>
-                <p>{reply.content}</p>
-            </li>
-        ));
+    const renderComments = (commentIds: number[], depth = 0) => {
+        return commentIds.map((commentId) => {
+            const comment = comments.find(c => c.comment_id === commentId);
+            if (!comment) return null;
+
+            return (
+                <li key={comment.comment_id} className={`border p-2 mb-2 ml-${depth * 4}`}>
+                    <p><strong>{comment.username}</strong> <span className="text-gray-500">({new Date(comment.time_created).toLocaleString()})</span></p>
+                    <p>{comment.content}</p>
+                    <button
+                        onClick={() => handleReplyClick(comment.comment_id)}
+                        className="text-blue-600 hover:underline"
+                    >
+                        {replyVisible[comment.comment_id] ? 'Cancel' : 'Reply'}
+                    </button>
+                    {replyVisible[comment.comment_id] && (
+                        <div>
+                            <textarea
+                                value={newReply[comment.comment_id] || ''}
+                                onChange={(e) => handleReplyChange(comment.comment_id, e.target.value)}
+                                rows={2}
+                                cols={50}
+                                placeholder="Write your reply here..."
+                                className="border border-black rounded-md p-2 mb-2 w-full"
+                            />
+                            <div className="flex justify-end space-x-2">
+                                <button
+                                    onClick={() => handleReply(comment.comment_id)}
+                                    className="bg-[#6baed6] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                >
+                                    Post
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    {comment.children && comment.children.length > 0 && (
+                        <ul>
+                            {renderComments(comment.children, depth + 1)}
+                        </ul>
+                    )}
+                </li>
+            );
+        });
     };
 
     return (
         <div className="flex-grow flex items-center justify-center p-8">
-            <div className="bg-white w-full max-w-6xl"> 
+            <div className="bg-white w-full max-w-6xl">
                 <p className="text-[#0077B6] text-3xl text-bold mb-2">{title}</p>
-                {/* Updated author link */}
                 <p className="mb-4">
                     <strong>By: </strong>
                     <Link href={`/profile/${authorId}`}>
@@ -315,44 +351,7 @@ const Blogdetail: React.FC = () => {
                     <h3>Comments:</h3>
                     {comments.length > 0 ? (
                         <ul>
-                            {comments.map((comment, index) => (
-                                <li key={index} className="border p-2 mb-2">
-                                    <p><strong>{comment.username}</strong> <span className="text-gray-500">({new Date(comment.time_created).toLocaleString()})</span></p>
-                                    <p>{comment.content}</p>
-                                    <button
-                                        onClick={() => handleReplyClick(index)}
-                                        className="text-blue-600 hover:underline"
-                                    >
-                                        {replyVisible[index] ? 'Cancel' : 'Reply'}
-                                    </button>
-                                    {replyVisible[index] && (
-                                        <div>
-                                            <textarea
-                                                value={newReply[index] || ''}
-                                                onChange={(e) => handleReplyChange(index, e.target.value)}
-                                                rows={2}
-                                                cols={50}
-                                                placeholder="Write your reply here..."
-                                                className="border border-black rounded-md p-2 mb-2 w-full"
-                                            />
-                                            <div className="flex justify-end space-x-2">
-                                                <button
-                                                    onClick={() => handleReply(index)}
-                                                    className="bg-[#6baed6] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                                                >
-                                                    Post
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {/* Render replies if any */}
-                                    {comment.replies && (
-                                        <ul>
-                                            {renderReplies(comment.replies, index)}
-                                        </ul>
-                                    )}
-                                </li>
-                            ))}
+                            {renderComments(rootComments.map(comment => comment.comment_id))}
                         </ul>
                     ) : (
                         <p>No comments yet.</p>
