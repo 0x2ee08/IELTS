@@ -255,9 +255,14 @@ const Blogdetail: React.FC = () => {
 
             const isVisible = visibleComments.has(commentId);
             const toggleSymbol = isVisible ? '-' : '+';
+            let ml_value = 5;
+
+            if(depth === 0 || depth > 5) {
+                ml_value = 0;
+            }
 
             return (
-                <li key={comment.comment_id} className={`border p-2 mb-2 ml-${Math.min(depth, 5) * 10}`}>
+                <li key={comment.comment_id} className={`border p-2 mb-2 ml-${ml_value}`}>
                     <div className="flex items-center">
                         {comment.children && comment.children.length > 0 && (
                             <button
