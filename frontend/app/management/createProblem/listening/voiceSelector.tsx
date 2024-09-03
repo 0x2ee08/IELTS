@@ -77,7 +77,7 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({ tts }) => {
       <p className="mb-4">Select Voices: </p>
 
       {/* Just for debug */}
-      {tts}
+      {/* {tts} */}
 
       <div className="mb-4">
         <select
