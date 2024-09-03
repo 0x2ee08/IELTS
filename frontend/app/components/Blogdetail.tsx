@@ -35,6 +35,19 @@ const Blogdetail: React.FC = () => {
     const [loadingDislike, setLoadingDislike] = useState(false);
     const [isCommentVisible, setIsCommentVisible] = useState(false);
 
+    const [visibleComments, setVisibleComments] = useState<Set<number>>(new Set());
+    const toggleCommentVisibility = (commentId: number) => {
+        setVisibleComments(prev => {
+            const newVisibleComments = new Set(prev);
+            if (newVisibleComments.has(commentId)) {
+                newVisibleComments.delete(commentId);
+            } else {
+                newVisibleComments.add(commentId);
+            }
+            return newVisibleComments;
+        });
+    };
+
     // New states for replies
     const [newReply, setNewReply] = useState<{[key: number]: string}>({});
     const [replyVisible, setReplyVisible] = useState<{[key: number]: boolean}>({});
@@ -240,9 +253,22 @@ const Blogdetail: React.FC = () => {
             const comment = comments.find(c => c.comment_id === commentId);
             if (!comment) return null;
 
+            const isVisible = visibleComments.has(commentId);
+            const toggleSymbol = isVisible ? '-' : '+';
+
             return (
-                <li key={comment.comment_id} className={`border p-2 mb-2 ml-${depth * 4}`}>
-                    <p><strong>{comment.username}</strong> <span className="text-gray-500">({new Date(comment.time_created).toLocaleString()})</span></p>
+                <li key={comment.comment_id} className={`border p-2 mb-2 ml-${Math.min(depth, 5) * 10}`}>
+                    <div className="flex items-center">
+                        {comment.children && comment.children.length > 0 && (
+                            <button
+                                onClick={() => toggleCommentVisibility(comment.comment_id)}
+                                className="text-blue-600 hover:underline mr-2"
+                            >
+                                {toggleSymbol}
+                            </button>
+                        )}
+                        <p><strong>{comment.username}</strong> <span className="text-gray-500">({new Date(comment.time_created).toLocaleString()})</span></p>
+                    </div>
                     <p>{comment.content}</p>
                     <button
                         onClick={() => handleReplyClick(comment.comment_id)}
@@ -270,7 +296,7 @@ const Blogdetail: React.FC = () => {
                             </div>
                         </div>
                     )}
-                    {comment.children && comment.children.length > 0 && (
+                    {isVisible && comment.children && comment.children.length > 0 && (
                         <ul>
                             {renderComments(comment.children, depth + 1)}
                         </ul>
