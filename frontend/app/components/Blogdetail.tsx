@@ -252,57 +252,68 @@ const Blogdetail: React.FC = () => {
         return commentIds.map((commentId) => {
             const comment = comments.find(c => c.comment_id === commentId);
             if (!comment) return null;
-
+        
             const isVisible = !visibleComments.has(commentId);
             const toggleSymbol = isVisible ? '-' : '+';
-            let ml_value = 5;
+    
+            // Determine margin based on depth
+            const marginClass = depth > 5 ? 'ml-0' : 'ml-4'; 
 
-            if(depth === 0 || depth > 5) {
-                ml_value = 0;
-            }
+            console.log(comment);
 
+            console.log(depth);
+    
             return (
-                <li key={comment.comment_id} className={`border p-2 mb-2 ml-${ml_value}`}>
-                    <div className="flex items-center">
-                        {comment.children && comment.children.length > 0 && (
-                            <button
-                                onClick={() => toggleCommentVisibility(comment.comment_id)}
-                                className="text-blue-600 hover:underline mr-2"
-                            >
-                                {toggleSymbol}
-                            </button>
-                        )}
-                        <p><strong>{comment.username}</strong> <span className="text-gray-500">({new Date(comment.time_created).toLocaleString()})</span></p>
-                    </div>
-                    <p>{comment.content}</p>
-                    <button
-                        onClick={() => handleReplyClick(comment.comment_id)}
-                        className="text-blue-600 hover:underline"
-                    >
-                        {replyVisible[comment.comment_id] ? 'Cancel' : 'Reply'}
-                    </button>
-                    {replyVisible[comment.comment_id] && (
+                <li key={comment.comment_id} className={`mb-2 ${marginClass}`}>
+                    <div className="p-2 border border-gray-400 bg-slate-100 rounded">
                         <div>
-                            <textarea
-                                value={newReply[comment.comment_id] || ''}
-                                onChange={(e) => handleReplyChange(comment.comment_id, e.target.value)}
-                                rows={2}
-                                cols={50}
-                                placeholder="Write your reply here..."
-                                className="border border-black rounded-md p-2 mb-2 w-full"
-                            />
-                            <div className="flex justify-end space-x-2">
-                                <button
-                                    onClick={() => handleReply(comment.comment_id)}
-                                    className="bg-[#6baed6] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                                >
-                                    Post
-                                </button>
+                            <div className="flex items-center">
+                                {comment.children && comment.children.length > 0 && (
+                                    <button
+                                        onClick={() => toggleCommentVisibility(comment.comment_id)}
+                                        className="text-blue-600 hover:underline mr-2"
+                                    >
+                                        {toggleSymbol}
+                                    </button>
+                                )}
+                                <p>
+                                    <strong>{comment.username}</strong> 
+                                    <span className="text-gray-500">
+                                        ({new Date(comment.time_created).toLocaleString()})
+                                    </span>
+                                </p>
                             </div>
+                            <p>{comment.content}</p>
+                            <button
+                                onClick={() => handleReplyClick(comment.comment_id)}
+                                className="text-blue-600 hover:underline"
+                            >
+                                {replyVisible[comment.comment_id] ? 'Cancel' : 'Reply'}
+                            </button>
+                            {replyVisible[comment.comment_id] && (
+                                <div>
+                                    <textarea
+                                        value={newReply[comment.comment_id] || ''}
+                                        onChange={(e) => handleReplyChange(comment.comment_id, e.target.value)}
+                                        rows={2}
+                                        cols={50}
+                                        placeholder="Write your reply here..."
+                                        className="border border-black rounded-md p-2 mb-2 w-full"
+                                    />
+                                    <div className="flex justify-end space-x-2">
+                                        <button
+                                            onClick={() => handleReply(comment.comment_id)}
+                                            className="bg-[#6baed6] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                        >
+                                            Post
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    )}
+                    </div>
                     {isVisible && comment.children && comment.children.length > 0 && (
-                        <ul>
+                        <ul className="pl-6">
                             {renderComments(comment.children, depth + 1)}
                         </ul>
                     )}
@@ -310,6 +321,12 @@ const Blogdetail: React.FC = () => {
             );
         });
     };
+    
+    
+    
+    
+    
+    
 
     return (
         <div className="flex-grow flex items-center justify-center p-8">
