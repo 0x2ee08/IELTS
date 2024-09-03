@@ -88,7 +88,7 @@ router.post('/get_user_blog_list', authenticateToken, async (req, res) => {
         const result = await userCollection.findOne({ username: username });
         let op = false;
 
-        if (!result) {
+        if (!result) { 
             await userCollection.insertOne({
                 username,
                 like: [],

@@ -17,6 +17,7 @@ const blogsRoutes = require('./routes/blogsRoutes');
 const tedtalkRoutes = require('./routes/tedtalkRoutes');
 const generateReadingParagraphRoutes = require('./routes/genReadingRoutes');
 const contestRoutes = require('./routes/contestRoutes');
+const userNoteRoutes = require('./routes/userNoteRoutes')
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -25,7 +26,7 @@ const upload = multer({ storage: storage });
 
 app.use(cors({
     origin: '*',
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: [' Content-Type', 'Authorization']
 }));
 
@@ -41,6 +42,7 @@ app.use('/api', blogsRoutes);
 app.use('/api', tedtalkRoutes);
 app.use('/api', generateReadingParagraphRoutes);
 app.use('/api', contestRoutes);
+app.use('/api', userNoteRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
