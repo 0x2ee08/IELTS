@@ -162,9 +162,45 @@ router.post('/add_comment', authenticateToken, async (req, res) => {
         const db = await connectToDatabase();
         const blogsCollection = db.collection('blogs');
 
+        const count = await blogsCollection.findOne({ blog_id: blog_id });
+        const nextCommentId = Number(count.comments.length + 1); 
+
         const newComment = {
             username: username,
             time_created: new Date(),
+            par: -1,
+            comment_id: nextCommentId,
+            content: content,
+        };
+
+        const result = await blogsCollection.updateOne(
+            { blog_id: blog_id },
+            { $push: { comments: newComment } }
+        );
+
+        if (result.modifiedCount > 0) {
+            res.json({ success: true, message: 'Comment added successfully' });
+        } else {
+            res.status(404).json({ success: false, message: 'Blog not found' });
+        }
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+router.post('/add_reply', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { blog_id, parent, content } = req.body;
+
+    try {
+        const db = await connectToDatabase();
+        const blogsCollection = db.collection('blogs');
+
+        const newComment = {
+            username: username,
+            time_created: new Date(),
+            par: parent,
             content: content,
         };
 

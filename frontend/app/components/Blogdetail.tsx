@@ -8,9 +8,11 @@ import { useSearchParams } from "next/navigation";
 
 interface Comment {
     username: string;
-    time_created: string; // Use ISO string format for dates
+    time_created: string;
+    par: number;
+    comment_id: number;
     content: string;
-    replies?: Comment[]; // Added replies field
+    replies?: Comment[];
 }
 
 const Blogdetail: React.FC = () => {
@@ -18,7 +20,7 @@ const Blogdetail: React.FC = () => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [author, setAuthor] = useState('');
-    const [authorId, setAuthorId] = useState(''); // Add state for author ID or username
+    const [authorId, setAuthorId] = useState('');
     const [curlike, setCurlike] = useState(0);
     const [curdislike, setCurdislike] = useState(0);
     const [liked, setLiked] = useState(false);
@@ -66,16 +68,21 @@ const Blogdetail: React.FC = () => {
                 },
             });
             const result = response.data.result;
+            const sortedComments = (result.comments || []).sort((a: Comment, b: Comment) => 
+                new Date(b.time_created).getTime() - new Date(a.time_created).getTime()
+            );
 
             setTitle(result.title);
             setContent(result.content);
             setAuthor(result.author);
-            setAuthorId(result.authorId); // Set author ID or username
+            setAuthorId(result.authorId);
             setCurlike(result.like || 0);
             setCurdislike(result.dislike || 0);
             setView(result.view);
             setTime_created(result.time_created);
-            setComments(result.comments || []);
+            setComments(sortedComments);
+
+
 
             get_user_blog_list(Number(result.view));
 
