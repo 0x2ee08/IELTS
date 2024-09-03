@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../config';
 
-interface WritingProbLoaderProps {
+interface ProbLoaderProps {
     prob_id: string
 }
 
-const WritingProbLoader: React.FC<WritingProbLoaderProps> = ({ prob_id }) => {
+const ProbLoader: React.FC<ProbLoaderProps> = ({ prob_id }) => {
     const [ statement, setStatement ] = useState('');
     const [ questionlist, setQuestionlist] = useState([]);
     const [ answerlist, setAnswerlist] = useState([]);
@@ -16,7 +16,7 @@ const WritingProbLoader: React.FC<WritingProbLoaderProps> = ({ prob_id }) => {
     const get_prob_data = async () => { 
         const token = localStorage.getItem('token');
         try {
-            const response = await fetch(`${config.API_BASE_URL}api/get_prob_data`, {
+            const response = await fetch(`${config.API_BASE_URL}api/get__writing_prob_data`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -63,4 +63,4 @@ const WritingProbLoader: React.FC<WritingProbLoaderProps> = ({ prob_id }) => {
     );
 };
 
-export default WritingProbLoader;
+export default ProbLoader;

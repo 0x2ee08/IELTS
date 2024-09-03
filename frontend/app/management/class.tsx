@@ -25,7 +25,6 @@ const ClassRightSide: React.FC<ClassRightSideProps> = ({ school, class_, classli
     };
 
     const update_class_list = async (classlist: string[]) => {
-        console.log(classlist);
         const token = localStorage.getItem('token');
         try {
             const response = await fetch(`${config.API_BASE_URL}api/update_class_list`, {

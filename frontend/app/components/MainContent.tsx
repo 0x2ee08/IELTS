@@ -1,7 +1,44 @@
-import React from 'react';
-import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import config from '../config';
+
+interface Blog {
+  author: string;
+  blog_id: string;
+  comments: any[];
+  content: string;
+  dislike: number;
+  like: number;
+  time_created: string;
+  title: string;
+  view: number;
+  _id: string;
+}
 
 const MainContent: React.FC = () => {
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+
+  const get_home_page_bloglist = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await axios.post(`${config.API_BASE_URL}api/get_home_page_bloglist`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const result = response.data.blogs;
+
+      setBlogs(result);
+
+    } catch (error) {
+      console.error('Error fetching blogs:', error);
+    }
+  };
+
+  useEffect(() => {
+    get_home_page_bloglist();
+  }, []);
+
   return (
     <div className="flex flex-col lg:flex-row justify-between space-y-8 lg:space-y-0 lg:space-x-8 px-8 lg:px-12 py-8">
       {/* Left Section: Upcoming Contest and Virtual Tests */}
@@ -52,20 +89,26 @@ const MainContent: React.FC = () => {
         <section className="bg-white p-6 rounded-lg border border-black">
           <h2 className="text-lg font-semibold">RECENT BLOGS</h2>
           <div className="space-y-4 mt-4">
-            {Array(5).fill(0).map((_, index) => (
+          {blogs.slice(0, Math.min(blogs.length, 10)).map((blog, index) => {
+            const link = `/blog_loader?id=${blog.blog_id}`; // Define link outside JSX
+
+            return (
               <div key={index} className="flex flex-col">
-                <a href="#" className="text-blue-500 hover:underline">Why my writing can’t score higher than 7.0? Help me improve.</a>
+                <a href={link} className="text-blue-500 hover:underline">{blog.title}</a>
                 <div className="text-gray-500 text-sm flex space-x-2">
-                  <span>@riihime196</span>
-                  <span>10:51 28/08/2024 | one minute ago</span>
-                  <span>2405 &#128065;</span>
-                  <span>3 &#128172;</span>
+                  <span>@{blog.author}</span>
+                  <span>{new Date(blog.time_created).toLocaleString()}</span>
+                  <span>{blog.view} &#128065;</span>
+                  <span>{blog.like} &#128077;</span>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
           <div className="flex items-center justify-center mt-4">
-            <button className="text-[#0077B6] mr-4">READ MORE</button>
+            <a href="/blogs" className="text-[#0077B6] mr-4">
+              READ MORE
+            </a>
           </div>
         </section>
       </aside>

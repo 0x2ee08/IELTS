@@ -5,7 +5,7 @@ import axios from 'axios';
 import config from '../config';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-import WritingProbLoader from './prob_loader';
+import ProbLoader from './prob_loader';
 
 const WritingPage: React.FC = () => {
 
@@ -27,7 +27,7 @@ const WritingPage: React.FC = () => {
             </div>
 
             <div className="mb-4 ml-4 mr-4">
-                <WritingProbLoader
+                <ProbLoader
                     prob_id= {prob_id}
                 />
             </div>

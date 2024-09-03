@@ -1,61 +1,53 @@
+// AddProblem.tsx
 'use client';
 
 import React, { useState } from 'react';
+import ReadingRender from './createProblem/ReadingRender';
+import ListeningRender from './createProblem/ListeningRender';
+import SpeakingRender from './createProblem/SpeakingRender';
+import WritingRender from './createProblem/WritingRender';
 
-const AddContest: React.FC = () => {
-    const [selectedOption, setSelectedOption] = useState('Listening');
+const AddProblem: React.FC = () => {
+    const [problemType, setProblemType] = useState<string | null>(null);
+    const skill = [
+        'Choose skill',
+        'Reading',
+        'Listening',
+        'Writing',
+        'Speaking'
+    ];
 
-    const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setSelectedOption(event.target.value);
+    const handleProblemTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setProblemType(e.target.value);
+    };
+
+    const renderProblemOptions = () => {
+        switch (problemType) {
+            case 'Reading':
+                return <ReadingRender />;
+            case 'Listening':
+                return <ListeningRender />;
+            case 'Writing':
+                return <WritingRender />;
+            case 'Speaking':
+                return <SpeakingRender />;
+            default:
+                return null;
+        }
     };
 
     return (
-        <div className="container">
-            <label htmlFor="type-select" className="label">
-                Type
-            </label>
-            <select
-                id="type-select"
-                value={selectedOption}
-                onChange={handleChange}
-                className="dropdown"
-            >
-                <option value="listening">Listening</option>
-                <option value="reading">Reading</option>
-                <option value="writing">Writing</option>
-                <option value="speaking">Speaking</option>
+        <div>
+            <h2 className='py-3'>Select Problem Type</h2>
+            <select className="border border-gray-300 px-3 py-2 rounded-md w-full" onChange={handleProblemTypeChange}>
+                {skill.map((type, i) => (
+                    <option key={i} value={type}>{type}</option>
+                ))}
             </select>
-            <style jsx>{`
-                .container {
-                    display: flex;
-                    align-items: center;
-                    height: 100vh;
-                    justify-content: center;
-                    gap: 16px;
-                }
 
-                .label {
-                    font-size: 18px;
-                    color: #333;
-                }
-
-                .dropdown {
-                    padding: 12px;
-                    font-size: 16px;
-                    border: 2px solid #00B4D8;
-                    border-radius: 8px;
-                    background-color: white;
-                    color: #333;
-                    cursor: pointer;
-                    transition: border-color 0.3s ease;
-                }
-
-                .dropdown:hover {
-                    border-color: #005f73;
-                }
-            `}</style>
+            {renderProblemOptions()}
         </div>
     );
 };
 
-export default AddContest;
+export default AddProblem;
