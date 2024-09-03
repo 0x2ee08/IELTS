@@ -263,7 +263,8 @@ router.post('/create_blog', authenticateToken, async (req, res) => {
             like: 0,
             dislike: 0,
             view: 0,
-            comments: []
+            comments: [],
+            comments_count: 0,
         });
 
         res.json({ success: true, message: 'Blog created successfully', blog_id: nextBlogId });
