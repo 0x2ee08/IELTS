@@ -87,16 +87,12 @@ const ReadingRender: React.FC = () => {
 
     const questionTypes = [
         "Choose a question type",
-        "Yes/No/Not given",
-        "True/False/Not Given",
-        "Fill in the blank with one word only",
-        "Fill in the blank with no more than two words",
-        "Matching Heading",
-        "Matching Paragraph Information",
-        "Matching Features",
-        "Matching Sentence Endings",
-        "Multiple Choice One Answer",
-        "Multiple Choice Multiple Answer"
+        "Form Completion",
+        "Directions",
+        "Map Labeling",
+        "Short Answer Quesion",
+        "Multiple Choices",
+        "Matching Feature",
     ];
 
     const toggleParagraph = (index: number) => {

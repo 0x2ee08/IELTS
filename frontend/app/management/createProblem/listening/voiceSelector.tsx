@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from "react";
 
 interface VoiceSelectorProps {
-    tts: string;
+  tts: string;
 }
 
 const VoiceSelector: React.FC<VoiceSelectorProps> = ({ tts }) => {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState<string>("Microsoft Jenny Online (Natural)-English (United States) (en-US)");
+  const [selectedVoice, setSelectedVoice] = useState("Microsoft Jenny Online (Natural) - English (United States)");
   const [rate, setRate] = useState<number>(1);
   const [pitch, setPitch] = useState<number>(1);
   const [utterance, setUtterance] = useState<SpeechSynthesisUtterance | null>(null);
@@ -19,6 +19,15 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({ tts }) => {
       const synth = window.speechSynthesis;
       let availableVoices = synth.getVoices();
 
+      const setDefaultVoice = (voicesList: SpeechSynthesisVoice[]) => {
+        const defaultVoice = voicesList.find(v => v.name === "Microsoft Jenny Online (Natural) - English (United States)");
+        if (defaultVoice) {
+          setSelectedVoice(defaultVoice.name); // Set to the desired default voice if found
+        } else if (voicesList.length > 0) {
+          setSelectedVoice(voicesList[0].name); // Fallback to the first available voice
+        }
+      };
+
       if (availableVoices.length === 0) {
         synth.onvoiceschanged = () => {
           availableVoices = synth.getVoices();
@@ -26,19 +35,15 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({ tts }) => {
             .filter((v) => v.lang.startsWith('en'))
             .sort((a, b) => a.name.localeCompare(b.name));
           setVoices(englishVoices);
-          if (englishVoices.length > 0) {
-            setSelectedVoice(englishVoices[0].name); // Set default voice
-          }
+          setDefaultVoice(englishVoices);
+          console.log(englishVoices);
         };
       } else {
-        // Filter and sort voices if already available
         const englishVoices = availableVoices
           .filter((v) => v.lang.startsWith('en'))
           .sort((a, b) => a.name.localeCompare(b.name));
         setVoices(englishVoices);
-        if (englishVoices.length > 0) {
-          setSelectedVoice(englishVoices[0].name); // Set default voice
-        }
+        setDefaultVoice(englishVoices);
       }
     };
 
@@ -47,12 +52,13 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({ tts }) => {
 
   const handleSpeak = () => {
     if (!window.speechSynthesis) {
-      alert("Sorry, your browser does not support tts-to-speech.");
+      alert("Sorry, your browser does not support text-to-speech.");
       return;
     }
 
     const newUtterance = new SpeechSynthesisUtterance(tts);
     const voice = voices.find((v) => v.name === selectedVoice);
+    console.log(selectedVoice);
     if (voice) {
       newUtterance.voice = voice;
     }
@@ -75,9 +81,6 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({ tts }) => {
   return (
     <div className="mb-4">
       <p className="mb-4">Select Voices: </p>
-
-      {/* Just for debug */}
-      {/* {tts} */}
 
       <div className="mb-4">
         <select
@@ -117,7 +120,7 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({ tts }) => {
 
       <button
         onClick={handleStop}
-        className="bg-blue-500 text-white px-4 py-2 rounded mt-2, ml-2"
+        className="bg-blue-500 text-white px-4 py-2 rounded mt-2 ml-2"
       >
         Stop
       </button>
