@@ -80,30 +80,9 @@ const BlogsPage: React.FC = () => {
             <Header />
 
             <div className="container mx-auto p-4">
-                <h2>Create New Blog</h2>
-                <div className="mb-4">
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Title (cannot be empty)"
-                        className="border p-2 mb-2 w-full"
-                    />
-                    <textarea
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        rows={4}
-                        cols={50}
-                        placeholder="Content"
-                        className="border p-2 mb-2 w-full"
-                    />
-                    <button
-                        onClick={createBlog}
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    >
-                        Create Blog
-                    </button>
-                </div>
+                <a href={`/blog_creator`} className="text-sm text-blue-500 hover:underline">
+                    Create New Blog ?
+                </a>
             </div>
 
             <div className="container mx-auto p-4">
