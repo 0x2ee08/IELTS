@@ -5,11 +5,55 @@ import axios from 'axios';
 import Link from 'next/link';
 import config from '../config';
 import { useSearchParams } from "next/navigation";
+import MarkdownEditor from 'react-markdown-editor-lite';
+import 'react-markdown-editor-lite/lib/index.css'; // Import CSS for the editor
+
+// Import markdown parser
+import markdownIt from 'markdown-it';
+
+const mdParser = new markdownIt();
+
+function underlinePlugin(md: markdownIt) {
+    md.inline.ruler.before('emphasis', 'underline', function (state, silent) {
+      const start = state.pos;
+      const marker = state.src.charCodeAt(start);
+  
+      // Check for the ++ marker
+      if (silent || marker !== 0x2B /* + */ || state.src.charCodeAt(start + 1) !== 0x2B /* + */) {
+        return false;
+      }
+  
+      const match = state.src.slice(start).match(/^\+\+([^+]+)\+\+/);
+      if (!match) return false;
+  
+      // Push the underline open token
+      const token = state.push('underline_open', 'u', 1);
+      token.markup = '++';
+      token.content = match[1];
+  
+      // Push the content inside the underline
+      const tokenText = state.push('text', '', 0);
+      tokenText.content = match[1];
+  
+      // Push the underline close token
+      state.push('underline_close', 'u', -1);
+  
+      // Move the state position forward
+      state.pos += match[0].length;
+      return true;
+    });
+  
+    md.renderer.rules.underline_open = () => '<u>';
+    md.renderer.rules.underline_close = () => '</u>';
+  }
+
+mdParser.use(underlinePlugin);
 
 interface Comment {
     username: string;
     time_created: string;
-    par: number;
+    children: number[]; // Changed from Comment[] to number[]
+    parent: number;
     comment_id: number;
     content: string;
     replies?: Comment[];
@@ -21,21 +65,35 @@ const Blogdetail: React.FC = () => {
     const [content, setContent] = useState('');
     const [author, setAuthor] = useState('');
     const [authorId, setAuthorId] = useState('');
-    const [curlike, setCurlike] = useState(0);
-    const [curdislike, setCurdislike] = useState(0);
+    const [upvote, setUpvote] = useState(0);
+    const [downvote, setDownvote] = useState(0);
     const [liked, setLiked] = useState(false);
     const [disliked, setDisliked] = useState(false);
     const [view, setView] = useState(0);
     const [comments, setComments] = useState<Comment[]>([]);
+    const [rootComments, setRootComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState('');
     const [time_created, setTime_created] = useState('');
     const [loadingLike, setLoadingLike] = useState(false);
     const [loadingDislike, setLoadingDislike] = useState(false);
     const [isCommentVisible, setIsCommentVisible] = useState(false);
 
+    const [visibleComments, setVisibleComments] = useState<Set<number>>(new Set());
+    const toggleCommentVisibility = (commentId: number) => {
+        setVisibleComments(prev => {
+            const newVisibleComments = new Set(prev);
+            if (newVisibleComments.has(commentId)) {
+                newVisibleComments.delete(commentId);
+            } else {
+                newVisibleComments.add(commentId);
+            }
+            return newVisibleComments;
+        });
+    };
+
     // New states for replies
-    const [newReply, setNewReply] = useState<{[key: number]: string}>({});
-    const [replyVisible, setReplyVisible] = useState<{[key: number]: boolean}>({});
+    const [newReply, setNewReply] = useState<{ [key: number]: string }>({});
+    const [replyVisible, setReplyVisible] = useState<{ [key: number]: boolean }>({});
 
     const handleLineClick = () => {
         setIsCommentVisible(!isCommentVisible);
@@ -68,7 +126,7 @@ const Blogdetail: React.FC = () => {
                 },
             });
             const result = response.data.result;
-            const sortedComments = (result.comments || []).sort((a: Comment, b: Comment) => 
+            const sortedComments = (result.comments || []).sort((a: Comment, b: Comment) =>
                 new Date(b.time_created).getTime() - new Date(a.time_created).getTime()
             );
 
@@ -76,13 +134,12 @@ const Blogdetail: React.FC = () => {
             setContent(result.content);
             setAuthor(result.author);
             setAuthorId(result.authorId);
-            setCurlike(result.like || 0);
-            setCurdislike(result.dislike || 0);
+            setUpvote(result.like || 0);
+            setDownvote(result.dislike || 0);
             setView(result.view);
             setTime_created(result.time_created);
             setComments(sortedComments);
-
-
+            setRootComments(sortedComments.filter((comment: Comment) => comment.parent === -1));
 
             get_user_blog_list(Number(result.view));
 
@@ -104,12 +161,12 @@ const Blogdetail: React.FC = () => {
             const { liked, disliked, op } = response.data;
             setLiked(liked);
             setDisliked(disliked);
-            if(op) {
-                update_blog(curlike, curdislike, view + 1);
+            if (op) {
+                update_blog(upvote, downvote, view + 1);
                 setView(view + 1);
             }
 
-        } catch(error) {
+        } catch (error) {
             console.error('Error get user emotion:', error);
             alert('Internal server error while updating like/dislike');
         }
@@ -146,24 +203,24 @@ const Blogdetail: React.FC = () => {
         }
     };
 
-    const handleLike = async () => {
+    const handleUpvote = async () => {
         if (loadingLike || loadingDislike) return;
         setLoadingLike(true);
         try {
             if (!liked) {
-                await update_blog(curlike + 1, curdislike, view);
+                await update_blog(upvote + 1, downvote, view);
                 await update_user_emotion('like');
                 setLiked(true);
                 if (disliked) {
-                    setCurdislike(curdislike - 1);
-                    await update_blog(curlike + 1, curdislike - 1, view);
+                    setDownvote(downvote - 1);
+                    await update_blog(upvote + 1, downvote - 1, view);
                     setDisliked(false);
                 }
-                setCurlike(curlike + 1);
+                setUpvote(upvote + 1);
             } else {
-                await update_blog(curlike - 1, curdislike, view);
+                await update_blog(upvote - 1, downvote, view);
                 await update_user_emotion('like');
-                setCurlike(curlike - 1);
+                setUpvote(upvote - 1);
                 setLiked(false);
             }
         } finally {
@@ -171,24 +228,24 @@ const Blogdetail: React.FC = () => {
         }
     };
 
-    const handleDislike = async () => {
+    const handleDownvote = async () => {
         if (loadingLike || loadingDislike) return;
         setLoadingDislike(true);
         try {
             if (!disliked) {
-                await update_blog(curlike, curdislike + 1, view);
+                await update_blog(upvote, downvote + 1, view);
                 await update_user_emotion('dislike');
                 setDisliked(true);
                 if (liked) {
-                    setCurlike(curlike - 1);
-                    await update_blog(curlike - 1, curdislike + 1, view);
+                    setUpvote(upvote - 1);
+                    await update_blog(upvote - 1, downvote + 1, view);
                     setLiked(false);
                 }
-                setCurdislike(curdislike + 1);
+                setDownvote(downvote + 1);
             } else {
-                await update_blog(curlike, curdislike - 1, view);
+                await update_blog(upvote, downvote - 1, view);
                 await update_user_emotion('dislike');
-                setCurdislike(curdislike - 1);
+                setDownvote(downvote - 1);
                 setDisliked(false);
             }
         } finally {
@@ -196,7 +253,16 @@ const Blogdetail: React.FC = () => {
         }
     };
 
+    const calculateContribution = () => {
+        return upvote - downvote;
+    };
+
     const handle_comment = async () => {
+        if (!newComment || newComment.trim().length === 0) {
+            alert('Comment cannot be empty' );
+            return;
+        }
+
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
@@ -209,24 +275,34 @@ const Blogdetail: React.FC = () => {
             setNewComment('');
             get_blog();
         } catch (error) {
-            console.error('Error adding comment:', error);
-            alert('Internal server error');
+            if (axios.isAxiosError(error)) {
+                const errorMessage = error.response?.data?.message || 'An unexpected error occurred';
+                alert('Error while commenting: ' + errorMessage);
+            } else {
+                console.error('Error adding comment:', error);
+                alert('Error while commenting: An unexpected error occurred');
+            }
         }
     }
 
-    const handleReply = async (commentId: number) => {
+    const handleReply = async (parent: number) => {
+        if (!newReply[parent] || newReply[parent].trim().length === 0) {
+            alert('Comment cannot be empty' );
+            return;
+        }
+
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
-            const replyContent = newReply[commentId];
-            await axios.post(`${config.API_BASE_URL}api/add_reply`, { blog_id, commentId, content: replyContent }, {
+            const replyContent = newReply[parent];
+            await axios.post(`${config.API_BASE_URL}api/add_reply`, { blog_id, parent, content: replyContent }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             });
             // Clear the reply input and refresh the comments
-            setNewReply({...newReply, [commentId]: ''});
-            setReplyVisible({...replyVisible, [commentId]: false});
+            setNewReply({ ...newReply, [parent]: '' });
+            setReplyVisible({ ...replyVisible, [parent]: false });
             get_blog();
         } catch (error) {
             console.error('Error adding reply:', error);
@@ -234,20 +310,81 @@ const Blogdetail: React.FC = () => {
         }
     };
 
-    const renderReplies = (replies: Comment[], parentIndex: number) => {
-        return replies.map((reply, index) => (
-            <li key={`${parentIndex}-${index}`} className="border p-2 mb-2 ml-4">
-                <p><strong>{reply.username}</strong> <span className="text-gray-500">({new Date(reply.time_created).toLocaleString()})</span></p>
-                <p>{reply.content}</p>
-            </li>
-        ));
+    const renderComments = (commentIds: number[], depth = 0) => {
+        return commentIds.map((commentId) => {
+            const comment = comments.find(c => c.comment_id === commentId);
+            if (!comment) return null;
+    
+            const isVisible = !visibleComments.has(commentId);
+            const toggleSymbol = isVisible ? '-' : '+';
+    
+            // Determine margin based on depth
+            const marginClass = depth > 5 ? 'ml-0' : 'ml-4';
+    
+            return (
+                <li key={comment.comment_id} className={`mb-2 ${marginClass}`}>
+                    <div className="p-2 border border-gray-400 bg-slate-100 rounded">
+                        <div>
+                            <div className="flex items-center">
+                                {comment.children && comment.children.length > 0 && (
+                                    <button
+                                        onClick={() => toggleCommentVisibility(comment.comment_id)}
+                                        className="text-blue-600 hover:underline mr-2"
+                                    >
+                                        {toggleSymbol}
+                                    </button>
+                                )}
+                                <p>
+                                    <strong>{comment.username}</strong>
+                                    <span className="text-gray-500">
+                                        ({new Date(comment.time_created).toLocaleString()})
+                                    </span>
+                                </p>
+                            </div>
+                            <p dangerouslySetInnerHTML={{ __html: mdParser.render(comment.content) }}/>
+                            <button
+                                onClick={() => handleReplyClick(comment.comment_id)}
+                                className="text-blue-600 hover:underline"
+                            >
+                                {replyVisible[comment.comment_id] ? 'Cancel' : 'Reply'}
+                            </button>
+                            {replyVisible[comment.comment_id] && (
+                                <div>
+                                    <textarea
+                                        value={newReply[comment.comment_id] || ''}
+                                        onChange={(e) => handleReplyChange(comment.comment_id, e.target.value)}
+                                        rows={2}
+                                        cols={50}
+                                        placeholder="Write your reply here..."
+                                        className="border border-black rounded-md p-2 mb-2 w-full"
+                                    />
+                                    <div className="flex justify-end space-x-2">
+                                        <button
+                                            onClick={() => handleReply(comment.comment_id)}
+                                            className="bg-[#6baed6] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                        >
+                                            Post
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    {isVisible && comment.children && comment.children.length > 0 && (
+                        <ul className="pl-6" style={{ marginTop: '10px', marginBottom: '10px' }}> 
+                            {renderComments(comment.children, depth + 1)}
+                        </ul>
+                    )}
+                </li>
+            );
+        });
     };
+    
 
     return (
         <div className="flex-grow flex items-center justify-center p-8">
-            <div className="bg-white w-full max-w-6xl"> 
-                <p className="text-[#0077B6] text-3xl text-bold mb-2">{title}</p>
-                {/* Updated author link */}
+            <div className="bg-white w-full max-w-6xl">
+                <p className="text-[#0077B6] text-3xl font-bold mb-2">{title}</p>
                 <p className="mb-4">
                     <strong>By: </strong>
                     <Link href={`/profile/${authorId}`}>
@@ -255,33 +392,34 @@ const Blogdetail: React.FC = () => {
                     </Link>
                     , {new Date(time_created).toLocaleString()}
                 </p>
-                <p className="border-l-4 border-gray-500 p-2 mb-4">{content}</p>
-                <div className="bg-white border border-black rounded-md mb-2">
-                    <div className="flex items-center justify-between mb-2 mt-2">
-                        <div className="flex items-center">
-                            <button 
-                                onClick={handleLike}
+                <div className="border-l-4 border-gray-500 p-2 mb-4" dangerouslySetInnerHTML={{ __html: mdParser.render(content) }} />
+                <div className="bg-white border border-black rounded-md mb-2 p-2 flex justify-between items-center">
+                    <div className="flex flex-col items-start">
+                        <span className="text-lg font-semibold mb-1">Contribution: {calculateContribution()}</span>
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={handleUpvote}
                                 className={`${
                                     liked ? 'bg-[#0077B6]' : 'bg-[#6baed6]'
-                                } hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-4 mr-2`}>
-                                Like {curlike}
+                                } hover:bg-blue-700 text-white font-bold text-sm py-1 px-2 rounded focus:outline-none focus:shadow-outline`}>
+                                Upvote {upvote}
                             </button>
-                            <button 
-                                onClick={handleDislike}
+                            <button
+                                onClick={handleDownvote}
                                 className={`${
                                     disliked ? 'bg-[#0077B6]' : 'bg-[#6baed6]'
-                                } hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-2 mr-4`}>
-                                Dislike {curdislike}
+                                } hover:bg-blue-700 text-white font-bold text-sm py-1 px-2 rounded focus:outline-none focus:shadow-outline`}>
+                                Downvote {downvote}
                             </button>
                         </div>
-                        <span className="mr-2">{view} &#128100;</span>
                     </div>
+                    <span className="text-sm">{view} &#128100;</span>
                 </div>
                 {!isCommentVisible && (
-                    <p 
-                        className="flex justify-end text-blue-700 underline decoration-blue-700" 
+                    <p
+                        className="flex justify-end text-blue-700 underline decoration-blue-700 cursor-pointer"
                         onClick={handleLineClick}
-                    > 
+                    >
                         Write comment?
                     </p>
                 )}
@@ -312,47 +450,10 @@ const Blogdetail: React.FC = () => {
                     </div>
                 )}
                 <div>
-                    <h3>Comments:</h3>
+                    <h3 className="mb-10">Comments :</h3>
                     {comments.length > 0 ? (
                         <ul>
-                            {comments.map((comment, index) => (
-                                <li key={index} className="border p-2 mb-2">
-                                    <p><strong>{comment.username}</strong> <span className="text-gray-500">({new Date(comment.time_created).toLocaleString()})</span></p>
-                                    <p>{comment.content}</p>
-                                    <button
-                                        onClick={() => handleReplyClick(index)}
-                                        className="text-blue-600 hover:underline"
-                                    >
-                                        {replyVisible[index] ? 'Cancel' : 'Reply'}
-                                    </button>
-                                    {replyVisible[index] && (
-                                        <div>
-                                            <textarea
-                                                value={newReply[index] || ''}
-                                                onChange={(e) => handleReplyChange(index, e.target.value)}
-                                                rows={2}
-                                                cols={50}
-                                                placeholder="Write your reply here..."
-                                                className="border border-black rounded-md p-2 mb-2 w-full"
-                                            />
-                                            <div className="flex justify-end space-x-2">
-                                                <button
-                                                    onClick={() => handleReply(index)}
-                                                    className="bg-[#6baed6] hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                                                >
-                                                    Post
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {/* Render replies if any */}
-                                    {comment.replies && (
-                                        <ul>
-                                            {renderReplies(comment.replies, index)}
-                                        </ul>
-                                    )}
-                                </li>
-                            ))}
+                            {renderComments(rootComments.map(comment => comment.comment_id))}
                         </ul>
                     ) : (
                         <p>No comments yet.</p>

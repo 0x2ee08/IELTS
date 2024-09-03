@@ -10,9 +10,6 @@ const BlogsPage: React.FC = () => {
     const [bloglist, setBloglist] = useState<string[]>([]);
     const [authorlist, setAuthorlist] = useState<string[]>([]);
     const [idlist, setIdlist] = useState([]);
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
-    const [blog_id, setblog_id] = useState('');
 
     const get_blog_list = async () => {
         const token = localStorage.getItem('token');
@@ -46,30 +43,7 @@ const BlogsPage: React.FC = () => {
             alert('internal server error');
         }
     };
-
-    const createBlog = async () => {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${config.API_BASE_URL}api/create_blog`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ title, content, blog_id }),
-        });
-        const result = await response.json();
-        if (response.ok) {
-            alert('Blog created successfully');
-            setTitle('');
-            setContent('');
-            setblog_id('');
-            get_blog_list();
-        } else {
-            alert('Error creating blog: ' + result.error);
-        }
-    };
     
-
     useEffect(() => {
         get_blog_list();
         console.log(bloglist);

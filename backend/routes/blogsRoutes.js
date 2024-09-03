@@ -163,19 +163,23 @@ router.post('/add_comment', authenticateToken, async (req, res) => {
         const blogsCollection = db.collection('blogs');
 
         const count = await blogsCollection.findOne({ blog_id: blog_id });
-        const nextCommentId = Number(count.comments.length + 1); 
+        const nextCommentId = Number(count.comments_count + 1); 
 
         const newComment = {
             username: username,
             time_created: new Date(),
-            par: -1,
+            children: [],
+            parent: -1,
             comment_id: nextCommentId,
             content: content,
         };
 
         const result = await blogsCollection.updateOne(
             { blog_id: blog_id },
-            { $push: { comments: newComment } }
+            { 
+                $push: { comments: newComment } ,      
+                $set: { comments_count: nextCommentId } 
+            },
         );
 
         if (result.modifiedCount > 0) {
@@ -197,19 +201,32 @@ router.post('/add_reply', authenticateToken, async (req, res) => {
         const db = await connectToDatabase();
         const blogsCollection = db.collection('blogs');
 
+        const count = await blogsCollection.findOne({ blog_id: blog_id });
+        const nextCommentId = Number(count.comments_count + 1); 
+
         const newComment = {
             username: username,
             time_created: new Date(),
-            par: parent,
+            children: [],
+            parent: parent,
+            comment_id: nextCommentId,
             content: content,
         };
 
         const result = await blogsCollection.updateOne(
             { blog_id: blog_id },
-            { $push: { comments: newComment } }
+            { 
+                $push: { comments: newComment } ,      
+                $set: { comments_count: nextCommentId } 
+            },
         );
 
-        if (result.modifiedCount > 0) {
+        const updateChildren = await blogsCollection.updateOne(
+            { blog_id: blog_id, 'comments.comment_id': parent },
+            { $push: { 'comments.$.children': nextCommentId } }
+        );
+
+        if (updateChildren.modifiedCount > 0 && result.modifiedCount > 0) {
             res.json({ success: true, message: 'Comment added successfully' });
         } else {
             res.status(404).json({ success: false, message: 'Blog not found' });
@@ -246,7 +263,8 @@ router.post('/create_blog', authenticateToken, async (req, res) => {
             like: 0,
             dislike: 0,
             view: 0,
-            comments: []
+            comments: [],
+            comments_count: 0,
         });
 
         res.json({ success: true, message: 'Blog created successfully', blog_id: nextBlogId });

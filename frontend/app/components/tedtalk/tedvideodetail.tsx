@@ -66,6 +66,7 @@ const TedVideoDetail: React.FC = () => {
     const [player, setPlayer] = useState<YT.Player | null>(null);
     const [currentTime, setCurrentTime] = useState<number>(0);
     const [transcript, setTranscript] = useState<any[]>([]);
+    const [isTranscriptVisible, setIsTranscriptVisible] = useState<boolean>(true);
     const transcriptRef = useRef<HTMLDivElement | null>(null);
 
     const getVideo = async () => {
@@ -196,6 +197,10 @@ const TedVideoDetail: React.FC = () => {
   
     const filteredTranscript = transcript.filter(item => currentTime >= item.offset);
 
+    const toggleTranscriptVisibility = () => {
+        setIsTranscriptVisible(!isTranscriptVisible);
+      };
+
     return (
         <div className="flex flex-col min-h-screen">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 0.352518fr', gridGap: '40px', padding: '20px', boxSizing: 'border-box' }}>
@@ -299,6 +304,9 @@ const TedVideoDetail: React.FC = () => {
                             fontSize: '24px',
                             margin: '0',
                         }}>TRANSCRIPT</h1>
+                        <button onClick={toggleTranscriptVisibility} className="toggle-button text-blue-500">
+                            {isTranscriptVisible ? "Hide Transcript" : "Show Transcript"}
+                        </button>
                         <div className="border-b border-blue-500 mt-2"></div>
                         <div 
                             ref={transcriptRef}
@@ -312,7 +320,23 @@ const TedVideoDetail: React.FC = () => {
                         >
                           {filteredTranscript.map((item, index) => (
                             <div key={index}>
-                              <p><strong>{convertSecondsToReadable(Math.floor(item.offset))}: </strong> {decodeHtmlEntities(item.text)}</p>
+
+                                {isTranscriptVisible ? (
+                                    <p>
+                                        <strong>
+                                            {convertSecondsToReadable(Math.floor(item.offset))}:{' '} 
+                                        </strong> 
+                                        {decodeHtmlEntities(item.text)} 
+                                    </p>
+                                ) : (
+                                    <p style={{ margin: 0 }}>
+                                        <strong>
+                                            {convertSecondsToReadable(Math.floor(item.offset))}:{' '}  
+                                        </strong> 
+                                            {'.'.repeat(item.text.length)}
+                                    </p>
+                                )}
+                                 
                             </div>
                           ))}
                         </div>
