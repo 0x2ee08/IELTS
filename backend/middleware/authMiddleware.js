@@ -26,11 +26,33 @@ const authenticateToken = (req, res, next) => {
     catch (error) {return res.sendStatus(401);}
 };
 
+const authenticateTokenCheck = (req, res, next) => {
+    try{
+        // const authHeader = req.body['headers']['Authorization'];
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        // console.log(req);
+        // console.log(token)
+
+        if (!token || token == "null") return next();
+        // console.log("OK");
+        jwt.verify(token, secret, (err, user) => {
+            // console.log("OK");
+            // console.log(err);
+            if (err) next();
+            req.user = user;
+            // console.log("OK");
+            next();
+        });
+    }
+    catch (error) {next();}
+};
+
 const authorizeTeacher = (req, res, next) => {
     try{
-        console.log(req.role);
-        if (req.role !== 'teacher' && req.role !== 'Teacher') {
-            if(req.role !== 'admin' && req.role !== 'Admin'){
+        console.log(req.user.role);
+        if (req.user.role !== 'teacher' && req.user.role !== 'Teacher') {
+            if(req.user.role !== 'admin' && req.user.role !== 'Admin'){
                 return res.status(403).json({ message: 'Access denied. You are not authorized to perform this action.' });
             }
         }
@@ -65,7 +87,8 @@ const authenticateTokenContest = (req, res, next) => {
 module.exports = {
     authenticateToken,
     authorizeTeacher,
-    authenticateTokenContest
+    authenticateTokenContest,
+    authenticateTokenCheck
 };
 
 // module.exports = authenticateToken;
