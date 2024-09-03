@@ -341,7 +341,7 @@ const Blogdetail: React.FC = () => {
                                     </span>
                                 </p>
                             </div>
-                            <p>{comment.content}</p>
+                            <p dangerouslySetInnerHTML={{ __html: mdParser.render(comment.content) }}/>
                             <button
                                 onClick={() => handleReplyClick(comment.comment_id)}
                                 className="text-blue-600 hover:underline"
