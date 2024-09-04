@@ -790,7 +790,7 @@ const ReadingRender: React.FC = () => {
                     </div>
                 </div>
                 {useVocab && (
-                    <p className="text-red-600 ">Warning: Creating the contest may take an insanely long time (5 to 15 minutes) due to vocabulary processing.</p>
+                    <p className="text-red-600 ">Warning: Creating the contest may take an insanely long time (5 to 15 minutes) and consume alot of money (token) due to vocabulary processing.</p>
                 )}
             </div>
 

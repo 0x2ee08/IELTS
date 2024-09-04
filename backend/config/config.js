@@ -11,4 +11,6 @@ module.exports = {
     GOOGLE_CLOUD_API_KEY: process.env.GOOGLE_CLOUD_API_KEY,
     TEDTALK_ID: process.env.TEDTALK_ID,
     RAPID_API_KEY: process.env.RAPID_API_KEY,
+    MODEL_CHATBOT_NAME: process.env.MODEL_CHATBOT_NAME,
+    VOCAB_MODEL_NAME: process.env.VOCAB_MODEL_NAME
 };

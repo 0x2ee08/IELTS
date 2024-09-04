@@ -5,7 +5,7 @@ import config from '../config';
 import axios from 'axios';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-import Blogdetail from '../components/Blogdetail';
+import Blogdetail from '../components/blog/Blogdetail';
 
 const BlogLoader: React.FC = () => {
     
