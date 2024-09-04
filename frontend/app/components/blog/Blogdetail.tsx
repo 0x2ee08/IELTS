@@ -104,7 +104,7 @@ const Blogdetail: React.FC = () => {
             setAuthor(result.author);
             setUpvote(result.like || 0);
             setDownvote(result.dislike || 0);
-            setView(result.view);
+            setView(result.view || 0);
             setTime_created(result.time_created);
 
             get_user_blog_list(Number(result.view));
@@ -115,8 +115,28 @@ const Blogdetail: React.FC = () => {
         }
     };
 
+    const get_blog_like_dislike_view = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const blog_id = params.get("id");
+            const response = await axios.post(`${config.API_BASE_URL}api/get_blog_like_dislike_view`, { blog_id }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            const result = response.data;
+
+            setUpvote(result.like || 0);
+            setDownvote(result.dislike || 0);
+            setView(result.view || 0);
+
+        } catch (error) {
+            console.error('Error fetching blog:', error);
+            alert('Internal server error 1');
+        }
+    };
+
     const get_user_blog_list = async (view: number) => {
-        get_blog();
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
@@ -128,10 +148,7 @@ const Blogdetail: React.FC = () => {
             const { liked, disliked, op } = response.data;
             setLiked(liked);
             setDisliked(disliked);
-            if (op) {
-                update_blog(upvote, downvote, view + 1);
-                setView(view + 1);
-            }
+            if (op) update_blog(0, 0, 1);
 
         } catch (error) {
             console.error('Error get user emotion:', error);
@@ -140,11 +157,10 @@ const Blogdetail: React.FC = () => {
     }
 
     const update_blog = async (like: number, dislike: number, view: number) => {
-        get_blog();
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
-            await axios.post(`${config.API_BASE_URL}api/update_blog`, { blog_id, like, dislike, view }, {
+            await axios.post(`${config.API_BASE_URL}api/update_blog_like_dislike_view`, { blog_id, like, dislike, view }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -154,10 +170,10 @@ const Blogdetail: React.FC = () => {
             console.error('Error updating blog:', error);
             alert('Internal server error');
         }
+        get_blog_like_dislike_view();
     };
 
     const update_user_emotion = async (action: string) => {
-        get_blog();
         const token = localStorage.getItem('token');
         try {
             const blog_id = params.get("id");
@@ -177,19 +193,16 @@ const Blogdetail: React.FC = () => {
         setLoadingLike(true);
         try {
             if (!liked) {
-                await update_blog(upvote + 1, downvote, view);
+                await update_blog(1, 0, 0);
                 await update_user_emotion('like');
                 setLiked(true);
                 if (disliked) {
-                    setDownvote(downvote - 1);
-                    await update_blog(upvote + 1, downvote - 1, view);
+                    await update_blog(0, -1, 0);
                     setDisliked(false);
                 }
-                setUpvote(upvote + 1);
             } else {
-                await update_blog(upvote - 1, downvote, view);
+                await update_blog(-1, 0, 0);
                 await update_user_emotion('like');
-                setUpvote(upvote - 1);
                 setLiked(false);
             }
         } finally {
@@ -202,19 +215,16 @@ const Blogdetail: React.FC = () => {
         setLoadingDislike(true);
         try {
             if (!disliked) {
-                await update_blog(upvote, downvote + 1, view);
+                await update_blog(0, 1, 0);
                 await update_user_emotion('dislike');
                 setDisliked(true);
                 if (liked) {
-                    setUpvote(upvote - 1);
-                    await update_blog(upvote - 1, downvote + 1, view);
+                    await update_blog(-1, 0, 0);
                     setLiked(false);
                 }
-                setDownvote(downvote + 1);
             } else {
-                await update_blog(upvote, downvote - 1, view);
+                await update_blog(0, -1, 0);
                 await update_user_emotion('dislike');
-                setDownvote(downvote - 1);
                 setDisliked(false);
             }
         } finally {

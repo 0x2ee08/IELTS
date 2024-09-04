@@ -72,13 +72,30 @@ router.post('/get_blog', authenticateToken, async (req, res) => {
     const db = await connectToDatabase();
     const blogsCollection = db.collection(`blogs`);
 
-    const result = await blogsCollection.findOne({ blog_id: blog_id });
+    const result = await blogsCollection.findOne(
+        { blog_id: blog_id }, 
+        { projection: { comments: 0 } }
+    );
 
     res.json({ result });
 });
 
-router.post('/update_blog', async (req, res) => {
+router.post('/get_blog_like_dislike_view', authenticateToken, async (req, res) => {
     // const { username } = req.user;
+    const { blog_id } = req.body;
+
+    const db = await connectToDatabase();
+    const blogsCollection = db.collection(`blogs`);
+
+    const result = await blogsCollection.findOne(
+        { blog_id: blog_id }, 
+        { projection: { like: 1, dislike: 1, view: 1, _id: 0 } }
+    );
+
+    res.json({ like: result.like, dislike: result.dislike, view: result.view });
+});
+
+router.post('/update_blog_like_dislike_view', async (req, res) => {
     const { blog_id, like, dislike, view } = req.body;
     try {
         const db = await connectToDatabase();
@@ -86,15 +103,18 @@ router.post('/update_blog', async (req, res) => {
 
         const result = await usersCollection.updateOne(
             { blog_id: blog_id },
-            { $set: { like: like, dislike: dislike, view: view } }
+            {
+                $inc: { like: like, dislike: dislike, view: view },
+            }
         );
 
         res.json({ success: true });
     } catch (error) {
         console.error('Error updating blog:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: `Error updating blog: ${error}` });
     }
 });
+
 
 router.post('/get_user_blog_list', authenticateToken, async (req, res) => {
     const { username } = req.user;
