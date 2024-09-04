@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef, useReducer } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
-import config from '../config';
+import config from '../../config';
 import { useSearchParams } from "next/navigation";
 import MarkdownEditor from 'react-markdown-editor-lite';
 import 'react-markdown-editor-lite/lib/index.css'; // Import CSS for the editor
