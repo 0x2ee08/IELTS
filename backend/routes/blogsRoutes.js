@@ -29,6 +29,25 @@ router.post('/get_bloglist', authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/get_comments_by_blog_id', authenticateToken, async (req, res) => {
+    const { blog_id } = req.body;
+    try {
+        const db = await connectToDatabase();
+        const blogsCollection = db.collection('blogs');
+
+        const result = await blogsCollection.findOne(
+            { blog_id: blog_id }, 
+            { projection: { comments: 1, _id: 0 } }
+        );
+
+        res.json({ comments: result.comments });
+    } catch (error) {
+        console.error('Error Getting Comments', error);
+        res.status(500).json({ error: 'Error Getting Comments' });
+    }
+});
+
+
 router.post('/get_home_page_bloglist', async (req, res) => {
     try {
         const db = await connectToDatabase();
