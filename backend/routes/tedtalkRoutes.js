@@ -148,56 +148,24 @@ router.post('/save_note', authenticateToken, async (req, res) => {
 
     try {
         const db = await connectToDatabase();
-        const noteCollection = db.collection('note');
+        const noteCollection = db.collection('ted_notes');
 
-        const newNote = {
-            username: username,
-            time_created: time_save,
-            content: content
-        };
+        const note = await noteCollection.findOne({ video_id: video_id });
+        const userNoteIndex = note.note_array.findIndex(n => n.username === username);
 
-        const result = await noteCollection.updateOne(
-            { video_id: video_id },
-            { $push: { content: newNote } },
-            { upsert: true } // Ensure it creates the document if it doesn't exist
+        await noteCollection.updateOne(
+            { video_id: video_id, "note_array.username": username },
+            { $set: { "note_array.$.content": content, "note_array.$.time_created": time_save } }
         );
-
-        if (result.modifiedCount > 0 || result.upsertedCount > 0) {
-            res.json({ success: true, message: 'Note saved!' });
-        } else {
-            res.status(404).json({ success: false, message: 'Video not found' });
-        }
+        res.json({ success: true, message: 'Note updated!' });
+        
     } catch (error) {
         console.error('An error occurred:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
 
-// Delete Note
-router.delete('/delete_note', authenticateToken, async (req, res) => {
-    const { username } = req.user;
-    const { video_id } = req.body;
 
-    try {
-        const db = await connectToDatabase();
-        const noteCollection = db.collection('note');
-
-        const result = await noteCollection.updateOne(
-            { video_id: video_id },
-            { $pull: { content: { username: username } } }
-        );
-
-        if (result.modifiedCount > 0) {
-            res.json({ success: true, message: 'Note deleted!' });
-        } else {
-            // Skipping the note deletion if it doesn't exist
-            res.json({ success: true, message: 'No note to delete.' });
-        }
-    } catch (error) {
-        console.error('An error occurred:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
 
 // Get Note
 router.post('/get_note', authenticateToken, async (req, res) => {
@@ -206,22 +174,35 @@ router.post('/get_note', authenticateToken, async (req, res) => {
 
     try {
         const db = await connectToDatabase();
-        const noteCollection = db.collection('note');
+        const noteCollection = db.collection('ted_notes');
 
-        // Find the note with the given video_id and the specific username in the content array
         const note = await noteCollection.findOne({ video_id: video_id });
 
-        if (note) {
-            const userNote = note.content.find(noteItem => noteItem.username === username);
-            
-            if (userNote) {
-                res.json({ success: true, note: userNote });
-            } else {
-                res.status(404).json({ success: false, message: 'Note not found for this user' });
-            }
-        } else {
-            res.status(404).json({ success: false, message: 'Note not found' });
+        if(!note) {
+            await noteCollection.insertOne({
+                video_id: video_id,
+                note_array: [],
+            });
+            res.json({ content: '' });
         }
+        else {
+            const userNote = note.note_array.find(n => n.username === username);
+            if (userNote) {
+                res.json({ content: userNote.content });
+            } else {
+                const newUserNote = {
+                    username: username,
+                    time_created: new Date(),
+                    content: ''
+                };
+                await noteCollection.updateOne(
+                    { video_id: video_id },
+                    { $push: { note_array: newUserNote } }
+                );
+                res.json({ content: '' });
+            }
+        }
+
     } catch (error) {
         console.error('An error occurred:', error);
         res.status(500).json({ error: 'Internal server error' });

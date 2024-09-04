@@ -110,9 +110,15 @@ const TedVideoDetail: React.FC = () => {
       }
     };
 
+    const hasInitialize = useRef(false);
+
     useEffect(() => {
-        getVideo();
-        fetch_transcript();
+        if (!hasInitialize.current) {
+            getVideo();
+            fetch_transcript();
+            handleGetNote(videoId);
+            hasInitialize.current = true;
+        }
     }, []);
 
     useEffect(() => {
@@ -145,22 +151,6 @@ const TedVideoDetail: React.FC = () => {
         const token = localStorage.getItem('token');
         
         try {
-            // Step 1: Delete the existing note for this video_id (skip if it doesn't exist)
-            const deleteResponse = await axios.delete(`${config.API_BASE_URL}api/delete_note`, {
-                data: { video_id },
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-    
-            // Checking for a successful delete or skip response
-            if (deleteResponse.status === 200 && deleteResponse.data.success) {
-            } else {
-                setMessage('Failed to delete existing note');
-                return;
-            }
-    
-            // Step 2: Save the new note
             const response = await axios.post(`${config.API_BASE_URL}api/save_note`, { video_id, content }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -168,9 +158,9 @@ const TedVideoDetail: React.FC = () => {
             });
     
             if (response.status === 200 && response.data.success) {
-                setMessage('Note saved!');
+                alert('Note saved!');
             } else {
-                setMessage('Failed to save note');
+                alert('Failed to save note');
             }
         } catch (error) {
             setMessage('Failed to save note due to a network error.');
@@ -185,14 +175,8 @@ const TedVideoDetail: React.FC = () => {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-    
-            if (response.status === 200 && response.data.success) {
-                const noteContent = response.data.note?.content || '';
-                setSavedNotes(noteContent);
-            } else {
-                setMessage(response.data.message || 'Failed to fetch note');
-                setSavedNotes('');
-            }
+            const result = response.data;
+            setNotes(result.content);
         } catch (error) {
             console.error('An error occurred while fetching the note:', error);
             setMessage('An error occurred while fetching the note');
@@ -304,16 +288,6 @@ const TedVideoDetail: React.FC = () => {
                             >
                                 Save note
                             </button>
-                            <button
-                                onClick={() => handleGetNote(videoId)}
-                            >
-                                Get note
-                            </button>
-                            {savedNotes.length > 0 && (
-                                <div>
-                                    <p>{savedNotes}</p>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
