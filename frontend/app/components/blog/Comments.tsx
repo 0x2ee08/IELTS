@@ -7,6 +7,7 @@ import config from '../../config';
 import { useSearchParams } from "next/navigation";
 import 'react-markdown-editor-lite/lib/index.css';
 import ReactMarkdown from 'react-markdown'
+import rehypeRaw from 'rehype-raw';
 
 interface CommentsPage {
     blog_id: string;
@@ -175,7 +176,9 @@ const CommentsPage: React.FC<CommentsPage> = ({ blog_id }) => {
                                 </p>
                             </div>
                             <p> 
-                                <ReactMarkdown>{comment.content}</ReactMarkdown>
+                            <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                                    {comment.content}
+                                </ReactMarkdown>
                             </p>
                             <button
                                 onClick={() => handleReplyClick(comment.comment_id)}

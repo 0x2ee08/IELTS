@@ -5,11 +5,9 @@ import axios from 'axios';
 import Link from 'next/link';
 import config from '../../config';
 import { useSearchParams } from "next/navigation";
-import 'react-markdown-editor-lite/lib/index.css';
 import ReactMarkdown from 'react-markdown'
 import CommentsPage from './Comments';
-
-// Import markdown parser
+import rehypeRaw from 'rehype-raw';
 import markdownIt from 'markdown-it';
 
 const mdParser = new markdownIt();
@@ -236,13 +234,6 @@ const Blogdetail: React.FC = () => {
         return upvote - downvote;
     };
 
-    const test = mdParser.render(content);
-    // console.log(test);
-    useEffect(() => {
-        console.log('Component rendered with content:', content);
-        console.log(test);
-      }, [content]);
-
     return (
         <div className="flex-grow flex items-center justify-center p-8">
             <div className="bg-white w-full max-w-6xl">
@@ -255,7 +246,9 @@ const Blogdetail: React.FC = () => {
                     , {new Date(time_created).toLocaleString()}
                 </p>
                 <div className="border-l-4 border-gray-500 p-2 mb-4"> 
-                    <ReactMarkdown>{content}</ReactMarkdown>
+                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                        {content}
+                    </ReactMarkdown>
                 </div>
 
                 <div className="bg-white border border-black rounded-md mb-2 p-2 flex justify-between items-center">
