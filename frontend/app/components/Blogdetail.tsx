@@ -7,11 +7,13 @@ import config from '../config';
 import { useSearchParams } from "next/navigation";
 import MarkdownEditor from 'react-markdown-editor-lite';
 import 'react-markdown-editor-lite/lib/index.css'; // Import CSS for the editor
+import ReactMarkdown from 'react-markdown'
 
 // Import markdown parser
 import markdownIt from 'markdown-it';
 
 const mdParser = new markdownIt();
+
 
 function underlinePlugin(md: markdownIt) {
     md.inline.ruler.before('emphasis', 'underline', function (state, silent) {
@@ -323,7 +325,7 @@ const Blogdetail: React.FC = () => {
             const toggleSymbol = isVisible ? '-' : '+';
     
             // Determine margin based on depth
-            const marginClass = depth > 5 ? '' : 'ml-4';
+            const marginClass = depth > 5 ? '' : 'ml-4' ;
     
             return (
                 <li key={comment.comment_id} className={`mb-2 ${marginClass}`}>
@@ -345,7 +347,9 @@ const Blogdetail: React.FC = () => {
                                     </span>
                                 </p>
                             </div>
-                            <p dangerouslySetInnerHTML={{ __html: mdParser.render(comment.content) }}/>
+                            <p> 
+                                <ReactMarkdown>{comment.content}</ReactMarkdown>
+                            </p>
                             <button
                                 onClick={() => handleReplyClick(comment.comment_id)}
                                 className="text-blue-600 hover:underline"
@@ -383,7 +387,12 @@ const Blogdetail: React.FC = () => {
             );
         });
     };
-    
+    const test = mdParser.render(content);
+    // console.log(test);
+    useEffect(() => {
+        console.log('Component rendered with content:', content);
+        console.log(test);
+      }, [content]);
 
     return (
         <div className="flex-grow flex items-center justify-center p-8">
@@ -396,7 +405,10 @@ const Blogdetail: React.FC = () => {
                     </Link>
                     , {new Date(time_created).toLocaleString()}
                 </p>
-                <div className="border-l-4 border-gray-500 p-2 mb-4" dangerouslySetInnerHTML={{ __html: mdParser.render(content) }} />
+                <div className="border-l-4 border-gray-500 p-2 mb-4"> 
+                    <ReactMarkdown>{content}</ReactMarkdown>
+                </div>
+
                 <div className="bg-white border border-black rounded-md mb-2 p-2 flex justify-between items-center">
                     <div className="flex flex-col items-start">
                         <span className="text-lg font-semibold mb-1">Contribution: {calculateContribution()}</span>
