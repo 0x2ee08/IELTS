@@ -63,4 +63,11 @@ body {
 
 /* banner */
 
-
+blockquote {
+  border-left: 4px solid #ccc;
+  padding-left: 16px;
+  color: #555;
+  margin: 0 0 16px;
+  font-style: italic;
+  background-color: #f9f9f9;
+}
