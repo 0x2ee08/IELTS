@@ -71,10 +71,17 @@ router.post('/get_note', authenticateToken, async (req, res) => {
         const db = await connectToDatabase();
         const noteCollection = db.collection('note');
 
-        const note = await noteCollection.findOne({ video_id: video_id, 'content.username': username });
+        // Find the note with the given video_id and the specific username in the content array
+        const note = await noteCollection.findOne({ video_id: video_id });
 
         if (note) {
-            res.json({ success: true, note: note });
+            const userNote = note.content.find(noteItem => noteItem.username === username);
+            
+            if (userNote) {
+                res.json({ success: true, note: userNote });
+            } else {
+                res.status(404).json({ success: false, message: 'Note not found for this user' });
+            }
         } else {
             res.status(404).json({ success: false, message: 'Note not found' });
         }

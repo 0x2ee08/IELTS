@@ -39,6 +39,7 @@ const TedVideoDetail: React.FC = () => {
     const params = useSearchParams();
     const [notes, setNotes] = useState<string>('');
     const [message, setMessage] = useState<string>('')
+    const [savedNotes, setSavedNotes] = useState<string>('')
     const [messages, setMessages] = useState<{ user: boolean, text: string }[]>([
         { user: false, text: 'Hello. How can I help you?' },
         { user: true, text: 'Good morning.' }
@@ -176,6 +177,28 @@ const TedVideoDetail: React.FC = () => {
         }
     };
     
+    const handleGetNote = async (video_id: string) => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_note`, { video_id }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+    
+            if (response.status === 200 && response.data.success) {
+                const noteContent = response.data.note?.content || '';
+                setSavedNotes(noteContent);
+            } else {
+                setMessage(response.data.message || 'Failed to fetch note');
+                setSavedNotes('');
+            }
+        } catch (error) {
+            console.error('An error occurred while fetching the note:', error);
+            setMessage('An error occurred while fetching the note');
+            setSavedNotes('');
+        }
+    };
     
     
     const handleChatSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -281,6 +304,16 @@ const TedVideoDetail: React.FC = () => {
                             >
                                 Save note
                             </button>
+                            <button
+                                onClick={() => handleGetNote(videoId)}
+                            >
+                                Get note
+                            </button>
+                            {savedNotes.length > 0 && (
+                                <div>
+                                    <p>{savedNotes}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
