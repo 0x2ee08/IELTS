@@ -141,4 +141,91 @@ router.post('/send_chat', authenticateToken, async (req, res) => {
     res.json({ message: data.choices[0]?.message?.content });
 });
 
+router.post('/save_note', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { video_id, content } = req.body;
+    const time_save = new Date();
+
+    try {
+        const db = await connectToDatabase();
+        const noteCollection = db.collection('note');
+
+        const newNote = {
+            username: username,
+            time_created: time_save,
+            content: content
+        };
+
+        const result = await noteCollection.updateOne(
+            { video_id: video_id },
+            { $push: { content: newNote } },
+            { upsert: true } // Ensure it creates the document if it doesn't exist
+        );
+
+        if (result.modifiedCount > 0 || result.upsertedCount > 0) {
+            res.json({ success: true, message: 'Note saved!' });
+        } else {
+            res.status(404).json({ success: false, message: 'Video not found' });
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Delete Note
+router.delete('/delete_note', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { video_id } = req.body;
+
+    try {
+        const db = await connectToDatabase();
+        const noteCollection = db.collection('note');
+
+        const result = await noteCollection.updateOne(
+            { video_id: video_id },
+            { $pull: { content: { username: username } } }
+        );
+
+        if (result.modifiedCount > 0) {
+            res.json({ success: true, message: 'Note deleted!' });
+        } else {
+            // Skipping the note deletion if it doesn't exist
+            res.json({ success: true, message: 'No note to delete.' });
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Get Note
+router.post('/get_note', authenticateToken, async (req, res) => {
+    const { video_id } = req.body;
+    const { username } = req.user;
+
+    try {
+        const db = await connectToDatabase();
+        const noteCollection = db.collection('note');
+
+        // Find the note with the given video_id and the specific username in the content array
+        const note = await noteCollection.findOne({ video_id: video_id });
+
+        if (note) {
+            const userNote = note.content.find(noteItem => noteItem.username === username);
+            
+            if (userNote) {
+                res.json({ success: true, note: userNote });
+            } else {
+                res.status(404).json({ success: false, message: 'Note not found for this user' });
+            }
+        } else {
+            res.status(404).json({ success: false, message: 'Note not found' });
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 module.exports = router;
