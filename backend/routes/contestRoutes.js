@@ -36,56 +36,56 @@ router.post('/createContestReading', authenticateToken, authorizeTeacher, async 
         const { type, accessUser, startTime, endTime, problemName, paragraphs, useVocab } = req.body;
         const { username } = req.user;
 
-        //created by and contest id
-
         // Check for missing fields
         if (!problemName || !startTime || !endTime || !paragraphs || paragraphs.length === 0) {
             return res.status(400).json({ error: "Missing content." });
         }
-        let content = '';
 
         // Validate each paragraph, section, and question
         for (let paragraph of paragraphs) {
+            var content = '';
+
             if (!paragraph.content || !paragraph.sections || paragraph.sections.length === 0) {
                 return res.status(400).json({ error: "Missing content in paragraphs." });
             }
 
-            content += paragraph.content + ' ';
+            content += paragraph.content;
+            content += ' || '
 
             for (let section of paragraph.sections) {
-                // if (!section.content || !section.questions || section.questions.length === 0) {
-                //     return res.status(400).json({ error: "Missing content in sections." });
-                // }
-
                 for (let question of section.questions) {
-                    // console.log(question);
                     if (!question.question || !question.answer) {
                         return res.status(400).json({ error: "Missing content in questions." });
                     }
-
-                    content += question.question + ' ';
-                    content += question.answer + ' ';
+                    content += section.questions.question;
+                    content += ' || ';
+                    content += section.questions.answer;
+                    content += ' || ';
+                    content += section.questions.explaination;
+                    content += ' || ';
                 }
+            }
+
+            // If useVocab is true, get the vocab for this paragraph's content
+            if (useVocab) {
+                paragraph.vocab = await getVocab(content);
             }
         }
 
         try {
-            let vocab = [];
-            if(useVocab) vocab = await getVocab(content);
             const db = await connectToDatabase();
             const contestCollection = db.collection('contest');
 
             // Save the contest data to the database
             const newContest = {
-                'id' : generateRandomString(8),
+                id: generateRandomString(8),
                 type,
                 accessUser,
                 startTime,
                 endTime,
                 problemName,
                 paragraphs,
-                'created_by' : username,
-                vocab
+                created_by: username,
             };
             await contestCollection.insertOne(newContest);
 
