@@ -42,7 +42,6 @@ const TedVideoDetail: React.FC = () => {
     const [savedNotes, setSavedNotes] = useState<string>('')
     const [messages, setMessages] = useState<{ user: boolean, text: string }[]>([
         { user: false, text: 'Hello. How can I help you?' },
-        { user: true, text: 'Good morning.' }
     ]);
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -183,16 +182,38 @@ const TedVideoDetail: React.FC = () => {
             setSavedNotes('');
         }
     };
-    
-    
-    const handleChatSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const input = e.currentTarget.elements.namedItem('chatInput') as HTMLInputElement;
-        if (input.value.trim() !== '') {
-            setMessages([...messages, { user: true, text: input.value.trim() }, { user: false, text: 'Hello. How can I help you?' }]);
-            input.value = '';
-        }
-    };
+
+    const handleChatSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const input = e.currentTarget.elements.namedItem('chatInput') as HTMLInputElement;
+    const token = localStorage.getItem('token');
+
+    const newMessage = { role: 'user', content: input.value.trim() };
+    const formattedMessages = [
+        ...messages.map(msg => ({
+            role: msg.user ? 'user' : 'assistant',
+            content: msg.text
+        })),
+        newMessage
+    ];
+
+    console.log(formattedMessages);
+
+    axios.post(`${config.API_BASE_URL}api/send_chat`, 
+        { message: formattedMessages },
+        { headers: { 'Authorization': `Bearer ${token}` } }
+    )
+    .then(response => {
+        setMessages([...messages, 
+            { user: true, text: input.value.trim() }, 
+            { user: false, text: response.data.message }
+        ]);
+        input.value = '';
+    })
+    .catch(error => alert('Send Chat Error'))
+    .finally(() => {
+    });
+};
 
     const opts = {
         height: '426px',

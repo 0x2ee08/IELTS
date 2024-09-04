@@ -6,8 +6,7 @@ const { authenticateToken } = require('../middleware/authMiddleware');
 const { YoutubeTranscript } = require('youtube-transcript');
 const router = express.Router();
 
-// YouTube Data API credentials
-const GOOGLE_CLOUD_API_KEY = process.env.GOOGLE_CLOUD_API_KEY; // Store your Google API key in .env file
+const GOOGLE_CLOUD_API_KEY = process.env.GOOGLE_CLOUD_API_KEY;
 const RSS_FEED_URL = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCsooa4yRKGN_zEE8iknghZA';
 const MODEL_CHATBOT_NAME = process.env.MODEL_CHATBOT_NAME;
 const openRouterApiKey = process.env.OPENROUTER_API_KEY;
@@ -126,11 +125,11 @@ router.post('/get_transcript', async (req, res) => {
 router.post('/send_chat', authenticateToken, async (req, res) => {
     const { message } = req.body;
 
+    console.log(message);
+
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: MODEL_CHATBOT_NAME,
-        messages: [
-            { message }
-        ],
+        "messages": message,
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -138,7 +137,7 @@ router.post('/send_chat', authenticateToken, async (req, res) => {
         }
     });
 
-    res.json({ message: data.choices[0]?.message?.content });
+    res.json({ message: response.data.choices[0].message.content.trim() });
 });
 
 router.post('/save_note', authenticateToken, async (req, res) => {
@@ -158,7 +157,7 @@ router.post('/save_note', authenticateToken, async (req, res) => {
             { $set: { "note_array.$.content": content, "note_array.$.time_created": time_save } }
         );
         res.json({ success: true, message: 'Note updated!' });
-        
+
     } catch (error) {
         console.error('An error occurred:', error);
         res.status(500).json({ error: 'Internal server error' });
