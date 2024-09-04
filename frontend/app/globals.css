@@ -63,27 +63,4 @@ body {
 
 /* banner */
 
- blockquote {
-  border-left: 4px solid #ccc;
-  padding-left: 16px;
-  color: #555;
-  margin: 0 0 16px;
-  font-style: italic;
-  background-color: #f9f9f9;
-} 
-
-
-a {
-  color: #0000EE; 
-  pointer-events: auto;
-} 
-
-a:hover {
-  color: #0000EE; 
-}
-
-a:active {
-  color: #FF0000; 
-}
-
 

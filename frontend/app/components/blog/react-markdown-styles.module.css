@@ -1,0 +1,20 @@
+
+
+.reactMarkDown  blockquote {
+    border-left: 4px solid #ccc;
+    padding-left: 16px;
+    color: #555;
+    margin: 0 0 16px;
+    font-style: italic;
+    background-color: #f9f9f9;
+  } 
+
+.reactMarkDown a {
+    color: #0000EE ; 
+    text-decoration: none;
+    font-weight: 400; 
+ }
+.reactMarkDown a:hover {
+    text-decoration: underline; 
+    color: #0000EE ; 
+ }

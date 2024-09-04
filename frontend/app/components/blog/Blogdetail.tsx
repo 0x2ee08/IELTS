@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown'
 import CommentsPage from './Comments';
 import rehypeRaw from 'rehype-raw';
 import markdownIt from 'markdown-it';
+import style from './react-markdown-styles.module.css';
 
 const mdParser = new markdownIt();
 
@@ -246,8 +247,11 @@ const Blogdetail: React.FC = () => {
                     , {new Date(time_created).toLocaleString()}
                 </p>
                 <div className="border-l-4 border-gray-500 p-2 mb-4"> 
-                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                        {content}
+                    <ReactMarkdown 
+                        rehypePlugins={[rehypeRaw]}
+                        className={style.reactMarkDown}
+                    >
+                        {mdParser.render(content)}
                     </ReactMarkdown>
                 </div>
 
