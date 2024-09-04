@@ -211,8 +211,8 @@ const TedVideoDetail: React.FC = () => {
     };
 
     const opts = {
-      height: '676',
-      width: '1202',
+        height: '426px',
+        width: '100%',
       playerVars: {
         autoplay: 1,
       },
