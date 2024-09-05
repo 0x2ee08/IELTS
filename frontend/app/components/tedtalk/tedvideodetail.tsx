@@ -142,27 +142,25 @@ const TedVideoDetail: React.FC = () => {
       }
     }, [player]);
 
-    const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const handleNoteChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setNotes(e.target.value);
-    };
-
-    const handleSaveNote = async (video_id: string, content: string) => {
         const token = localStorage.getItem('token');
+        const content = e.target.value;
         
         try {
-            const response = await axios.post(`${config.API_BASE_URL}api/save_note`, { video_id, content }, {
+            const response = await axios.post(`${config.API_BASE_URL}api/save_note`, { videoId, content }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             });
     
             if (response.status === 200 && response.data.success) {
-                alert('Note saved!');
+                // alert('Note saved!');
             } else {
-                alert('Failed to save note');
+                // alert('Failed to save note');
             }
         } catch (error) {
-            setMessage('Failed to save note due to a network error.');
+            // setMessage('Failed to save note due to a network error.');
         }
     };
     
@@ -196,8 +194,6 @@ const TedVideoDetail: React.FC = () => {
         })),
         newMessage
     ];
-
-    console.log(formattedMessages);
 
     axios.post(`${config.API_BASE_URL}api/send_chat`, 
         { message: formattedMessages },
@@ -306,11 +302,6 @@ const TedVideoDetail: React.FC = () => {
                                     }}
                                     placeholder="Write your notes here..."
                                 ></textarea>
-                                <button className="text-blue-400 hover:underline"
-                                    onClick = {() => handleSaveNote(videoId,notes)}
-                                >
-                                    Save note
-                                </button>
                             </div>
                         </div>
                     </div>

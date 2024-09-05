@@ -142,18 +142,17 @@ router.post('/send_chat', authenticateToken, async (req, res) => {
 
 router.post('/save_note', authenticateToken, async (req, res) => {
     const { username } = req.user;
-    const { video_id, content } = req.body;
+    const { videoId, content } = req.body;
     const time_save = new Date();
 
     try {
         const db = await connectToDatabase();
         const noteCollection = db.collection('ted_notes');
 
-        const note = await noteCollection.findOne({ video_id: video_id });
-        const userNoteIndex = note.note_array.findIndex(n => n.username === username);
+        const note = await noteCollection.findOne({ video_id: videoId });
 
         await noteCollection.updateOne(
-            { video_id: video_id, "note_array.username": username },
+            { video_id: videoId, "note_array.username": username },
             { $set: { "note_array.$.content": content, "note_array.$.time_created": time_save } }
         );
         res.json({ success: true, message: 'Note updated!' });
