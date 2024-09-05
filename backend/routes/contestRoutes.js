@@ -159,4 +159,130 @@ router.get('/getAllContest', async (req, res) => {
     }
 });
 
+router.get('/getAllParagraph', async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const contestCollection = db.collection('contest');
+
+        // Authenticate user
+        let username = null;
+        try {
+            const user = await authenticateTokenCheck(req, res);
+            if (req.user['username']) {
+                username = req.user['username'];
+            }
+        } catch (err) {
+            username = null;
+        }
+
+        // Define the query to find contests that have ended
+        let query = {
+            $and: [
+                { accessUser: "" },
+                { endTime: { $lt: new Date().toISOString() } }
+            ]
+        }; // Use ISO string format for comparison
+        if (username) {
+            // Include user-specific access conditions if authenticated
+            query = {
+                $and: [
+                    { endTime: { $lt: new Date().toISOString() } }, // Contests that have ended
+                    {
+                        $or: [
+                            { accessUser: "" }, // Public contests
+                            { accessUser: { $regex: `(^|,)${username}(,|$)` } } // Private contests accessible to the user
+                        ]
+                    }
+                ]
+            };
+        }
+
+        // Fetch contests from the database
+        const availableContests = await contestCollection.find(query).toArray();
+
+        // Prepare response with paragraph details
+        const response = [];
+        availableContests.forEach(contest => {
+            const paragraphs = contest.paragraphs || {};
+            for (const [key, value] of Object.entries(paragraphs)) {
+                response.push({
+                    idContest: contest.id,
+                    title: value.title,
+                    contestName: contest.problemName
+                });
+            }
+        });
+
+        res.status(200).json(response);
+    } catch (error) {
+        console.error("Error retrieving paragraphs:", error);
+        res.status(500).json({ message: "Error retrieving paragraphs" });
+    }
+});
+
+router.post('/getVocab', async (req, res) => {
+    try {
+        const { idContest, title } = req.body; // Extract contest ID and title from the request body
+
+        if (!idContest || !title) {
+            return res.status(400).json({ message: "Missing idContest or title" });
+        }
+
+        const db = await connectToDatabase();
+        const contestCollection = db.collection('contest');
+
+        // Authenticate user
+        let username = null;
+        try {
+            const user = await authenticateTokenCheck(req, res);
+            if (req.user['username']) {
+                username = req.user['username'];
+            }
+        } catch (err) {
+            // Handle error in authentication (e.g., invalid token), but don't send a response yet
+            username = null;
+        }
+
+        // Find the specific contest
+        const contest = await contestCollection.findOne({ id: idContest });
+
+        if (!contest) {
+            return res.status(404).json({ message: "Contest not found" });
+        }
+
+        // Check if the contest has ended
+        const contestEndTime = new Date(contest.endTime);
+        if (isNaN(contestEndTime.getTime()) || contestEndTime >= new Date()) {
+            return res.status(403).json({ message: "Contest is still ongoing or endTime is invalid" });
+        }
+
+        // Check user access permissions
+        if (contest.accessUser !== "" && !contest.accessUser.split(',').includes(username)) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+        // Extract vocab from the paragraphs
+        const paragraphs = contest.paragraphs || {};
+        const vocab = {};
+
+        for (const [key, value] of Object.entries(paragraphs)) {
+            if (value.title === title && value.vocab) {
+                for (const [level, words] of Object.entries(value.vocab)) {
+                    if (!vocab[level]) {
+                        vocab[level] = []; // Initialize array for the level if it doesn't exist
+                    }
+                    vocab[level].push(...words);
+                }
+                break; // Assuming title is unique in each contest
+            }
+        }
+
+        res.status(200).json(vocab);
+    } catch (error) {
+        console.error("Error retrieving vocab:", error);
+        res.status(500).json({ message: "Error retrieving vocab" });
+    }
+});
+
+
 module.exports = router;
