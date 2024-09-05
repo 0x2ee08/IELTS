@@ -68,6 +68,7 @@ const TedVideoDetail: React.FC = () => {
     const [transcript, setTranscript] = useState<any[]>([]);
     const [isTranscriptVisible, setIsTranscriptVisible] = useState<boolean>(true);
     const transcriptRef = useRef<HTMLDivElement | null>(null);
+    const [sendingChat, setSendingChat] = useState(false);
 
     const getVideo = async () => {
         const token = localStorage.getItem('token');
@@ -182,6 +183,7 @@ const TedVideoDetail: React.FC = () => {
     };
 
     const handleChatSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        setSendingChat(true);
         e.preventDefault();
         const input = e.currentTarget.elements.namedItem('chatInput') as HTMLInputElement;
         const token = localStorage.getItem('token');
@@ -208,6 +210,7 @@ const TedVideoDetail: React.FC = () => {
         })
         .catch(error => alert('Send Chat Error'))
         .finally(() => {
+            setSendingChat(false);
         });
     };
 
@@ -391,7 +394,10 @@ const TedVideoDetail: React.FC = () => {
                                 </div>
                                 <form onSubmit={handleChatSubmit} style={{ display: 'flex' }}>
                                     <input type="text" name="chatInput" placeholder="Type a message..." style={{ flex: 1, padding: '8px', borderRadius: '10px', border: '1px solid #ccc', outline: 'none', fontSize: '14px' }} />
-                                    <button type="submit" style={{ padding: '8px 16px', marginLeft: '10px', borderRadius: '10px', backgroundColor: '#009bdb', color: '#fff', border: 'none', cursor: 'pointer' }}>
+                                    <button type="submit" style={{ padding: '8px 16px', marginLeft: '10px', borderRadius: '10px', backgroundColor: '#009bdb', color: '#fff', border: 'none', 
+                                        cursor: sendingChat ? 'not-allowed' : 'pointer'}}
+                                        disabled={sendingChat}
+                                    >
                                         Send
                                     </button>
                                 </form>
