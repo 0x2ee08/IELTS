@@ -1,14 +1,22 @@
-// SpeakingRender.tsx
-'use client';
+// app/page.tsx
+'use client'
 
 import React from 'react';
 
-const SpeakingRender: React.FC = () => {
+import Head from 'next/head';
+import Link from 'next/link';
+import SpeakingDetail from '../../components/speaking/speakingdetail';
+
+const SpeakingPage: React.FC = () => {
     return (
-        <div className='py-4'>
-            {/* Implement Speaking render logic here */}
+        <div>
+            <div className="flex flex-col min-h-screen">
+                
+                <SpeakingDetail />
+
+            </div>
         </div>
     );
-};
+}
+export default SpeakingPage;
 
-export default SpeakingRender;
