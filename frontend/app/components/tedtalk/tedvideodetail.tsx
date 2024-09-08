@@ -283,7 +283,7 @@ const TedVideoDetail: React.FC = () => {
                         <strong style={{fontSize: '20px'}}> {video.title}</strong>
 
                         {/* Video Description */}
-                        <div style={{ padding: '10px', backgroundColor: '#fff', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+                        <div style={{ padding: '10px', backgroundColor: '#fff', borderRadius: '10px', boxShadow: '4 8px 4px rgba(0, 0, 0, 0.1)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
                                 <span style={{ color: '#888' }}>Thời lượng: {convertDuration(video.duration)} | {dateString}</span>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
