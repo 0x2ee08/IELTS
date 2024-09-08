@@ -122,9 +122,9 @@ const SpeakingDetail: React.FC = () => {
         const start_time = responseData.start_time.split(' ').map(parseFloat);
         let end_time = responseData.end_time.split(' ').map(parseFloat);
 
-        for (let i = 0; i < end_time.length - 1; i++) {
-            end_time[i] = start_time[i + 1] - 0.01; 
-        }
+        // for (let i = 0; i < end_time.length - 1; i++) {
+        //     end_time[i] = start_time[i + 1] - 0.01; 
+        // }
     
         for (let word_idx = 0; word_idx < currentTextWords.length; word_idx++) {
             const currentWord = currentTextWords[word_idx]; // Current word
