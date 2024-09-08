@@ -9,6 +9,7 @@ import { convertDuration } from './convertDuration';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import eyeIcon from './eye_icon.png';
 import heartIcon from './heart_icon.png';
+import Draggable from 'react-draggable';
 const convertSecondsToReadable = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -69,6 +70,40 @@ const TedVideoDetail: React.FC = () => {
     const [isTranscriptVisible, setIsTranscriptVisible] = useState<boolean>(true);
     const transcriptRef = useRef<HTMLDivElement | null>(null);
     const [sendingChat, setSendingChat] = useState(false);
+    const windowRef = useRef<HTMLDivElement>(null);
+    const [position, setPosition] = useState({ top: 100, left: 100 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+    const [isNoteVisible, setNoteVisible] = useState<boolean>(false);
+
+    const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        setIsDragging(true);
+        setDragStart({ x: e.clientX - position.left, y: e.clientY - position.top });
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+        if (!isDragging) return;
+        const newLeft = e.clientX - dragStart.x;
+        const newTop = e.clientY - dragStart.y;
+        setPosition({ top: newTop, left: newLeft });
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const handleNoteVisible =() => {
+        setNoteVisible(!isNoteVisible);
+    };
+
+    React.useEffect(() => {
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+        return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, dragStart, position]);
 
     const getVideo = async () => {
         const token = localStorage.getItem('token');
@@ -234,20 +269,21 @@ const TedVideoDetail: React.FC = () => {
                 {/* Left Column: 2/3 Width */}
                     <div className="lg:w-2/3 space-y-8">
                     {/* Left Column */}
-                    <div style={{ display: 'grid', gridGap: '20px', height:'100%' }}>
+                    <div style={{ display: 'grid', gridGap: '10px', height:'auto' }}>
                         {/* Video Player */}
-                        <div style={{ borderRadius: '10px', overflow: 'hidden', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
                         <YouTube
                             videoId={videoId}
                             opts={opts}
                             onReady={onReady}
                             onStateChange={onStateChange}
+                            style={{ borderRadius: '10px', overflow: 'hidden', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
+
+                            }}
                         />
-                        </div>
+                        <strong style={{fontSize: '20px'}}> {video.title}</strong>
 
                         {/* Video Description */}
                         <div style={{ padding: '10px', backgroundColor: '#fff', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-                            <strong>{video.title}</strong>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
                                 <span style={{ color: '#888' }}>Thời lượng: {convertDuration(video.duration)} | {dateString}</span>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
@@ -257,56 +293,62 @@ const TedVideoDetail: React.FC = () => {
                                     <span style={{ display: 'flex', alignItems: 'center', color: '#009bdb' }}>
                                         <img src={heartIcon.src} alt="Likes" style={{ width: '20px', height: '20px', marginRight: '5px' }} /> {video.likes}
                                     </span>
+                                    <span> 
+                                        {!isNoteVisible && 
+                                        <div className="flex justify-start"> 
+                                            <button
+                                            style={{
+                                                color: '#0077b6'
+                                            }}
+                                            onClick = {handleNoteVisible}> 
+                                                Note
+                                            </button>
+                                        </div> 
+                                        }
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Personal Notes */}
-                        <div style={{padding: '10px', position: 'relative', borderRadius: '10px',boxShadow: '0 0px 0px rgba(0, 0, 0, 0.1)'}}>
-                            <div style={{
-                                backgroundColor: '#fff',
-                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                                backgroundSize: 'contain',
-                                borderRadius: '10px',
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                zIndex: 1
-                            }}></div>
-                            <div style={{
-                                position: 'relative',
-                                height: '205px',
-                                zIndex: 2
-                            }}>
-                                <h3 style={{
-                                    fontSize: '25px',
-                                    fontWeight: 'bold',
-                                    color: '#00B4D8'
-                                }}>Personal note:</h3>
-                                <textarea
-                                    value={notes}
-                                    onChange={handleNoteChange}
-                                    style={{
-                                        width: '100%',
-                                        height: '150px',
+                        {isNoteVisible && 
+                        <div
+                            className="window"
+                            ref={windowRef}
+                            style={{ top: position.top, left: position.left }}
+                            >
+                            <div
+                                className="toolbar"
+                                onMouseDown={handleMouseDown}
+                                style={{ borderBottom: '1px solid #d9d9d9'}}
+                            >
+                                    <button style ={{
+                                        width: '12px',
+                                        height: '12px',
+                                        backgroundColor: '#0077b6',
                                         border: 'none',
-                                        outline: 'none',
-                                        padding: '10px',
-                                        borderRadius: '10px',
-                                        boxSizing: 'border-box',
-                                        backgroundColor: 'transparent',
-                                        fontFamily: 'Arial, sans-serif',
-                                        fontSize: '14px',
-                                        lineHeight: '1.5',
-                                        color: '#333',
-                                        resize: 'none',
+                                        borderRadius: '12px',
+                                        marginRight: '4px'
                                     }}
-                                    placeholder="Write your notes here..."
-                                ></textarea>
+                                    onClick = {handleNoteVisible}> 
+                                    </button>
+                                <span> New Note </span>
                             </div>
+                            <textarea
+                                value={notes}
+                                onChange={handleNoteChange}
+                                style={{
+                                    border: 'none',
+                                    padding: '10px',
+                                    width: '100%',
+                                    height: 'calc(100% - 40px)',
+                                    outline: 'none',
+                                    boxSizing: 'border-box',
+                                    backgroundColor: 'transparent'
+                                }}
+                            ></textarea>
                         </div>
+                        }
                     </div>
                 </div>
                 {/* Right Column: 1/3 Width */}
