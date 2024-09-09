@@ -18,3 +18,18 @@
     text-decoration: underline; 
     color: #0000EE ; 
  }
+
+.reactMarkDown pre {
+  background-color: #f5f5f5; 
+  padding: 10px; 
+  border-radius: 5px; 
+  overflow-x: auto; 
+  white-space: pre-wrap; 
+}
+
+.reactMarkDown code {
+  background-color: #f5f5f5; 
+  padding: 2px 4px; 
+  border-radius: 3px; 
+  font-family: monospace; 
+}

@@ -197,7 +197,7 @@ const CommentsPage: React.FC<CommentsPage> = ({ blog_id }) => {
     
             return (
                 <li key={comment.comment_id} className={`mb-2 ${marginClass}`}>
-                    <div className="p-2 border border-gray-400 bg-slate-100 rounded">
+                    <div className="p-2 border border-gray-400 bg-[#fff] rounded">
                         <div>
                             <div className="flex items-center">
                                 {comment.children && comment.children.length > 0 && (
