@@ -29,7 +29,8 @@ def lambda_handler(event, context):
     language = data['language']
 
     start = time.time()
-    random_file_name = './'+utilsFileIO.generateRandomString()+'.ogg'
+    file_base_name = utilsFileIO.generateRandomString()+'.ogg'
+    random_file_name = './'+file_base_name
     f = open(random_file_name, 'wb')
     f.write(file_bytes)
     f.close()
@@ -43,7 +44,7 @@ def lambda_handler(event, context):
     print('Time for loading .ogg file file: ', str(time.time()-start))
 
     result = trainer_SST_lambda[language].processAudioForGivenText(
-        signal, real_text)
+        signal, real_text, file_base_name)
 
     real_text = result['real_text'];
     start = time.time()

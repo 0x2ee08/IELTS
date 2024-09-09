@@ -119,8 +119,8 @@ const SpeakingDetail: React.FC = () => {
         const currentTextWords = matchedTranscript.split(' ');
         const lettersOfWordAreCorrect = is_letter_correct_all_words.split(" ")
         let coloredWords = [];
-        const start_time = responseData.start_time.split(' ').map(parseFloat);
-        let end_time = responseData.end_time.split(' ').map(parseFloat);
+        const start_time = responseData.start_time;
+        let end_time = responseData.end_time;
 
         // for (let i = 0; i < end_time.length - 1; i++) {
         //     end_time[i] = start_time[i + 1] - 0.01; 
@@ -204,7 +204,7 @@ const SpeakingDetail: React.FC = () => {
                 {responseData && responseData.matched_transcripts && responseData.is_letter_correct_all_words ? (
                     getColoredMatchedTranscript(responseData.matched_transcripts, responseData.is_letter_correct_all_words)
                 ) : (
-                    <p>No transcript available.</p>
+                    <p>Loading...</p>
                 )}
             </div>
 

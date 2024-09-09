@@ -10,6 +10,7 @@ import AIModels
 import RuleBasedModels
 from string import punctuation
 import time
+import whisper
 
 
 def getTrainer(language: str):
@@ -80,11 +81,28 @@ class PronunciationTrainer:
 
     ##################### ASR Functions ###########################
 
-    def processAudioForGivenText(self, recordedAudio: torch.Tensor = None, real_text=None):
+    def processAudioForGivenText(self, recordedAudio: torch.Tensor = None, real_text=None, file_base_name=None):
 
         start = time.time()
         recording_transcript, recording_ipa, word_locations = self.getAudioTranscript(
             recordedAudio)
+        
+        model = whisper.load_model("base")
+        result = model.transcribe(file_base_name, word_timestamps=True)
+
+        start_time = []
+        end_time = []
+
+        for segment in result['segments']:
+            for word_info in segment['words']:
+                word = word_info['word']
+                s = word_info['start']
+                e = word_info['end']
+                
+                start_time.append(s)
+                end_time.append(e)
+
+        recording_transcript = result['text']
         real_text = recording_transcript
         print('Time for NN to transcript audio: ', str(time.time()-start))
 
@@ -93,11 +111,8 @@ class PronunciationTrainer:
             real_text, recording_transcript)
         print('Time for matching transcripts: ', str(time.time()-start))
 
-        start_time, end_time = self.getWordLocationsFromRecordInSeconds(
-            word_locations, mapped_words_indices)
-
         pronunciation_accuracy, current_words_pronunciation_accuracy = self.getPronunciationAccuracy(
-            real_and_transcribed_words)  # _ipa
+            real_and_transcribed_words)
 
         pronunciation_categories = self.getWordsPronunciationCategory(
             current_words_pronunciation_accuracy)
