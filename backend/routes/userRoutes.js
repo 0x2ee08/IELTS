@@ -149,5 +149,15 @@ router.post('/get_data_profile', authenticateToken, async (req, res) => {
     res.json({id: result.insertedId, result});
 });
 
+router.post('/get_data_profile_as_guest', authenticateToken, async (req, res) => {
+    const { username } = req.body;
+
+    const db = await connectToDatabase();
+    const tasksCollection = db.collection(`users`);
+
+    const result = await tasksCollection.findOne({ username: username });
+
+    res.json({id: result.insertedId, result});
+});
 
 module.exports = router;
