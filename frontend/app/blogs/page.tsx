@@ -99,7 +99,7 @@ const BlogsPage: React.FC = () => {
 
 
                 {blogs.map((blog, idx) => {
-                    const link = `/blog_loader?id=${blog.blog_id}`;
+                    const link = `/loader/blog?id=${blog.blog_id}`;
                     return (
                         <div>
                             <div className="h-px bg-[#d0d0d0] my-1"></div> 
