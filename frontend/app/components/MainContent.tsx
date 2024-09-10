@@ -99,7 +99,7 @@ const MainContent: React.FC = () => {
                   <span>@{blog.author}</span>
                   <span>{new Date(blog.time_created).toLocaleString()}</span>
                   <span>{blog.view} &#128065;</span>
-                  <span>{blog.like} &#128077;</span>
+                  <span>{blog.like - blog.dislike} &#128077;</span>
                 </div>
               </div>
             );
