@@ -1,0 +1,15 @@
+'use client';
+
+const ReadingContest = ({ contest }: { contest: any }) => {
+    console.log(contest);
+    return (
+        <div>
+            <h1>{contest.type} Contest</h1>
+            <p>Start Time: {contest.startTime}</p>
+            <p>End Time: {contest.endTime}</p>
+            {/* Add other details specific to Reading contest */}
+        </div>
+    );
+};
+
+export default ReadingContest;

@@ -9,7 +9,7 @@ import { convertDuration } from './convertDuration';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import eyeIcon from './eye_icon.png';
 import heartIcon from './heart_icon.png';
-import Draggable from 'react-draggable';
+// import Draggable from 'react-draggable';
 const convertSecondsToReadable = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -41,7 +41,7 @@ const TedVideoDetail: React.FC = () => {
     const [message, setMessage] = useState<string>('')
     const [savedNotes, setSavedNotes] = useState<string>('')
     const [messages, setMessages] = useState<{ user: boolean, text: string }[]>([
-        { user: false, text: 'Hello. How can I help you?' },
+        { user: false, text: 'Ask me anything! I can summarize, explain content, translate words, ...' },
     ]);
     const [highlightedWord, setHighlightedWord] = useState<{
         word: string,

@@ -13,6 +13,7 @@
     "@uiw/react-markdown-editor": "^6.1.2",
     "axios": "^1.7.6",
     "date-fns": "^3.6.0",
+    "dayjs": "^1.11.13",
     "markdown-it": "^14.1.0",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-underline": "^1.0.1",

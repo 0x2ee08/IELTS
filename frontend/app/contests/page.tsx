@@ -5,6 +5,8 @@ import axios from 'axios';
 import config from '../config';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import dayjs from 'dayjs';
+import Link from 'next/link';
 
 interface Contest {
     id: string;
@@ -17,44 +19,43 @@ interface Contest {
 }
 
 const ContestPage: React.FC = () => {
-    const [upcomingContest, setUpcomingContest] = useState<Record<string, Contest> | null>(null);
-    const [readingContest, setReadingContest] = useState<Record<string, Contest> | null>(null);
-    const [listeningContest, setListeningContest] = useState<Record<string, Contest> | null>(null);
-    const [speakingContest, setSpeakingContest] = useState<Record<string, Contest> | null>(null);
-    const [writingContest, setWritingContest] = useState<Record<string, Contest> | null>(null);
-
+    const [upcomingContest, setUpcomingContest] = useState<Contest[] | null>(null);
+    const [pastContest, setPastContest] = useState<Contest[] | null>(null);
+    
     useEffect(() => {
         const token = localStorage.getItem('token');
         axios.get(`${config.API_BASE_URL}api/getAllContest`, { headers: { 'Authorization': `Bearer ${token}` } })
             .then(response => {
-                setUpcomingContest(response.data);
+                const contests = Object.values(response.data) as Contest[]; // Cast to Contest[]
+                const currentTime = new Date().toISOString();
+
+                // Split contests into upcoming and past contests
+                const upcoming = contests.filter((contest: Contest) => contest.startTime > currentTime);
+                const past = contests.filter((contest: Contest) => contest.endTime < currentTime);
+
+                setUpcomingContest(upcoming);
+                setPastContest(past);
             })
             .catch(error => {
-                console.error('Error fetching upcoming contest:', error);
+                console.error('Error fetching contests:', error);
             });
     }, []);
 
     const handleRegister = (contestId: string) => {
-        // Handle registration logic here
         console.log(`Registering for contest with ID: ${contestId}`);
-    };
-
-    const handleJoin = (contestId: string) => {
-        // Handle join logic here
-        console.log(`Joining contest with ID: ${contestId}`);
     };
 
     return (
         <>
             <Header />
             <section>
-                <h2>Upcoming Contest</h2>
+                <h2>Upcoming Contests</h2>
                 {upcomingContest ? (
-                    Object.entries(upcomingContest).map(([key, contest]) => (
-                        <div key={key}>
+                    upcomingContest.map(contest => (
+                        <div key={contest.id}>
                             <p>Type: {contest.type}</p>
-                            <p>Start Time: {contest.startTime}</p>
-                            <p>End Time: {contest.endTime}</p>
+                            <p>Start Time: {dayjs(contest.startTime).format('YYYY-MM-DDTHH:mm')}</p>
+                            <p>End Time: {dayjs(contest.endTime).format('YYYY-MM-DDTHH:mm')}</p>
                             <p>Created By: {contest.created_by}</p>
                             <p>Access: {contest.access}</p>
                             <p>Registered Users: {contest.registerUser}</p>
@@ -67,81 +68,25 @@ const ContestPage: React.FC = () => {
             </section>
 
             <section>
-                <h2>Reading Test</h2>
-                {readingContest ? (
-                    Object.entries(readingContest).map(([key, contest]) => (
-                        <div key={key}>
+                <h2>Past Contests</h2>
+                {pastContest ? (
+                    pastContest.map(contest => (
+                        <div key={contest.id}>
                             <p>Type: {contest.type}</p>
-                            <p>Start Time: {contest.startTime}</p>
-                            <p>End Time: {contest.endTime}</p>
+                            <p>Start Time: {dayjs(contest.startTime).format('YYYY-MM-DDTHH:mm')}</p>
+                            <p>End Time: {dayjs(contest.endTime).format('YYYY-MM-DDTHH:mm')}</p>
                             <p>Created By: {contest.created_by}</p>
                             <p>Access: {contest.access}</p>
                             <p>Registered Users: {contest.registerUser}</p>
-                            <button onClick={() => handleJoin(contest.id)}>Join</button>
+                            <Link href={`/contests/${contest.id}`}>
+                                <button>Join</button>
+                            </Link>
                         </div>
                     ))
                 ) : (
                     <p>Loading...</p>
                 )}
             </section>
-
-            <section>
-                <h2>Listening Test</h2>
-                {listeningContest ? (
-                    Object.entries(listeningContest).map(([key, contest]) => (
-                        <div key={key}>
-                            <p>Type: {contest.type}</p>
-                            <p>Start Time: {contest.startTime}</p>
-                            <p>End Time: {contest.endTime}</p>
-                            <p>Created By: {contest.created_by}</p>
-                            <p>Access: {contest.access}</p>
-                            <p>Registered Users: {contest.registerUser}</p>
-                            <button onClick={() => handleJoin(contest.id)}>Join</button>
-                        </div>
-                    ))
-                ) : (
-                    <p>Loading...</p>
-                )}
-            </section>
-
-            <section>
-                <h2>Speaking Test</h2>
-                {speakingContest ? (
-                    Object.entries(speakingContest).map(([key, contest]) => (
-                        <div key={key}>
-                            <p>Type: {contest.type}</p>
-                            <p>Start Time: {contest.startTime}</p>
-                            <p>End Time: {contest.endTime}</p>
-                            <p>Created By: {contest.created_by}</p>
-                            <p>Access: {contest.access}</p>
-                            <p>Registered Users: {contest.registerUser}</p>
-                            <button onClick={() => handleJoin(contest.id)}>Join</button>
-                        </div>
-                    ))
-                ) : (
-                    <p>Loading...</p>
-                )}
-            </section>
-
-            <section>
-                <h2>Writing Test</h2>
-                {writingContest ? (
-                    Object.entries(writingContest).map(([key, contest]) => (
-                        <div key={key}>
-                            <p>Type: {contest.type}</p>
-                            <p>Start Time: {contest.startTime}</p>
-                            <p>End Time: {contest.endTime}</p>
-                            <p>Created By: {contest.created_by}</p>
-                            <p>Access: {contest.access}</p>
-                            <p>Registered Users: {contest.registerUser}</p>
-                            <button onClick={() => handleJoin(contest.id)}>Join</button>
-                        </div>
-                    ))
-                ) : (
-                    <p>Loading...</p>
-                )}
-            </section>
-
             <Footer />
         </>
     );
