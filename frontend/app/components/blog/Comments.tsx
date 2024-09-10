@@ -9,7 +9,7 @@ import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw';
 import markdownIt from 'markdown-it';
 import style from './react-markdown-styles.module.css';
-
+import MarkdownContent from './MarkdownContent';
 
 const mdParser = new markdownIt();
 
@@ -209,19 +209,16 @@ const CommentsPage: React.FC<CommentsPage> = ({ blog_id }) => {
                                     </button>
                                 )}
                                 <p>
-                                    <strong>{comment.username}</strong>
+                                    <Link href={`/loader/profile?id=${comment.username}`}>
+                                        <span className="text-blue-600 hover:underline cursor-pointer">{comment.username}</span>
+                                    </Link>
                                     <span className="text-gray-500">
                                         ({new Date(comment.time_created).toLocaleString()})
                                     </span>
                                 </p>
                             </div>
                             <p> 
-                                <ReactMarkdown 
-                                    rehypePlugins={[rehypeRaw]}
-                                    className={style.reactMarkDown} 
-                                >
-                                        {comment.content}
-                                </ReactMarkdown>
+                                <MarkdownContent content={comment.content} />
                             </p>
                             <button
                                 onClick={() => handleReplyClick(comment.comment_id)}

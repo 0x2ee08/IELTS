@@ -10,6 +10,7 @@ import CommentsPage from './Comments';
 import rehypeRaw from 'rehype-raw';
 import markdownIt from 'markdown-it';
 import style from './react-markdown-styles.module.css';
+import MarkdownContent from './MarkdownContent';
 
 const mdParser = new markdownIt();
 
@@ -241,18 +242,13 @@ const Blogdetail: React.FC = () => {
                 <p className="text-[#0077B6] text-3xl font-bold mb-2">{title}</p>
                 <p className="mb-4">
                     <strong>By: </strong>
-                    <Link href={`/profile`}>
+                    <Link href={`/loader/profile?id=${author}`}>
                         <span className="text-blue-600 hover:underline cursor-pointer">{author}</span>
                     </Link>
                     , {new Date(time_created).toLocaleString()}
                 </p>
                 <div className="border-l-4 border-gray-500 p-2 mb-4"> 
-                    <ReactMarkdown 
-                        rehypePlugins={[rehypeRaw]}
-                        className={style.reactMarkDown}
-                    >
-                        {mdParser.render(content)}
-                    </ReactMarkdown>
+                    <MarkdownContent content={content} />
                 </div>
 
                 <div className="bg-white border border-black rounded-md mb-2 p-2 flex justify-between items-center">

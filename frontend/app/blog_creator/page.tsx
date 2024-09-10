@@ -69,7 +69,7 @@ const BlogsCreator: React.FC = () => {
       setTitle('');
       setContent('');
       setblog_id('');
-      router.push(`/blog_loader?id=${result.blog_id}`);
+      router.push(`/loader/blog?id=${result.blog_id}`);
     } else {
       alert('Error creating blog: ' + result.error);
     }
