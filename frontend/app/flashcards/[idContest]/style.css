@@ -1,0 +1,52 @@
+main {
+    display: flex;
+    flex-direction: column; /* Stack card and buttons vertically */
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh; /* Use most of the viewport height to center content */
+    margin: 0;
+  }
+  
+  .card {
+    border: 2px solid #ccc;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+    max-width: 80%; /* Ensure it does not cover the full page width */
+    width: auto;    /* Let the width adapt to content */
+    text-align: center;
+    margin-bottom: 20px; /* Add space between the card and buttons */
+  }
+  
+  .card strong, 
+  .card em,
+  .card p {
+    display: block;
+    margin: 10px 0;
+  }
+  
+  .buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .buttons button:hover {
+    background-color: #0056b3;
+  }
+  
+  .buttons button:active {
+    background-color: #004085;
+  }
+  

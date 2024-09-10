@@ -1,5 +1,6 @@
 'use client'; // Ensure this file is treated as a client component
 
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Head from 'next/head';
@@ -37,7 +38,25 @@ const VocabPage: React.FC = () => {
               headers: { Authorization: `Bearer ${token}` }
             }
           );
-          setVocab(response.data);
+          const fetchedVocab: Vocab = response.data;
+
+          // Create a new vocab structure to filter distinct words
+          const distinctVocab: Vocab = {};
+          const seenWords = new Set<string>();
+
+          for (const [level, entries] of Object.entries(fetchedVocab)) {
+            const filteredEntries = entries.filter(entry => {
+              const isNewWord = !seenWords.has(entry.word);
+              if (isNewWord) seenWords.add(entry.word);
+              return isNewWord;
+            });
+
+            if (filteredEntries.length > 0) {
+              distinctVocab[level] = filteredEntries;
+            }
+          }
+
+          setVocab(distinctVocab);
         } catch (error) {
           console.error('Error fetching vocab:', error);
         }
@@ -66,6 +85,11 @@ const VocabPage: React.FC = () => {
       <Header />
       <main>
         <h1>Vocabulary for {title}</h1>
+        <h2>
+          <Link href={`/flashcards/${idContest}/review?title=${encodeURIComponent(title)}`}>
+            Review
+          </Link>
+        </h2>
         <div className="flashcard-container">
           {Object.entries(vocab).map(([level, words]) => (
             <div key={level}>
