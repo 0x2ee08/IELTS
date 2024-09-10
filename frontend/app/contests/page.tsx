@@ -11,6 +11,7 @@ import Link from 'next/link';
 interface Contest {
     id: string;
     type: string;
+    problemName: string;
     startTime: string;
     endTime: string;
     created_by: string;
@@ -54,6 +55,7 @@ const ContestPage: React.FC = () => {
                     upcomingContest.map(contest => (
                         <div key={contest.id}>
                             <p>Type: {contest.type}</p>
+                            <p>Name: {contest.problemName}</p>
                             <p>Start Time: {dayjs(contest.startTime).format('YYYY-MM-DDTHH:mm')}</p>
                             <p>End Time: {dayjs(contest.endTime).format('YYYY-MM-DDTHH:mm')}</p>
                             <p>Created By: {contest.created_by}</p>
@@ -73,6 +75,7 @@ const ContestPage: React.FC = () => {
                     pastContest.map(contest => (
                         <div key={contest.id}>
                             <p>Type: {contest.type}</p>
+                            <p>Name: {contest.problemName}</p>
                             <p>Start Time: {dayjs(contest.startTime).format('YYYY-MM-DDTHH:mm')}</p>
                             <p>End Time: {dayjs(contest.endTime).format('YYYY-MM-DDTHH:mm')}</p>
                             <p>Created By: {contest.created_by}</p>

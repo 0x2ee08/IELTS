@@ -87,7 +87,8 @@ class PronunciationTrainer:
         recording_transcript, recording_ipa, word_locations = self.getAudioTranscript(
             recordedAudio)
         
-        model = whisper.load_model("base")
+        # model = whisper.load_model("medium.en")
+        model = whisper.load_model("large")
         result = model.transcribe(file_base_name, word_timestamps=True)
 
         start_time = []

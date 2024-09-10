@@ -137,6 +137,7 @@ router.get('/getAllContest', async (req, res) => {
             response[index + 1] = {
                 id: contest.id,
                 type: contest.type,
+                problemName: contest.problemName,
                 startTime: contest.startTime,
                 endTime: contest.endTime,
                 created_by: contest.created_by,
@@ -278,6 +279,54 @@ router.post('/getVocab', async (req, res) => {
         }
 
         res.status(200).json(vocab);
+    } catch (error) {
+        console.error("Error retrieving vocab:", error);
+        res.status(500).json({ message: "Error retrieving vocab" });
+    }
+});
+
+router.post('/getContest', async (req, res) => {
+    try {
+        const { idContest } = req.body; // Extract contest ID and title from the request body
+
+        if (!idContest) {
+            return res.status(400).json({ message: "Missing idContest" });
+        }
+
+        const db = await connectToDatabase();
+        const contestCollection = db.collection('contest');
+
+        // Authenticate user
+        let username = null;
+        try {
+            const user = await authenticateTokenCheck(req, res);
+            if (req.user['username']) {
+                username = req.user['username'];
+            }
+        } catch (err) {
+            // Handle error in authentication (e.g., invalid token), but don't send a response yet
+            username = null;
+        }
+
+        // Find the specific contest
+        const contest = await contestCollection.findOne({ id: idContest });
+
+        if (!contest) {
+            return res.status(404).json({ message: "Contest not found" });
+        }
+
+        // Check if the contest has ended
+        const contestEndTime = new Date(contest.endTime);
+        if (isNaN(contestEndTime.getTime()) || contestEndTime >= new Date()) {
+            return res.status(403).json({ message: "Contest is still ongoing or endTime is invalid" });
+        }
+
+        // Check user access permissions
+        if (contest.accessUser !== "" && !contest.accessUser.split(',').includes(username)) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+        res.status(200).json(contest);
     } catch (error) {
         console.error("Error retrieving vocab:", error);
         res.status(500).json({ message: "Error retrieving vocab" });
