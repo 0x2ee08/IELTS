@@ -5,6 +5,7 @@ import axios from 'axios';
 import Link from 'next/link';
 import config from '../../config';
 import { useSearchParams } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
 interface ProfileData {
     avatar?: string;
@@ -19,7 +20,7 @@ interface ProfileData {
 const ProfileDetail: React.FC = () => {
     const params = useSearchParams();
     const [data, setData] = useState<ProfileData | null>(null);
-
+    const router = useRouter();
 
     const hasInitialize = useRef(false);
 
@@ -41,7 +42,7 @@ const ProfileDetail: React.FC = () => {
             });
             setData(response.data.result);
         } catch (error) {
-            console.error('Error fetching data', error);
+            router.push('./404notfound')
         }
     };
 

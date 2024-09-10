@@ -157,7 +157,8 @@ router.post('/get_data_profile_as_guest', authenticateToken, async (req, res) =>
 
     const result = await tasksCollection.findOne({ username: username });
 
-    res.json({id: result.insertedId, result});
+    if(!result) res.status(404).json({ error: 'Failed to update user info' });
+    else res.json({id: result.insertedId, result});
 });
 
 module.exports = router;
