@@ -92,6 +92,7 @@ const CommentsPage: React.FC<CommentsPage> = ({ blog_id }) => {
 
     const [newReply, setNewReply] = useState<{ [key: number]: string }>({});
     const [replyVisible, setReplyVisible] = useState<{ [key: number]: boolean }>({});
+    const [avatarUrl, setAvatarUrl] = useState<Map<string, string>>(new Map());
 
     const get_comments_by_blog_id = async () => {
         const token = localStorage.getItem('token');
@@ -118,6 +119,20 @@ const CommentsPage: React.FC<CommentsPage> = ({ blog_id }) => {
         } finally {
         }
     };
+
+    const get_avatar = async(username: string) => {
+        if(avatarUrl.has(username)) return; 
+        const token = localStorage.getItem('token');
+        try {;
+            const response = await axios.post(`${config.API_BASE_URL}api/get_avatar`, { username }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            setAvatarUrl(prev => new Map(prev).set(username, response.data.avatar));
+        } catch (error) {
+        }
+    }
 
     const handle_comment = async () => {
         if (!newComment || newComment.trim().length === 0) {
@@ -194,6 +209,8 @@ const CommentsPage: React.FC<CommentsPage> = ({ blog_id }) => {
     
             // Determine margin based on depth
             const marginClass = depth > 5 ? '' : 'ml-4' ;
+
+            get_avatar(comment.username);
     
             return (
                 <li key={comment.comment_id} className={`mb-2 ${marginClass}`}>
@@ -208,9 +225,12 @@ const CommentsPage: React.FC<CommentsPage> = ({ blog_id }) => {
                                         {toggleSymbol}
                                     </button>
                                 )}
+                                <div>
+                                    <img src={avatarUrl.get(comment.username) || '/default-avatar.png'} alt="Avatar" className="w-9 h-9 rounded-full" />
+                                </div>
                                 <p>
                                     <Link href={`/loader/profile?id=${comment.username}`}>
-                                        <span className="text-blue-600 hover:underline cursor-pointer">{comment.username}</span>
+                                        <span className="text-blue-600 hover:underline cursor-pointer">&nbsp;{comment.username}</span>
                                     </Link>
                                     <span className="text-gray-500">
                                         ({new Date(comment.time_created).toLocaleString()})

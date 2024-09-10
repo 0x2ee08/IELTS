@@ -161,4 +161,15 @@ router.post('/get_data_profile_as_guest', authenticateToken, async (req, res) =>
     else res.json({id: result.insertedId, result});
 });
 
+router.post('/get_avatar', authenticateToken, async (req, res) => {
+    const { username } = req.body;
+
+    const db = await connectToDatabase();
+    const usersCollection = db.collection(`users`);
+
+    const result = await usersCollection.findOne({ username: username }, { projection: { avatar: 1, _id: 0 } });
+
+    res.json({id: result.insertedId, avatar: result.avatar});
+});
+
 module.exports = router;

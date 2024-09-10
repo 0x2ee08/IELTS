@@ -49,7 +49,7 @@ const TedVideoDetail: React.FC = () => {
         type: string,
         meaning: string
       } | null>(null);    
-  const [doubleClickPosition, setDoubleClickPosition] = useState<{ top: number; left: number } | null>(null);
+    const [doubleClickPosition, setDoubleClickPosition] = useState<{ top: number; left: number } | null>(null);
     const handleDoubleClick = async() => {
         const selection = window.getSelection();
         const word = selection?.toString().trim();
