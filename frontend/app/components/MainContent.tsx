@@ -90,7 +90,7 @@ const MainContent: React.FC = () => {
           <h2 className="text-lg font-semibold">RECENT BLOGS</h2>
           <div className="space-y-4 mt-4">
           {blogs.slice(0, Math.min(blogs.length, 10)).map((blog, index) => {
-            const link = `/blog_loader?id=${blog.blog_id}`; // Define link outside JSX
+            const link = `/loader/blog?id=${blog.blog_id}`; // Define link outside JSX
 
             return (
               <div key={index} className="flex flex-col">
