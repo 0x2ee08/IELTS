@@ -68,6 +68,7 @@ router.post('/create_speaking_problem', authenticateToken, async (req, res) => {
 
     const result = await problemCollection.insertOne({
         problem_id: String(nextProblemId),
+        type: "Speaking",
         taskArray: taskArray || [],
     });
 
