@@ -80,6 +80,7 @@ const Header: React.FC = () => {
                     {/* Right-side links */}
                     <nav className={`md:flex md:space-x-4 ${isMenuOpen ? 'block' : 'hidden md:block'}`}>
                         <NavLink href="/contests" text="Contests" />
+                        <NavLink href="/problemset" text="Problem Set" />
                         <NavLink href="/blogs" text="Blogs" />
                         <NavLink href="/writing" text="Writing" />
                         <NavLink href="/flashcards" text="Flash Cards" />

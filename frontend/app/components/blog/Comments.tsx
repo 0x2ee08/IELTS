@@ -213,7 +213,7 @@ const CommentsPage: React.FC<CommentsPage> = ({ blog_id }) => {
             get_avatar(comment.username);
     
             return (
-                <li key={comment.comment_id} className={`mb-2 ${marginClass}`}>
+                <li key={comment.comment_id} className={`mb-2${marginClass}`}>
                     <div className="p-2 border border-gray-400 bg-[#fff] rounded">
                         <div>
                             <div className="flex items-center">

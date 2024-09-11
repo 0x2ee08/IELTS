@@ -1,7 +1,5 @@
 from TTS.api import TTS
-import json
-import os
-from playsound import playsound
+
 
 def lambda_handler(event, context):
 
@@ -14,13 +12,8 @@ def lambda_handler(event, context):
 
     speaker = "p227"
 
-    file_path = "audio.wav"
-    tts.tts_to_file(text=text, speaker=speaker, file_path=file_path)
-    playsound(file_path)
+    tts.tts_to_file(text=text, speaker=speaker, file_path="audio.wav")
 
-    res = {'success': 'true'}
+    return
 
-    os.remove(file_path)
-
-    return json.dumps(res)
-
+tts = TTS(model_name="tts_models/en/vctk/vits", progress_bar=True, gpu=False)

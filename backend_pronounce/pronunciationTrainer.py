@@ -88,7 +88,7 @@ class PronunciationTrainer:
             recordedAudio)
         
         # model = whisper.load_model("medium.en")
-        model = whisper.load_model("base")
+        model = whisper.load_model("base.en")
         result = model.transcribe(file_base_name, word_timestamps=True)
 
         start_time = []
@@ -101,7 +101,7 @@ class PronunciationTrainer:
                 e = word_info['end']
                 
                 start_time.append(s)
-                end_time.append(e)
+                end_time.append(e + 0.2)
 
         recording_transcript = result['text']
         real_text = recording_transcript

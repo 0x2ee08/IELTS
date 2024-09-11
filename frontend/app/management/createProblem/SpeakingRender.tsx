@@ -13,7 +13,7 @@ const SpeakingPage: React.FC = () => {
             <div className="flex flex-col min-h-screen">
                 
                 <SpeakingDetail />
-
+                
             </div>
         </div>
     );

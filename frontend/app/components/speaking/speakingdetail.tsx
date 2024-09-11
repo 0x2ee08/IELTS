@@ -14,7 +14,7 @@ const SpeakingDetail: React.FC = () => {
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb'; // Replace with your API key
+    const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb';
 
     const startRecording = async () => {
         setAudioBlob(null);
@@ -74,6 +74,19 @@ const SpeakingDetail: React.FC = () => {
         }
     };
 
+    const playSpeechFromWord = async ( text: string ) => {
+        await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromText`, {
+            method: "post",
+            body: JSON.stringify({ "text": text }),
+            headers: { "X-Api-Key": STScoreAPIKey }
+        });
+
+        const audio = new Audio('../../../../backend_pronounce/audio.wav');
+        audio.play()
+            .then(() => console.log('Audio is playing'))
+            .catch((error) => console.error('Error playing audio:', error));
+    };
+
     const convertBlobToBase64 = (blob: Blob): Promise<string> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -115,19 +128,19 @@ const SpeakingDetail: React.FC = () => {
     
     
 
-    const getColoredMatchedTranscript = (matchedTranscript: string, is_letter_correct_all_words: string) => {
+    const getColoredMatchedTranscript = (
+                                            matchedTranscript: string, 
+                                            is_letter_correct_all_words: string, 
+                                            real_transcripts_ipa: string,) => {
         const currentTextWords = matchedTranscript.split(' ');
-        const lettersOfWordAreCorrect = is_letter_correct_all_words.split(" ")
-        let coloredWords = [];
+        const lettersOfWordAreCorrect = is_letter_correct_all_words.split(' ');
+        const realTranscript = real_transcripts_ipa.split(' ');
         const start_time = responseData.start_time;
         let end_time = responseData.end_time;
-
-        // for (let i = 0; i < end_time.length - 1; i++) {
-        //     end_time[i] = start_time[i + 1] - 0.01; 
-        // }
+        let coloredWords = [];
     
         for (let word_idx = 0; word_idx < currentTextWords.length; word_idx++) {
-            const currentWord = currentTextWords[word_idx]; // Current word
+            const currentWord = currentTextWords[word_idx];
             let wordTemp = [];
     
             for (let letter_idx = 0; letter_idx < currentWord.length; letter_idx++) {
@@ -139,28 +152,55 @@ const SpeakingDetail: React.FC = () => {
                     </span>
                 );
             }
+    
             coloredWords.push(
-                <span 
-                    key={`word-${word_idx}`} 
-                    onClick={() => replayAudio(start_time[word_idx], end_time[word_idx])} 
-                    style={{ cursor: 'pointer', marginRight: '5px' }}
+                <div
+                    key={`word-container-${word_idx}`}
+                    style={{
+                        display: 'inline-block',
+                        textAlign: 'center',
+                        marginRight: '10px',
+                    }}
                 >
-                    {wordTemp}
-                </span>
+                    <span
+                        onClick={() => replayAudio(start_time[word_idx], end_time[word_idx])}
+                        style={{ cursor: 'pointer', display: 'block' }}
+                    >
+                        {wordTemp}
+                    </span>
+
+                    <span
+                        onClick={() => {
+                            playSpeechFromWord(currentTextWords[word_idx]);
+                        }}
+                        style={{ cursor: 'pointer', display: 'block', color: 'gray' }}
+                    >
+                        {realTranscript[word_idx]}
+                    </span>
+
+                </div>
             );
         }
     
         return coloredWords;
     };
+    
 
     return (
-        <div style={{ padding: '20px' }}>
-            <button 
-                onClick={isRecording ? stopRecording : startRecording} 
+        <div className='p-4'>
+            <div className='mb-4'>
+            <button
+                className={`py-2 px-4 text-white font-semibold rounded-lg ${isRecording ? 'bg-red-600 hover:bg-red:700' : 'bg-green-600 hover:bg-green:700'}`}
+                onClick={isRecording ? stopRecording : startRecording}
                 style={{ marginRight: '10px' }}
             >
                 {isRecording ? 'Stop Recording' : 'Start Recording'}
             </button>
+
+            </div>
+
+            <hr className="border-t-2 border-black my-4" />
+
             {audioBlob && (
                 <div>
                     <audio 
@@ -169,40 +209,14 @@ const SpeakingDetail: React.FC = () => {
                         src={audioUrl ?? undefined} 
                         style={{ marginTop: '10px' }}
                     ></audio>
-                    <button 
-                        onClick={() => replayAudio(0, audioRef.current?.duration || 0)} 
-                        style={{ marginTop: '10px' }}
-                    >
-                        Replay
-                    </button>
-                </div>
-            )}
-            {recordingError && (
-                <div style={{ color: 'red', marginTop: '10px' }}>
-                    {recordingError}
-                </div>
-            )}
-            {responseData && (
-                <div style={{ marginTop: '20px' }}>
-                    <h3>Recorded Data</h3>
-                    <p><strong>IPA Transcript:</strong> {responseData.ipa_transcript}</p>
-                    <p><strong>Pronunciation Accuracy:</strong> {responseData.pronunciation_accuracy}%</p>
-                    <p><strong>Real Transcript:</strong> {responseData.real_transcript}</p>
-                    <p><strong>Expected Transcripts:</strong> {responseData.real_transcripts}</p>
-                    <p><strong>Matched Transcripts:</strong> {responseData.matched_transcripts}</p>
-                    <p><strong>Real Transcripts IPA:</strong> {responseData.real_transcripts_ipa}</p>
-                    <p><strong>Matched Transcripts IPA:</strong> {responseData.matched_transcripts_ipa}</p>
-                    <p><strong>Pair Accuracy Category:</strong> {responseData.pair_accuracy_category}</p>
-                    <p><strong>Start Time:</strong> {responseData.start_time}</p>
-                    <p><strong>End Time:</strong> {responseData.end_time}</p>
-                    <p><strong>Is Letter Correct All Words:</strong> {responseData.is_letter_correct_all_words}</p>
                 </div>
             )}
             
             <div style={{ marginTop: '20px', fontSize: '24px' }}>
-                <h4><strong>Matched Transcript:</strong></h4>
-                {responseData && responseData.matched_transcripts && responseData.is_letter_correct_all_words ? (
-                    getColoredMatchedTranscript(responseData.matched_transcripts, responseData.is_letter_correct_all_words)
+                {responseData ? (
+                    getColoredMatchedTranscript(responseData.matched_transcripts, 
+                                                responseData.is_letter_correct_all_words, 
+                                                responseData.real_transcripts_ipa)
                 ) : (
                     <p>Loading...</p>
                 )}
