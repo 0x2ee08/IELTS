@@ -55,7 +55,7 @@ const BlogsCreator: React.FC = () => {
 
   const createBlog = async () => {
     const token = localStorage.getItem('token');
-    const response = await fetch(`${config.API_BASE_URL}api/create_blog`, {
+    const response = await fetch(`${config.API_BASE_URL}api/generateSpeakingTask1`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -16,6 +16,7 @@ const writingRoutes = require('./routes/writingRoutes');
 const blogsRoutes = require('./routes/blogsRoutes');
 const tedtalkRoutes = require('./routes/tedtalkRoutes');
 const generateReadingParagraphRoutes = require('./routes/genReadingRoutes');
+const generateSpeakingRoutes = require('./routes/genSpeakingRoutes');
 const contestRoutes = require('./routes/contestRoutes');
 const generateListeningRoutes = require('./routes/genListeningRoutes');
 
@@ -43,6 +44,7 @@ app.use('/api', tedtalkRoutes);
 app.use('/api', generateReadingParagraphRoutes);
 app.use('/api', contestRoutes);
 app.use('/api', generateListeningRoutes);
+app.use('/api', generateSpeakingRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
