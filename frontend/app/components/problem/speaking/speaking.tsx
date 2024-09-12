@@ -3,9 +3,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import config from '../../../config';
-import Task1Page from './task1';
 import { useSearchParams } from "next/navigation";
 import { useRouter } from 'next/navigation';
+
+import Task1Page from './task1';
+
+export interface task1QuestionGeneral {
+    type: string,
+    number_of_task: string,
+    length: number;
+    questions: string[],
+}
 
 interface SpeakingPageProps {
     
@@ -15,7 +23,7 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({  }) => {
     const params = useSearchParams();
     const problem_id = params.get('id');
     const [taskArray, setTaskArray] = useState<any[]>([]);
-    const [choosenTask, setChoosenTask] = useState('');
+    const [choosenTask, setChoosenTask] = useState<number>(1e9);
 
     const hasInitialize = useRef(false);
 
@@ -28,7 +36,7 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({  }) => {
 
     const getProblem = async ( ) => {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${config.API_BASE_URL}api/getProblem`, {
+        const response = await fetch(`${config.API_BASE_URL}api/getSpeakingProblem`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -41,43 +49,40 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({  }) => {
         setTaskArray(result.task);
     };
 
-    const renderContent = () => {
-        switch (choosenTask) {
-            case 'Speaking':
-                return <SpeakingPage />;
-            case 'AnotherType':
-                return null;
+    const renderTaskPage = (type: number, task: task1QuestionGeneral) => {
+        switch (type) {
+            case 0:
+                return <Task1Page task={task} problem_id={problem_id} onTaskUpdate={(task: any) => handleTaskUpdate()} />;
+            case 1:
+                return <Task1Page task={task} problem_id={problem_id} onTaskUpdate={(task: any) => handleTaskUpdate()} />;
             default:
                 return null;
         }
     };
 
-    const renderTaskPage = (type: string, idx: number) => {
-        switch (type) {
-            case 'Task 1':
-                return <Task1Page onTaskUpdate={(task: any) => handleTaskUpdate(task, idx)} />;
-            default:
-                return null;
-        }
-    };
+    const handleTaskUpdate = async () => {
+
+    }
 
     return (
         <div>
             {taskArray.length > 0 ? (
                 taskArray.map((problem, idx) => {
-                    const link = `/loader/problem?id=${problem_id}`;
                     return (
                         <div key={idx}>
-                            <div className="my-1"></div> 
-                            <a href={link}>
-                                <p className="font-bold">{problem.type}</p>
-                            </a>
+                            <button
+                                onClick={() => setChoosenTask(idx)}
+                                className="px-2 py-1 text-black rounded-md"
+                            >
+                                {problem.type}
+                            </button>
                         </div>
                     );
                 })
-                ) : (
-                    <p>No problems found.</p>
-                )}
+            ) : (
+                <p>No problems found.</p>
+            )}
+            {renderTaskPage(choosenTask, taskArray[choosenTask])}
         </div>
     );
 };

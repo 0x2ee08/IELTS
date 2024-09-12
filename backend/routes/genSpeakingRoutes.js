@@ -21,7 +21,7 @@ router.post('/generateSpeakingTask1', authenticateToken, async (req, res) => {
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: model,
         messages: [{ role: 'system', content: `Give me ${number_of_task} speaking task 1 questions that the following conditions hold:\n
-            - The topic is similar to contestant's personal life\n
+            - The topic is similar to contestant's life\n
             - Only give me the question, no title, opening, or anything else\n
             - Question 1 is always something like 'can you introduct yourself' (with paraphrase)\n
             For example:\n
@@ -74,6 +74,5 @@ router.post('/create_speaking_problem', authenticateToken, async (req, res) => {
 
     res.json({ success: true, message: 'Problem created successfully' });
 });
-
 
 module.exports = router;

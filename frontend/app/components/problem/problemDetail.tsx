@@ -9,8 +9,6 @@ import { useRouter } from 'next/navigation';
 
 import SpeakingPage from './speaking/speaking';
 
-import SpeakingDetail from '../speaking/speakingdetail';
-
 const ProblemDetail: React.FC = () => {
     const params = useSearchParams();
     const problem_id = params.get('id');
@@ -59,8 +57,8 @@ const ProblemDetail: React.FC = () => {
 
     return (
         <div className="flex flex-col min-h-screen">
-            {/* {renderContent()} */}
-            <SpeakingDetail/>
+            {renderContent()}
+            {/* <SpeakingDetail/> */}
         </div>
     );
 };

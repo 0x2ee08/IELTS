@@ -9,6 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/material": "^6.1.0",
+    "@nextui-org/react": "^2.4.6",
     "@types/mdast": "^4.0.4",
     "@types/react-slick": "^0.23.13",
     "@types/unist": "^3.0.3",
@@ -16,6 +20,7 @@
     "axios": "^1.7.6",
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.13",
+    "framer-motion": "^11.5.4",
     "markdown-it": "^14.1.0",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-underline": "^1.0.1",

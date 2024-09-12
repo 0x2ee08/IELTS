@@ -9,8 +9,7 @@ import lambdaSpeechToScore
 import lambdaGetSample
 
 app = Flask(__name__)
-cors = CORS(app)
-app.config['CORS_HEADERS'] = '*'
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 rootPath = ''
 
