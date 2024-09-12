@@ -33,7 +33,7 @@ interface TranscriptData {
 interface ResultItem {
     [key: string]: {
         data: TranscriptData;
-        audioBlob: Blob;
+        audioBase64: string;
     };
 }
 
@@ -190,6 +190,25 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, problem_id }) =>
         return coloredWords;
     };
 
+    const convertBase64ToBlob = (base64: string, contentType = '', sliceSize = 512): Blob => {
+        const byteCharacters = atob(base64);
+        const byteArrays: Uint8Array[] = [];
+    
+        for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            const slice = byteCharacters.slice(offset, offset + sliceSize);
+    
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+    
+            const byteArray = new Uint8Array(byteNumbers);
+            byteArrays.push(byteArray);
+        }
+    
+        return new Blob(byteArrays, { type: contentType });
+    };
+
     return (
         <div className='mt-4'>
             <div className='w-1/2'>
@@ -214,7 +233,7 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, problem_id }) =>
                                                 value?.data?.real_transcripts_ipa,
                                                 value?.data?.start_time,
                                                 value?.data?.end_time,
-                                                value?.audioBlob,
+                                                convertBase64ToBlob(value?.audioBase64),
                                             )}
                                         </div>
                                     </div>

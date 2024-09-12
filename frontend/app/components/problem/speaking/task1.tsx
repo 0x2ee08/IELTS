@@ -32,6 +32,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
     const [responseData, setResponseData] = useState<any>(null);
     const [result, setResult] = useState<any[]>([]);
     const [blobArray, setBlobArray] = useState<any[]>([]);
+    const [blobRefArray, setBlobRefArray] = useState<any[]>([]);
     const [doneRecording, setDoneRecording] = useState(false);
     const [saveRecord, setSaveRecord] = useState(false);
 
@@ -126,7 +127,6 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
                 setAudioBlob(audioBlob);
                 const url = URL.createObjectURL(audioBlob);
                 setAudioUrl(url);
-
                 setBlobArray(prevBlobArray => [...prevBlobArray, audioBlob]);
             };
 
@@ -187,91 +187,12 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
         });
     };
 
-    const replayAudio = (startTime: number, endTime: number) => {
-        if (audioRef.current) {
-            const start = Number(startTime);
-            const end = Number(endTime);
-
-            const roundedStartTime = parseFloat(start.toFixed(4));
-            const roundedEndTime = parseFloat(end.toFixed(4));
-            
-            if (roundedEndTime > roundedStartTime) {
-                audioRef.current.currentTime = roundedStartTime;
-                audioRef.current.play();
-    
-                const durationInSeconds = roundedEndTime - roundedStartTime;
-                const durationInMs = Math.round(durationInSeconds * 1000);
-    
-                setTimeout(() => {
-                    if (audioRef.current) {
-                        audioRef.current.pause();
-                    }
-                }, durationInMs);
-            } else {
-                console.error('Invalid playback range: endTime must be greater than startTime.');
-            }
-        }
-    };
-
-    const getColoredMatchedTranscript = (
-        matchedTranscript: string, 
-        is_letter_correct_all_words: string, 
-        real_transcripts_ipa: string
-    ) => {
-        const currentTextWords = matchedTranscript.split(' ');
-        const lettersOfWordAreCorrect = is_letter_correct_all_words.split(' ');
-        const realTranscript = real_transcripts_ipa.split(' ');
-        const start_time = responseData?.start_time || [];
-        let end_time = responseData?.end_time || [];
-        let coloredWords = [];
-
-        for (let word_idx = 0; word_idx < currentTextWords.length; word_idx++) {
-            const currentWord = currentTextWords[word_idx];
-            let wordTemp = [];
-
-            for (let letter_idx = 0; letter_idx < currentWord.length; letter_idx++) {
-                const letter_is_correct = lettersOfWordAreCorrect[word_idx][letter_idx] === '1';
-                const color_letter = letter_is_correct ? 'green' : 'red';
-                wordTemp.push(
-                    <span key={`${word_idx}-${letter_idx}`} style={{ color: color_letter }}>
-                        {currentWord[letter_idx]}
-                    </span>
-                );
-            }
-
-            coloredWords.push(
-                <div
-                    key={`word-container-${word_idx}`}
-                    style={{display: 'inline-block', textAlign: 'center', marginRight: '10px', }}>
-                    <span
-                        onClick={() => replayAudio(start_time[word_idx], end_time[word_idx])}
-                        style={{ cursor: 'pointer', display: 'block' }}
-                    >
-                        {wordTemp}
-                    </span>
-
-                    <span
-                        onClick={() => {
-                            playSpeechFromWord(currentTextWords[word_idx]);
-                        }}
-                        style={{ cursor: 'pointer', display: 'block', color: 'gray' }}
-                    >
-                        {realTranscript[word_idx]}
-                    </span>
-
-                </div>
-            );
-        }
-
-        return coloredWords;
-    };
-
     const handleStartClick = () => {
         setBlobArray([]);
         setResult([]);
         setIsTesting(true);
         setIsLoading(true);
-        setProgress(10);
+        setProgress(0);
         setCurrentQuestionIndex(0);
 
         setTimeout(() => {
@@ -290,7 +211,6 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
     const processBlob = async () => {
         if(!doneRecording) return;
         console.log(blobArray)
-        let updatedResult: Array<{ data: any, audioBlob: Blob }> = [];
         for(let i=0; i<blobArray.length; i++) {
             const audioBlob = blobArray[i];
             const audioBase64 = await convertBlobToBase64(audioBlob);
@@ -307,7 +227,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
             }).then(res => res.json())
                 .then(data => {
                     setResponseData(data);
-                    setResult(prevResult => [...prevResult, { data, audioBlob }]);
+                    setResult(prevResult => [...prevResult, { data, audioBase64 }]);
                 });
         }
         setDoneRecording(false);
