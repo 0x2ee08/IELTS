@@ -49,12 +49,12 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({  }) => {
         setTaskArray(result.task);
     };
 
-    const renderTaskPage = (type: number, task: task1QuestionGeneral) => {
+    const renderTaskPage = (type: number, task_id: number, task: task1QuestionGeneral) => {
         switch (type) {
             case 0:
-                return <Task1Page task={task} problem_id={problem_id} onTaskUpdate={(task: any) => handleTaskUpdate()} />;
+                return <Task1Page task={task} task_id={task_id} problem_id={problem_id} onTaskUpdate={(task: any) => handleTaskUpdate()} />;
             case 1:
-                return <Task1Page task={task} problem_id={problem_id} onTaskUpdate={(task: any) => handleTaskUpdate()} />;
+                return <Task1Page task={task} task_id={task_id} problem_id={problem_id} onTaskUpdate={(task: any) => handleTaskUpdate()} />;
             default:
                 return null;
         }
@@ -82,7 +82,7 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({  }) => {
             ) : (
                 <p>No problems found.</p>
             )}
-            {renderTaskPage(choosenTask, taskArray[choosenTask])}
+            {renderTaskPage(choosenTask, choosenTask, taskArray[choosenTask])}
         </div>
     );
 };

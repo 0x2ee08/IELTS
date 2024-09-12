@@ -11,6 +11,7 @@ export interface QuestionGeneral {
 
 interface ResultPageProps {
     task: QuestionGeneral;
+    task_id: number;
     problem_id: string | null;
 }
 
@@ -40,7 +41,7 @@ interface UserAnswer {
     result: ResultItem[];
 }
 
-const ResultPage: React.FC<ResultPageProps> = ({ problem_id, task }) => {
+const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, problem_id }) => {
     const [answerArray, setAnswerArray] = useState<ResultItem[]>([]);
     const username = localStorage.getItem('username');
 
@@ -67,7 +68,13 @@ const ResultPage: React.FC<ResultPageProps> = ({ problem_id, task }) => {
         console.log('API Result:', result); // Log the result to inspect the structure
         const userAnswer = result.answer;
         if (userAnswer && Array.isArray(userAnswer.result)) {
-            setAnswerArray(userAnswer.result);
+            // setAnswerArray(userAnswer.result);
+            setAnswerArray([]);
+            for(let i=0; i<userAnswer.result.length; i++) {
+                console.log(task_id);
+                if(userAnswer.result[i].task_id === task_id)
+                    setAnswerArray(prevAnswerArray => [...prevAnswerArray, userAnswer.result[i]]);
+            }
         } else {
             setAnswerArray([]);
         }
@@ -84,7 +91,7 @@ const ResultPage: React.FC<ResultPageProps> = ({ problem_id, task }) => {
                                 aria-label={`Accordion ${idx + 1}`}
                                 title={`Submission ${idx + 1} of user ${username}`}
                             >
-                                {Object.entries(item).slice(0, -1).map(([key, value]) => (
+                                {Object.entries(item).slice(0, -2).map(([key, value]) => (
                                     <div className='flex flex-col mb-4' key={key}>
                                         <div className='mb-4'>
                                             {task.questions[parseInt(key)] || `Question ${parseInt(key) + 1}`}

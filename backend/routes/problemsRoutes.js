@@ -72,7 +72,7 @@ router.post('/getSpeakingAnswer', authenticateToken, async (req, res) => {
 });
 
 router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
-    const { problem_id, result } = req.body;
+    const { problem_id, result, task_id } = req.body;
     const { username } = req.user;
     const time_created = new Date();
 
@@ -90,7 +90,7 @@ router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
                     $push: {
                         userAnswer: {
                             username,
-                            result: [{ ...result, time_created }]
+                            result: [{ ...result, task_id, time_created }]
                         }
                     }
                 }
@@ -100,7 +100,7 @@ router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
                 { problem_id, 'userAnswer.username': username },
                 {
                     $push: {
-                        'userAnswer.$.result': { ...result, time_created }
+                        'userAnswer.$.result': { ...result, task_id, time_created }
                     }
                 }
             );

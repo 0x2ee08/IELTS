@@ -20,11 +20,12 @@ export interface task1QuestionGeneral {
 
 interface Task1PageProps {
     task: task1QuestionGeneral;
+    task_id: number;
     problem_id: string | null;
     onTaskUpdate: (task: task1QuestionGeneral) => void;
 }
 
-const Task1Page: React.FC<Task1PageProps> = ({ task, problem_id, onTaskUpdate }) => {
+const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTaskUpdate }) => {
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [recordingError, setRecordingError] = useState<string | null>(null);
@@ -321,7 +322,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, problem_id, onTaskUpdate })
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ problem_id,  result}),
+            body: JSON.stringify({ problem_id, result, task_id}),
         });
         setSaveRecord(true);
     }
@@ -399,7 +400,9 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, problem_id, onTaskUpdate })
                         ) : (
                             null
                         )}
-                        <ResultPage problem_id={problem_id} task={task}/>
+                        <div key={task_id}>
+                            <ResultPage task={task} task_id={task_id} problem_id={problem_id}/>
+                        </div>
                     </div>
                 )}
             </div>
