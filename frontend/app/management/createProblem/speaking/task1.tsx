@@ -51,7 +51,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
         }
 
         const parsedNumber = parseInt(inputValue, 10);
-        if (!isNaN(parsedNumber) && parsedNumber >= 2 && parsedNumber <= 12) {
+        if (!isNaN(parsedNumber) && parsedNumber >= 1 && parsedNumber <= 12) {
             setTask((prevTask) => ({
                 ...prevTask,
                 number_of_task: parsedNumber.toString(),

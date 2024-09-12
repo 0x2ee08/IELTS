@@ -38,4 +38,19 @@ router.post('/get_problem_type', authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/getProblem', authenticateToken, async (req, res) => {
+    const { problem_id } = req.body;
+    try {
+        const db = await connectToDatabase();
+        const problemsCollection = db.collection('problem');
+
+        const result = await problemsCollection.findOne({problem_id: problem_id})
+
+        res.json({ task: result.taskArray });
+    } catch (error) {
+        console.error('Error fetching blog list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 module.exports = router;

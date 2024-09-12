@@ -52,12 +52,12 @@ const ProblemsPage: React.FC = () => {
                         const link = `/loader/problem?id=${problem.problem_id}`;
                         return (
                             <div key={idx}>
-                                <div className="h-px bg-[#d0d0d0] my-1"></div> 
+                                <div className="my-1"></div> 
                                 <a href={link}>
                                     <div 
-                                        className="bg-white hover:bg-gray-100 p-4 rounded-lg"
+                                        className="p-4 rounded-lg"
                                     > 
-                                        <p className="text-2xl text-[#0077B6] font-bold">{problem.problem_id}</p>
+                                        <p className="font-bold">{problem.problem_id}</p>
                                     </div>  
                                 </a>
                             </div>
