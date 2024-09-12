@@ -49,47 +49,67 @@ const ContestPage: React.FC = () => {
     return (
         <>
             <Header />
-            <section>
-                <h2>Upcoming Contests</h2>
+
+            <section style={{textAlign:"center",alignItems:"center",marginLeft:"1%",marginRight:"5%",paddingRight:"5%",marginTop:"25px",justifyContent:"space-between"}}>
+                <h2>Upcoming Contest</h2>
+                <div style={{margin:"10px",padding:"10px"}}>
                 {upcomingContest ? (
-                    upcomingContest.map(contest => (
-                        <div key={contest.id}>
-                            <p>Type: {contest.type}</p>
-                            <p>Name: {contest.problemName}</p>
-                            <p>Start Time: {dayjs(contest.startTime).format('YYYY-MM-DDTHH:mm')}</p>
-                            <p>End Time: {dayjs(contest.endTime).format('YYYY-MM-DDTHH:mm')}</p>
-                            <p>Created By: {contest.created_by}</p>
-                            <p>Access: {contest.access}</p>
-                            <p>Registered Users: {contest.registerUser}</p>
-                            <button onClick={() => handleRegister(contest.id)}>Register</button>
-                        </div>
-                    ))
+                        <table style={{margin:"0 auto",borderSpacing:"0 10px",borderCollapse:"separate"}}>
+                            <tr style={{borderBottom:"1px solid #000"}}>
+                                <th>Contest</th>
+                                <th>Author</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Participant</th>
+                                <th></th>
+                            </tr>
+                            {upcomingContest.map((contest, cnt) =>
+                                <tr key={contest.id} style={{borderBottom:"1px solid #000",background:cnt%2==0?"#E2FAFF":"#CAF0F8"}}>
+                                    <td style={{padding:"10px",textAlign:"center"}}>{contest.problemName}<br/>({contest.access})</td>
+                                    <td style={{padding:"10px",textAlign:"center"}}>{contest.created_by}</td>
+                                    <td style={{padding:"10px",textAlign:"center"}}>{contest.startTime}</td>
+                                    <td style={{padding:"10px",textAlign:"center"}}>{contest.endTime}</td>
+                                    <td style={{padding:"10px",textAlign:"center"}}>{contest.registerUser}</td>
+                                    <td style={{padding:"10px",textAlign:"center"}}><button type='button'>Register</button></td>
+                                </tr>
+                            )}
+                        </table>
                 ) : (
                     <p>Loading...</p>
                 )}
+                </div>
+            </section>
+            
+            <section style={{textAlign:"center",alignItems:"center",marginLeft:"1%",marginRight:"5%",paddingRight:"5%",marginTop:"25px",justifyContent:"space-between"}}>
+                <h2>Past Contest</h2>
+                <div style={{margin:"10px",padding:"10px"}}>
+                {pastContest ? (
+                        <table style={{margin:"0 auto",borderSpacing:"0 10px",borderCollapse:"separate"}}>
+                            <tr style={{borderBottom:"1px solid #000"}}>
+                                <th>Contest</th>
+                                <th>Author</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Participant</th>
+                                <th></th>
+                            </tr>
+                            {pastContest.map((contest,cnt) =>
+                                <tr key={contest.id} style={{borderBottom:"1px solid #000",background:cnt%2==0?"#E2FAFF":"#CAF0F8"}}>
+                                    <td style={{padding:"10px",textAlign:"center"}}>{contest.problemName}<br/>({contest.access})</td>
+                                    <td style={{padding:"10px",textAlign:"center"}}>{contest.created_by}</td>
+                                    <td style={{padding:"10px",textAlign:"center"}}>{contest.startTime}</td>
+                                    <td style={{padding:"10px",textAlign:"center"}}>{contest.endTime}</td>
+                                    <td style={{padding:"10px",textAlign:"center"}}>{contest.registerUser}</td>
+                                    <td style={{padding:"10px",textAlign:"center"}}><Link href={`/contests/${contest.id}`}><button>Join</button></Link></td>
+                                </tr>
+                            )}
+                        </table>
+                ) : (
+                    <p>Loading...</p>
+                )}
+                </div>
             </section>
 
-            <section>
-                <h2>Past Contests</h2>
-                {pastContest ? (
-                    pastContest.map(contest => (
-                        <div key={contest.id}>
-                            <p>Type: {contest.type}</p>
-                            <p>Name: {contest.problemName}</p>
-                            <p>Start Time: {dayjs(contest.startTime).format('YYYY-MM-DDTHH:mm')}</p>
-                            <p>End Time: {dayjs(contest.endTime).format('YYYY-MM-DDTHH:mm')}</p>
-                            <p>Created By: {contest.created_by}</p>
-                            <p>Access: {contest.access}</p>
-                            <p>Registered Users: {contest.registerUser}</p>
-                            <Link href={`/contests/${contest.id}`}>
-                                <button>Join</button>
-                            </Link>
-                        </div>
-                    ))
-                ) : (
-                    <p>Loading...</p>
-                )}
-            </section>
             <Footer />
         </>
     );

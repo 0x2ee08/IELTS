@@ -44,6 +44,78 @@ const TedVideoDetail: React.FC = () => {
     const [messages, setMessages] = useState<{ user: boolean, text: string }[]>([
         { user: false, text: 'Hello. How can I help you?' },
     ]);
+
+    const [highlightedWord, setHighlightedWord] = useState<{
+        word: string,
+        pronunciation: string,
+        type: string,
+        meaning: string
+      } | null>(null);    
+    const [doubleClickPosition, setDoubleClickPosition] = useState<{ top: number; left: number } | null>(null);
+    const handleDoubleClick = async() => {
+        const selection = window.getSelection();
+        const word = selection?.toString().trim();
+
+        if (word) {
+          // Get the range of the selected word
+          const range = selection?.getRangeAt(0).getBoundingClientRect();
+
+          if (range) {
+            setDoubleClickPosition({
+              top: range.bottom + window.scrollY, // Position below the word
+              left: range.left + window.scrollX,  // Align with the word's start
+            });
+             // Fetch data from the dictionary API
+             try {
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
+                const data = await response.json();
+
+                if (data[0]) {
+                  const wordInfo = {
+                    word,
+                    pronunciation: data[0].phonetics[0]?.text || "No pronunciation available",
+                    type: data[0].meanings[0]?.partOfSpeech || "No type available",
+                    meaning: data[0].meanings[0]?.definitions[0]?.definition || "No meaning available",
+                  };
+
+                  setHighlightedWord(wordInfo);
+                } else {
+                  setHighlightedWord({
+                    word,
+                    pronunciation: "No pronunciation available",
+                    type: "No type available",
+                    meaning: "No meaning available",
+                  });
+                }
+              } catch (error) {
+                console.error("Error fetching word data:", error);
+                setHighlightedWord({
+                  word,
+                  pronunciation: "No pronunciation available",
+                  type: "No type available",
+                  meaning: "No meaning available",
+                });
+              }
+            }
+        } else {
+          // Clear both the highlighted word and position if no word is selected
+          setHighlightedWord(null);
+          setDoubleClickPosition(null);
+        }
+      };
+      // Handle when the user clicks anywhere else to remove the box
+        const handleClickOutside = () => {
+            setHighlightedWord(null);
+            setDoubleClickPosition(null);
+        };
+       // Add event listener to detect clicks outside the selection
+        React.useEffect(() => {
+            document.addEventListener('click', handleClickOutside);
+            return () => {
+            document.removeEventListener('click', handleClickOutside);
+            };
+        }, []);
+
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -377,6 +449,7 @@ const TedVideoDetail: React.FC = () => {
                             </button>
                             <div className="border-b border-blue-500 mt-2"></div>
                             <div 
+                                onDoubleClick={handleDoubleClick}
                                 ref={transcriptRef}
                                 style={{
                                 color: '#555',
@@ -407,6 +480,23 @@ const TedVideoDetail: React.FC = () => {
                                 </div>
                             ))}
                             </div>
+                            {highlightedWord && doubleClickPosition && (
+                                <div
+                                style={{
+                                    position: 'absolute',
+                                    top: doubleClickPosition.top,
+                                    left: doubleClickPosition.left-10,
+                                    backgroundColor: '#009bdb',
+                                    color: 'white',
+                                    padding: '5px',
+                                    borderRadius: '4px',
+                                }}
+                                >
+                                <p>{highlightedWord.pronunciation}</p>
+                                <p>{highlightedWord.type}</p>
+                                <p>{highlightedWord.meaning}</p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Chat Bot */}
