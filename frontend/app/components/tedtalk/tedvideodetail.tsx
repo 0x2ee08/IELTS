@@ -9,7 +9,7 @@ import { convertDuration } from './convertDuration';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import eyeIcon from './eye_icon.png';
 import heartIcon from './heart_icon.png';
-// import Draggable from 'react-draggable';
+import Draggable from 'react-draggable';
 const convertSecondsToReadable = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -35,84 +35,15 @@ const decodeHtmlEntities = (text: string): string => {
   
     return text.replace(/&[#A-Za-z0-9]+;/g, (entity) => entities[entity] || entity);
   };
+  
 const TedVideoDetail: React.FC = () => {
     const params = useSearchParams();
     const [notes, setNotes] = useState<string>('');
     const [message, setMessage] = useState<string>('')
     const [savedNotes, setSavedNotes] = useState<string>('')
     const [messages, setMessages] = useState<{ user: boolean, text: string }[]>([
-        { user: false, text: 'Ask me anything! I can summarize, explain content, translate words, ...' },
+        { user: false, text: 'Hello. How can I help you?' },
     ]);
-    const [highlightedWord, setHighlightedWord] = useState<{
-        word: string,
-        pronunciation: string,
-        type: string,
-        meaning: string
-      } | null>(null);    
-    const [doubleClickPosition, setDoubleClickPosition] = useState<{ top: number; left: number } | null>(null);
-    const handleDoubleClick = async() => {
-        const selection = window.getSelection();
-        const word = selection?.toString().trim();
-    
-        if (word) {
-          // Get the range of the selected word
-          const range = selection?.getRangeAt(0).getBoundingClientRect();
-    
-          if (range) {
-            setDoubleClickPosition({
-              top: range.bottom + window.scrollY, // Position below the word
-              left: range.left + window.scrollX,  // Align with the word's start
-            });
-             // Fetch data from the dictionary API
-             try {
-                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word.toLowerCase()}`);
-                const data = await response.json();
-      
-                if (data[0]) {
-                  const wordInfo = {
-                    word,
-                    pronunciation: data[0].phonetics[0]?.text || "No pronunciation available",
-                    type: data[0].meanings[0]?.partOfSpeech || "No type available",
-                    meaning: data[0].meanings[0]?.definitions[0]?.definition || "No meaning available",
-                  };
-      
-                  setHighlightedWord(wordInfo);
-                } else {
-                  setHighlightedWord({
-                    word,
-                    pronunciation: "No pronunciation available",
-                    type: "No type available",
-                    meaning: "No meaning available",
-                  });
-                }
-              } catch (error) {
-                console.error("Error fetching word data:", error);
-                setHighlightedWord({
-                  word,
-                  pronunciation: "No pronunciation available",
-                  type: "No type available",
-                  meaning: "No meaning available",
-                });
-              }
-            }
-        } else {
-          // Clear both the highlighted word and position if no word is selected
-          setHighlightedWord(null);
-          setDoubleClickPosition(null);
-        }
-      };
-      // Handle when the user clicks anywhere else to remove the box
-        const handleClickOutside = () => {
-            setHighlightedWord(null);
-            setDoubleClickPosition(null);
-        };
-       // Add event listener to detect clicks outside the selection
-        React.useEffect(() => {
-            document.addEventListener('click', handleClickOutside);
-            return () => {
-            document.removeEventListener('click', handleClickOutside);
-            };
-        }, []);
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -352,7 +283,7 @@ const TedVideoDetail: React.FC = () => {
                         <strong style={{fontSize: '20px'}}> {video.title}</strong>
 
                         {/* Video Description */}
-                        <div style={{ padding: '10px', backgroundColor: '#fff', borderRadius: '10px', boxShadow: '4 8px 4px rgba(0, 0, 0, 0.1)' }}>
+                        <div style={{ padding: '10px', backgroundColor: '#ffff', borderRadius: '10px', boxShadow: '4px 2px 4px rgba(0, 0, 0, 0.1)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
                                 <span style={{ color: '#888' }}>Thời lượng: {convertDuration(video.duration)} | {dateString}</span>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
@@ -413,7 +344,7 @@ const TedVideoDetail: React.FC = () => {
                                     height: 'calc(100% - 40px)',
                                     outline: 'none',
                                     boxSizing: 'border-box',
-                                    backgroundColor: 'transparent'
+                                    backgroundColor: 'transparent',
                                 }}
                             ></textarea>
                         </div>
@@ -441,12 +372,11 @@ const TedVideoDetail: React.FC = () => {
                                 fontSize: '24px',
                                 margin: '0',
                             }}>TRANSCRIPT</h1>
-                            <button onClick={toggleTranscriptVisibility} className="toggle-button text-blue-500 hover:underline">
+                            <button onClick={toggleTranscriptVisibility} className="toggle-button text-blue-500">
                                 {isTranscriptVisible ? "Hide Transcript" : "Show Transcript"}
                             </button>
                             <div className="border-b border-blue-500 mt-2"></div>
                             <div 
-                                onDoubleClick={handleDoubleClick}
                                 ref={transcriptRef}
                                 style={{
                                 color: '#555',
@@ -477,29 +407,12 @@ const TedVideoDetail: React.FC = () => {
                                 </div>
                             ))}
                             </div>
-                            {highlightedWord && doubleClickPosition && (
-                                <div
-                                style={{
-                                    position: 'absolute',
-                                    top: doubleClickPosition.top,
-                                    left: doubleClickPosition.left-10,
-                                    backgroundColor: '#009bdb',
-                                    color: 'white',
-                                    padding: '5px',
-                                    borderRadius: '4px',
-                                }}
-                                >
-                                <p>{highlightedWord.pronunciation}</p>
-                                <p>{highlightedWord.type}</p>
-                                <p>{highlightedWord.meaning}</p>
-                                </div>
-                            )}
                         </div>
 
                         {/* Chat Bot */}
-                        <div style={{ backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height:'320px'}}>
+                        <div style={{ padding: '1px', backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height:'320px'}}>
                             <h3 style={{ padding: '10px', fontSize: '20px', fontWeight: 'bold', color: '#FFFFFF' }}>AI chat bot</h3>
-                            <div style={{ padding: '10px', backgroundColor: '#FFFFFF', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height: '300px', overflow: 'hidden' }}>
+                            <div style={{ padding: '10px', backgroundColor: '#FFFFFF', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height: '300px', overflow: 'hidden' }}>
                                 <div style={{ flex: 1, overflowY: 'auto' as const, marginBottom: '10px', paddingRight: '10px', wordWrap: 'break-word' }}>
                                     {messages.map((message, index) => (
                                         <div key={index} style={{ textAlign: message.user ? 'right' : 'left', marginBottom: '10px' }}>
@@ -508,7 +421,7 @@ const TedVideoDetail: React.FC = () => {
                                                     display: 'inline-block',
                                                     padding: '8px',
                                                     borderRadius: '10px',
-                                                    background: message.user ? '#E5E5E5' : '#5B99C2',
+                                                    background: message.user ? '#E5E5E5' : '#00B4D8',
                                                     maxWidth: '100%',
                                                     maxHeight:'100%',
                                                     wordWrap: 'break-word',

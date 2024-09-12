@@ -2,6 +2,8 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import style from './react-markdown-styles.module.css';
+import markdownIt from 'markdown-it';
+
 
 interface MarkdownContentProps {
     content: string;
@@ -10,18 +12,27 @@ interface MarkdownContentProps {
 const preprocessContent = (content: string) => {
     const usernameRegex = /@(\w+)/g;
 
-    const transformedContent = content.replace(usernameRegex, (match, username) => {
-        return `<a href="/loader/profile?id=${username}" class="text-blue-600 hover:underline cursor-pointer">${match}</a>`;
+    let transformedContent = content.replace(usernameRegex, (match, username) => {
+        return `<a href="/loader/profile?id=${username}">${match}</a>`;
+    });
+
+    const underlineRegex = /\+\+([^\+]+)\+\+/g;
+
+    transformedContent = transformedContent.replace(underlineRegex, (match, text) => {
+      return `<u>${text}</u>`;
     });
 
     return transformedContent;
 };
 
+
+
+
 const MarkdownContent: React.FC<MarkdownContentProps> = ({ content }) => {
     const processedContent = preprocessContent(content);
 
     return (
-        <div className="border-l-4 border-gray-500 p-2 mb-4">
+        <div>
             <ReactMarkdown
                 rehypePlugins={[rehypeRaw]}
                 className={style.reactMarkDown}

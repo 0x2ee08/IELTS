@@ -5,50 +5,10 @@ import axios from 'axios';
 import Link from 'next/link';
 import config from '../../config';
 import { useSearchParams } from "next/navigation";
-import ReactMarkdown from 'react-markdown'
 import CommentsPage from './Comments';
-import rehypeRaw from 'rehype-raw';
-import markdownIt from 'markdown-it';
-import style from './react-markdown-styles.module.css';
 import MarkdownContent from './MarkdownContent';
 
-const mdParser = new markdownIt();
 
-function underlinePlugin(md: markdownIt) {
-    md.inline.ruler.before('emphasis', 'underline', function (state, silent) {
-      const start = state.pos;
-      const marker = state.src.charCodeAt(start);
-  
-      // Check for the ++ marker
-      if (silent || marker !== 0x2B /* + */ || state.src.charCodeAt(start + 1) !== 0x2B /* + */) {
-        return false;
-      }
-  
-      const match = state.src.slice(start).match(/^\+\+([^+]+)\+\+/);
-      if (!match) return false;
-  
-      // Push the underline open token
-      const token = state.push('underline_open', 'u', 1);
-      token.markup = '++';
-      token.content = match[1];
-  
-      // Push the content inside the underline
-      const tokenText = state.push('text', '', 0);
-      tokenText.content = match[1];
-  
-      // Push the underline close token
-      state.push('underline_close', 'u', -1);
-  
-      // Move the state position forward
-      state.pos += match[0].length;
-      return true;
-    });
-  
-    md.renderer.rules.underline_open = () => '<u>';
-    md.renderer.rules.underline_close = () => '</u>';
-  }
-
-mdParser.use(underlinePlugin);
 
 interface Comment {
     username: string;
