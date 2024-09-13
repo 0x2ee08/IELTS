@@ -34,21 +34,22 @@ export default function Paragraphs() {
   return (
     <div className="flex flex-col min-h-screen">
     <Header />
-    <div>
-      <h1>Available Paragraphs</h1>
+    <div className="ml-32 mr-32 mt-8">
+      <h1 className="flex justify-center items-center text-4xl mb-2 text-[#03045E]"> Flash Card </h1>
       <ul>
         {paragraphs.map((paragraph) => (
           <li key={paragraph.idContest}>
-            <div className="paragraph-card">
-              <h2>{paragraph.title}</h2>
-              <p>{paragraph.contestName}</p>
-              {/* Button for navigating to the next page */}
-              <Link
+            <Link
                 href={`/flashcards/${paragraph.idContest}?title=${encodeURIComponent(paragraph.title)}`}
               >
-                <button className="view-button">View Paragraph</button>
-              </Link>
+            <div className="flex justify-between bg-white hover:bg-gray-100 border border-gray-500 rounded mb-2 p-2">
+              <div>
+                <h2>{paragraph.title}</h2>
+                <p className='text-sm'>{paragraph.contestName}</p>
+              </div>
+              {/* Button for navigating to the next page */}
             </div>
+            </Link>
           </li>
         ))}
       </ul>
