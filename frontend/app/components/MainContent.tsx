@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import config from '../config';
-import Link from 'next/link';
 import dayjs from 'dayjs';
-import { formatDuration } from 'date-fns';
 
 interface Blog {
   author: string;
@@ -32,6 +30,7 @@ interface Contest {
 const MainContent: React.FC = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [upcomingContest, setUpcomingContest] = useState<Contest[] | null>(null);
+  const [countdowns, setCountdowns] = useState<string[]>([]);
 
   const get_home_page_bloglist = async () => {
     const token = localStorage.getItem('token');
@@ -51,68 +50,85 @@ const MainContent: React.FC = () => {
   };
 
   const handleRegister = (contestId: string) => {
-      console.log(`Registering for contest with ID: ${contestId}`);
+    console.log(`Registering for contest with ID: ${contestId}`);
   };
 
   useEffect(() => {
     get_home_page_bloglist();
 
     const token = localStorage.getItem('token');
-        axios.get(`${config.API_BASE_URL}api/getAllContest`, { headers: { 'Authorization': `Bearer ${token}` } })
-            .then(response => {
-                const contests = Object.values(response.data) as Contest[]; // Cast to Contest[]
-                const currentTime = new Date().toISOString();
+    axios.get(`${config.API_BASE_URL}api/getAllContest`, { headers: { 'Authorization': `Bearer ${token}` } })
+      .then(response => {
+        const contests = Object.values(response.data) as Contest[];
+        const currentTime = new Date().toISOString();
 
-                // Split contests into upcoming and past contests
-                const upcoming = contests.filter((contest: Contest) => contest.startTime > currentTime);
-
-                setUpcomingContest(upcoming);
-            })
-            .catch(error => {
-                console.error('Error fetching contests:', error);
-            });
+        // Split contests into upcoming and past contests
+        const upcoming = contests.filter((contest: Contest) => contest.startTime > currentTime);
+        setUpcomingContest(upcoming);
+      })
+      .catch(error => {
+        console.error('Error fetching contests:', error);
+      });
   }, []);
 
-  const formatDate = (isoString: string): JSX.Element => {
-    // Parse the ISO string into a Date object
-    const date = new Date(isoString);
+  useEffect(() => {
+    if (upcomingContest) {
+      const updateCountdowns = () => {
+        const updatedCountdowns = upcomingContest.map(contest => {
+          return timeleft(contest.startTime);
+        });
+        setCountdowns(updatedCountdowns);
+      };
 
-    // Shift the time to UTC+7
-    const utc7Offset = 7 * 60; // Offset in minutes (UTC+7 is 7 hours ahead of UTC)
+      updateCountdowns(); // Initial update
+      const interval = setInterval(updateCountdowns, 1000);
+
+      // Cleanup on component unmount
+      return () => clearInterval(interval);
+    }
+  }, [upcomingContest]);
+
+  const formatDate = (isoString: string): JSX.Element => {
+    const date = new Date(isoString);
+    const utc7Offset = 7 * 60;
     const localTime = new Date(date.getTime() + utc7Offset * 60 * 1000);
     const formattedDate = localTime.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit'
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit'
     }).replace(',', '/').replace(' ', '/');
     
     const formattedTime = localTime.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
     });
 
     return (
-            <>
-                {formattedDate} {formattedTime}
-                <span style={{ verticalAlign: 'super', fontSize: '10px' }}>UTC+7</span>
-            </>
-        );
-    };
-
-    const timeleft = (endTimeISO: string): string => {
-      const startTime = new Date(dayjs().toISOString());
-      const endTime = new Date(endTimeISO);
-      const diffInMs = endTime.getTime() - startTime.getTime();
-      
-      const seconds = Math.floor((diffInMs / 1000) % 60);
-      const minutes = Math.floor((diffInMs / (1000 * 60)) % 60);
-      const hours = Math.floor((diffInMs / (1000 * 60 * 60)) % 24);
-      const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-      
-      return `${String(days).padStart(2, '0')} ngày ${String(hours).padStart(2, '0')} tiếng ${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
+      <>
+        {formattedDate} {formattedTime}
+        <span style={{ verticalAlign: 'super', fontSize: '10px' }}>UTC+7</span>
+      </>
+    );
   };
-  
+
+  const timeleft = (endTimeISO: string): string => {
+    const startTime = new Date();
+    const endTime = new Date(endTimeISO);
+    const diffInMs = endTime.getTime() - startTime.getTime();
+    
+    const seconds = Math.floor((diffInMs / 1000) % 60);
+    const minutes = Math.floor((diffInMs / (1000 * 60)) % 60);
+    const hours = Math.floor((diffInMs / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (days !== 0) return `${String(days).padStart(2, '0')} ngày ${String(hours).padStart(2, '0')} tiếng ${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
+    if (hours !== 0) return `${String(hours).padStart(2, '0')} tiếng ${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
+    if (minutes !== 0) return `${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
+
+    return `${String(seconds).padStart(2, '0')} giây`;
+  };
+
   return (
     <div className="flex flex-col lg:flex-row justify-between space-y-8 lg:space-y-0 lg:space-x-8 px-8 lg:px-12 py-8">
       {/* Left Section: Upcoming Contest and Virtual Tests */}
@@ -120,19 +136,19 @@ const MainContent: React.FC = () => {
         {/* Upcoming Contest */}
         <section className="bg-white p-6 rounded-lg">
           <h2 className="text-lg font-semibold">UPCOMING CONTEST</h2>
-            <div className="bg-white-100 p-6 rounded-lg mt-4 border border-black">
-              {upcomingContest ? upcomingContest.map((contest, cnt) =>
-                <div key={cnt}>
-                    <h3 className="font-bold text-xl">{contest.problemName}</h3>
-                    <p className="text-gray-600">Bắt đầu trong: <span className="font-semibold text-[#0077B6]">{timeleft(contest.startTime)}</span></p>
-                    <div className="flex justify-end mt-4">
-                        <button className="px-8 py-3 bg-[#0077B6] text-white rounded-lg">Đăng ký</button>
-                    </div>
+          <div className="bg-white-100 p-6 rounded-lg mt-4 border border-black">
+            {upcomingContest ? upcomingContest.map((contest, cnt) =>
+              <div key={cnt}>
+                <h3 className="font-bold text-xl">{contest.problemName}</h3>
+                <p className="text-gray-600">Bắt đầu trong: <span className="font-semibold text-[#0077B6]">{countdowns[cnt]}</span></p>
+                <div className="flex justify-end mt-4">
+                  <button className="px-8 py-3 bg-[#0077B6] text-white rounded-lg" onClick={() => handleRegister(contest.id)}>Đăng ký</button>
                 </div>
-              ) : (
-                  <p>Loading...</p>
-              )}
-            </div>
+              </div>
+            ) : (
+              <p>Loading...</p>
+            )}
+          </div>
         </section>
 
         {/* Virtual Tests */}
