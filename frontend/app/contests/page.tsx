@@ -82,7 +82,7 @@ const ContestPage: React.FC = () => {
                 <div style={{padding:'3px', paddingBottom:'5px',backgroundColor:'#E1E1E1', borderRadius: '10px'}}>
                     <h2 style={{fontSize:'25px',fontWeight:'bold'}}>Upcoming Contest</h2>
                     {upcomingContest ? (
-                            <table style={{margin:"0 auto",borderCollapse:"collapse",border:"1px solid black"}}>
+                            <table style={{margin:"0 auto",borderCollapse:"collapse",border:"1px solid black",width:'100%'}}>
                                 <tr style={{border:'1px solid #e1e1e1',backgroundColor:"white"}}>
                                     <th style={{border:'1px solid #e1e1e1'}}>Contest</th>
                                     <th style={{border:'1px solid #e1e1e1'}}>Author</th>
@@ -117,7 +117,7 @@ const ContestPage: React.FC = () => {
                 <div style={{padding:'3px', paddingBottom:'5px',backgroundColor:'#E1E1E1', borderRadius: '10px'}}>
                     <h2 style={{fontSize:'25px', fontWeight:'bold'}}>Past Contest</h2>
                     {pastContest ? (
-                            <table style={{margin:"0 auto",borderCollapse:"collapse",border:"1px solid black"}}>
+                            <table style={{margin:"0 auto",borderCollapse:"collapse",border:"1px solid black",width:'100%'}}>
                                 <tr style={{border:'1px solid #e1e1e1',backgroundColor:"white"}}>
                                     <th style={{border:'1px solid #e1e1e1'}}>Contest</th>
                                     <th style={{border:'1px solid #e1e1e1'}}>Author</th>
