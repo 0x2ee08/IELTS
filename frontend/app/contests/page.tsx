@@ -79,8 +79,8 @@ const ContestPage: React.FC = () => {
             <Header />
 
             <section style={{textAlign:"center",alignItems:"center",paddingLeft:'5%',paddingRight:'5%',marginTop:"25px",justifyContent:"space-between"}}>
-                <div style={{padding:'3px', paddingBottom:'5px',backgroundColor:'#E1E1E1', borderRadius: '10px'}}>
-                    <h2 style={{fontSize:'25px',fontWeight:'bold'}}>Upcoming Contest</h2>
+                <div style={{padding:'3px', paddingBottom:'5px', borderRadius: '10px'}}>
+                    <h2 style={{fontSize:'25px',fontWeight:'bold', padding:'30px'}}>Upcoming Contest</h2>
                     {upcomingContest ? (
                             <table style={{margin:"0 auto",borderCollapse:"collapse",border:"1px solid black",width:'100%'}}>
                                 <tr style={{border:'1px solid #e1e1e1',backgroundColor:"white"}}>
@@ -114,8 +114,8 @@ const ContestPage: React.FC = () => {
             </section>
             <div style={{padding:'10px'}}></div>
             <section style={{textAlign:"center",alignItems:"center",paddingLeft:'5%',paddingRight:'5%',marginTop:"25px",justifyContent:"space-between"}}>
-                <div style={{padding:'3px', paddingBottom:'5px',backgroundColor:'#E1E1E1', borderRadius: '10px'}}>
-                    <h2 style={{fontSize:'25px', fontWeight:'bold'}}>Past Contest</h2>
+                <div style={{padding:'3px', paddingBottom:'5px', borderRadius: '10px'}}>
+                    <h2 style={{fontSize:'25px', fontWeight:'bold', padding:'30px'}}>Past Contest</h2>
                     {pastContest ? (
                             <table style={{margin:"0 auto",borderCollapse:"collapse",border:"1px solid black",width:'100%'}}>
                                 <tr style={{border:'1px solid #e1e1e1',backgroundColor:"white"}}>
