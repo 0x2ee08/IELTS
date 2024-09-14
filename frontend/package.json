@@ -21,6 +21,7 @@
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.13",
     "framer-motion": "^11.5.4",
+    "js-cookie": "^3.0.5",
     "markdown-it": "^14.1.0",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-underline": "^1.0.1",
