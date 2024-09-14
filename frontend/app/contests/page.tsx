@@ -7,6 +7,7 @@ import Footer from '../components/Footer';
 import Header from '../components/Header';
 import dayjs from 'dayjs';
 import Link from 'next/link';
+import { format } from 'path';
 
 interface Contest {
     id: string;
@@ -46,6 +47,23 @@ const ContestPage: React.FC = () => {
         console.log(`Registering for contest with ID: ${contestId}`);
     };
 
+    const formatDate = (isoString: string) => {
+        const date = new Date(isoString);
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const month = monthNames[date.getUTCMonth()]; // Get the month name
+        const day = date.getUTCDate();
+        const year = date.getUTCFullYear();
+        let hours = date.getUTCHours() + 7; // Adding 7 hours for UTC+7
+        let minutes = date.getUTCMinutes();
+        if (hours >= 24) {
+          hours = hours - 24;
+        }
+        
+        const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+      
+        return `${month}/${day}/${year} ${hours}:${minutesStr}`;
+      };
+
     return (
         <>
             <Header />
@@ -71,8 +89,10 @@ const ContestPage: React.FC = () => {
                                             <span className="text-blue-600 hover:underline cursor-pointer" 
                                             style={{fontWeight:'bold'}}>{contest.created_by}</span>
                                         </Link>}</td>
-                                    <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{contest.startTime}</td>
-                                    <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{contest.endTime}</td>
+                                    <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{formatDate(contest.startTime)}
+                                        <span style={{ verticalAlign: 'super', fontSize:'10px' }}>UTC+7</span></td>
+                                    <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{formatDate(contest.endTime)}
+                                        <span style={{ verticalAlign: 'super', fontSize:'10px' }}>UTC+7</span></td>
                                     <td style={{padding:"10px",textAlign:"center",width:'5%'}}>{contest.registerUser}</td>
                                     <td style={{padding:"10px",textAlign:"center",width:'10%'}}>
                                         <button className="text-blue-600 hover:underline cursor-pointer">Register</button></td>
@@ -106,8 +126,10 @@ const ContestPage: React.FC = () => {
                                             <span className="text-blue-600 hover:underline cursor-pointer bold" 
                                             style={{fontWeight:'bold'}}>{contest.created_by}</span>
                                         </Link>}</td>
-                                    <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{contest.startTime}</td>
-                                    <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{contest.endTime}</td>
+                                        <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{formatDate(contest.startTime)}
+                                        <span style={{ verticalAlign: 'super', fontSize:'10px' }}>UTC+7</span></td>
+                                    <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{formatDate(contest.endTime)}
+                                        <span style={{ verticalAlign: 'super', fontSize:'10px' }}>UTC+7</span></td>
                                     <td style={{padding:"10px",textAlign:"center",width:'5%'}}>{contest.registerUser}</td>
                                     <td style={{padding:"10px",textAlign:"center",width:'10%'}}><Link href={`/contests/${contest.id}`}>
                                         <button className="text-blue-600 hover:underline cursor-pointer">Join</button></Link></td>
