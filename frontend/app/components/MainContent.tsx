@@ -1,119 +1,150 @@
-import React, { useEffect, useState } from 'react';
+'use client'
+
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../config';
+import Footer from '../components/Footer';
+import Header from '../components/Header';
+import dayjs from 'dayjs';
+import Link from 'next/link';
+import { format } from 'path';
 
-interface Blog {
-  author: string;
-  blog_id: string;
-  comments: any[];
-  content: string;
-  dislike: number;
-  like: number;
-  time_created: string;
-  title: string;
-  view: number;
-  _id: string;
+interface Contest {
+    id: string;
+    type: string;
+    problemName: string;
+    startTime: string;
+    endTime: string;
+    created_by: string;
+    access: string;
+    registerUser: number;
 }
 
-const MainContent: React.FC = () => {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
+const ContestPage: React.FC = () => {
+    const [upcomingContest, setUpcomingContest] = useState<Contest[] | null>(null);
+    const [pastContest, setPastContest] = useState<Contest[] | null>(null);
+    
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        axios.get(`${config.API_BASE_URL}api/getAllContest`, { headers: { 'Authorization': `Bearer ${token}` } })
+            .then(response => {
+                const contests = Object.values(response.data) as Contest[]; // Cast to Contest[]
+                const currentTime = new Date().toISOString();
 
-  const get_home_page_bloglist = async () => {
-    const token = localStorage.getItem('token');
-    try {
-      const response = await axios.post(`${config.API_BASE_URL}api/get_home_page_bloglist`, {}, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      const result = response.data.blogs;
+                // Split contests into upcoming and past contests
+                const upcoming = contests.filter((contest: Contest) => contest.startTime > currentTime);
+                const past = contests.filter((contest: Contest) => contest.endTime < currentTime);
 
-      setBlogs(result);
+                setUpcomingContest(upcoming);
+                setPastContest(past);
+            })
+            .catch(error => {
+                console.error('Error fetching contests:', error);
+            });
+    }, []);
 
-    } catch (error) {
-      console.error('Error fetching blogs:', error);
-    }
-  };
+    const handleRegister = (contestId: string) => {
+        console.log(`Registering for contest with ID: ${contestId}`);
+    };
 
-  useEffect(() => {
-    get_home_page_bloglist();
-  }, []);
+    const formatDate = (isoString: string) => {
+        const date = new Date(isoString);
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const month = monthNames[date.getUTCMonth()]; // Get the month name
+        const day = date.getUTCDate();
+        const year = date.getUTCFullYear();
+        let hours = date.getUTCHours() + 7; // Adding 7 hours for UTC+7
+        let minutes = date.getUTCMinutes();
+        if (hours >= 24) {
+          hours = hours - 24;
+        }
+        
+        const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+      
+        return `${month}/${day}/${year} ${hours}:${minutesStr}`;
+      };
 
-  return (
-    <div className="flex flex-col lg:flex-row justify-between space-y-8 lg:space-y-0 lg:space-x-8 px-8 lg:px-12 py-8">
-      {/* Left Section: Upcoming Contest and Virtual Tests */}
-      <div className="flex-1 space-y-8">
-        {/* Upcoming Contest */}
-        <section className="bg-white p-6 rounded-lg">
-          <h2 className="text-lg font-semibold">UPCOMING CONTEST</h2>
-          <div className="bg-white-100 p-6 rounded-lg mt-4 border border-black">
-            <h3 className="font-bold text-xl">Reading Skill (AI generated contest) #01</h3>
-            <p className="text-gray-600">Bắt đầu trong: <span className="font-semibold text-[#0077B6]">2 ngày 3 tiếng 5 phút 23 giây</span></p>
-            <div className="flex justify-end mt-4">
-                <button className="px-8 py-3 bg-[#0077B6] text-white rounded-lg">Đăng ký</button>
-            </div>
-          </div>
-        </section>
+    return (
+        <>
+            <Header />
 
-        {/* Virtual Tests */}
-        <section className="bg-white p-4 rounded-lg">
-            <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold">VIRTUAL TESTS</h2>
-                <div className="flex space-x-2">
-                    <button className="px-4 py-1 bg-white text-[#0077B6] rounded-lg border border-[#0077B6] hover:bg-[#0077B6] hover:text-white hover:border-white">Lastest</button>
-                    <button className="px-4 py-1 bg-white text-[#0077B6] rounded-lg border border-[#0077B6] hover:bg-[#0077B6] hover:text-white hover:border-white">Difficulty</button>
-                    <button className="px-4 py-1 bg-white text-[#0077B6] rounded-lg border border-[#0077B6] hover:bg-[#0077B6] hover:text-white hover:border-white">Progress</button>
-                    <button className="text-gray-500">&#128269;</button>
+            <section style={{textAlign:"center",alignItems:"center",marginLeft:"1%",marginRight:"5%",paddingLeft:'5%',paddingRight:'5%',marginTop:"25px",justifyContent:"space-between"}}>
+                <h2 style={{fontSize:'25px',fontWeight:'bold'}}>Upcoming Contest</h2>
+                <div style={{margin:"10px"}}>
+                {upcomingContest ? (
+                        <table style={{margin:"0 auto",borderSpacing:"0 10px",borderCollapse:"separate"}}>
+                            <tr style={{borderBottom:"1px solid #000",backgroundColor:"#E8E8E8"}}>
+                                <th style={{borderTopLeftRadius:"8px",borderBottomLeftRadius:"8px"}}>Contest</th>
+                                <th>Author</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Participant</th>
+                                <th></th>
+                            </tr>
+                            {upcomingContest.map((contest, cnt) =>
+                                <tr key={contest.id} style={{borderBottom:"1px solid #000",background:cnt%2==0?"#E2FAFF":"#CAF0F8"}}>
+                                    <td style={{borderTopLeftRadius:"10px",borderBottomLeftRadius:"10px",padding:"10px",textAlign:"center",width:'40%'}}>{contest.problemName}<br/>({contest.access})</td>
+                                    <td style={{padding:"10px",textAlign:"center",width:'5%'}}>{
+                                        <Link href={`/loader/profile?id=${contest.created_by}`}>
+                                            <span className="text-blue-600 hover:underline cursor-pointer" 
+                                            style={{fontWeight:'bold'}}>{contest.created_by}</span>
+                                        </Link>}</td>
+                                    <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{formatDate(contest.startTime)}
+                                        <span style={{ verticalAlign: 'super', fontSize:'10px' }}>UTC+7</span></td>
+                                    <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{formatDate(contest.endTime)}
+                                        <span style={{ verticalAlign: 'super', fontSize:'10px' }}>UTC+7</span></td>
+                                    <td style={{padding:"10px",textAlign:"center",width:'5%'}}>{contest.registerUser}</td>
+                                    <td style={{borderTopRightRadius:"10px",borderBottomRightRadius:"10px",padding:"10px",textAlign:"center",width:'10%'}}>
+                                        <button className="text-blue-600 hover:underline cursor-pointer">Register</button></td>
+                                </tr>
+                            )}
+                        </table>
+                ) : (
+                    <p>Loading...</p>
+                )}
                 </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                {/* Test Card */}
-                {Array(6).fill(0).map((_, index) => (
-                    <div key={index} className="border border-black rounded-lg p-4 shadow hover:shadow-lg transition">
-                        <h3 className="font-semibold text-[#0077B6]">IELTS Cambridge 12 Listening</h3>
-                        <p className="text-gray-500">40 phút</p>
-                        <p className="text-gray-500">32 bài nộp</p>
-                        <p className="text-gray-500">4301 bình luận</p>
-                        <p className="text-blue-500 mt-2">40 câu hỏi</p>
-                    </div>
-                ))}
-            </div>
-            <div className="flex items-center justify-center mt-4">
-                <button className="text-[#0077B6] mr-4">READ MORE</button>
-            </div>
-        </section>
-      </div>
-
-      {/* Right Section: Recent Blogs */}
-      <aside className="w-full lg:w-1/3">
-        <section className="bg-white p-6 rounded-lg border border-black">
-          <h2 className="text-lg font-semibold">RECENT BLOGS</h2>
-          <div className="space-y-4 mt-4">
-          {blogs.slice(0, Math.min(blogs.length, 10)).map((blog, index) => {
-            const link = `/loader/blog?id=${blog.blog_id}`; // Define link outside JSX
-
-            return (
-              <div key={index} className="flex flex-col">
-                <a href={link} className="text-blue-500 hover:underline">{blog.title}</a>
-                <div className="text-gray-500 text-sm flex space-x-2">
-                  <span>@{blog.author}</span>
-                  <span>{new Date(blog.time_created).toLocaleString()}</span>
-                  <span>{blog.view} &#128065;</span>
-                  <span>{blog.like - blog.dislike} &#128077;</span>
+            </section>
+            
+            <section style={{textAlign:"center",alignItems:"center",marginLeft:"1%",marginRight:"5%",paddingLeft:'5%',paddingRight:'5%',marginTop:"25px",justifyContent:"space-between"}}>
+                <h2 style={{fontSize:'25px', fontWeight:'bold'}}>Past Contest</h2>
+                <div style={{margin:"10px"}}>
+                {pastContest ? (
+                        <table style={{margin:"0 auto",borderSpacing:"0 10px",borderCollapse:"separate"}}>
+                            <tr style={{borderBottom:"1px solid #000",backgroundColor:"#E8E8E8"}}>
+                                <th style={{borderTopLeftRadius:"8px",borderBottomLeftRadius:"8px"}}>Contest</th>
+                                <th>Author</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Participant</th>
+                                <th style={{borderTopRightRadius:"8px",borderBottomRightRadius:"8px"}}></th>
+                            </tr>
+                            {pastContest.map((contest,cnt) =>
+                                <tr key={contest.id} style={{borderBottom:"1px solid #000",background:cnt%2==0?"#E2FAFF":"#CAF0F8"}}>
+                                    <td style={{borderTopLeftRadius:"10px",borderBottomLeftRadius:"10px",padding:"10px",textAlign:"center",width:'40%'}}>{contest.problemName}<br/>({contest.access})</td>
+                                    <td style={{padding:"10px",textAlign:"center",width:'5%'}}>{
+                                        <Link href={`/loader/profile?id=${contest.created_by}`}>
+                                            <span className="text-blue-600 hover:underline cursor-pointer bold" 
+                                            style={{fontWeight:'bold'}}>{contest.created_by}</span>
+                                        </Link>}</td>
+                                        <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{formatDate(contest.startTime)}
+                                        <span style={{ verticalAlign: 'super', fontSize:'10px' }}>UTC+7</span></td>
+                                    <td style={{padding:"10px",textAlign:"center",width:'15%'}}>{formatDate(contest.endTime)}
+                                        <span style={{ verticalAlign: 'super', fontSize:'10px' }}>UTC+7</span></td>
+                                    <td style={{padding:"10px",textAlign:"center",width:'5%'}}>{contest.registerUser}</td>
+                                    <td style={{borderTopRightRadius:"10px",borderBottomRightRadius:"10px",padding:"10px",textAlign:"center",width:'10%'}}><Link href={`/contests/${contest.id}`}>
+                                        <button className="text-blue-600 hover:underline cursor-pointer">Join</button></Link></td>
+                                </tr>
+                            )}
+                        </table>
+                ) : (
+                    <p>Loading...</p>
+                )}
                 </div>
-              </div>
-            );
-          })}
-          </div>
-          <div className="flex items-center justify-center mt-4">
-            <a href="/blogs" className="text-[#0077B6] mr-4">
-              READ MORE
-            </a>
-          </div>
-        </section>
-      </aside>
-    </div>
-  );
+            </section>
+
+            <Footer />
+        </>
+    );
 };
 
-export default MainContent;
+export default ContestPage;
