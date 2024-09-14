@@ -34,4 +34,4 @@ Allows all IELTS practicers to improve in all skills, with the help of AI.
 # Contributing
 - Currently in GPL v3.0 license.
 - Allow: Commercial use, modification and distribution.
-(Do **not** distribute closed source versions!!!).
+(Do **not** distribute closed source versions).
