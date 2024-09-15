@@ -42,7 +42,7 @@ const TedVideoDetail: React.FC = () => {
     const [message, setMessage] = useState<string>('')
     const [savedNotes, setSavedNotes] = useState<string>('')
     const [messages, setMessages] = useState<{ user: boolean, text: string }[]>([
-        { user: false, text: 'Hello. How can I help you?' },
+        { user: false, text: 'Ask me anything! I can summarize, explain content, translate words, ...' },
     ]);
 
     const [highlightedWord, setHighlightedWord] = useState<{
@@ -444,7 +444,7 @@ const TedVideoDetail: React.FC = () => {
                                 fontSize: '24px',
                                 margin: '0',
                             }}>TRANSCRIPT</h1>
-                            <button onClick={toggleTranscriptVisibility} className="toggle-button text-blue-500">
+                            <button onClick={toggleTranscriptVisibility} className="toggle-button text-blue-500 hover:underline">
                                 {isTranscriptVisible ? "Hide Transcript" : "Show Transcript"}
                             </button>
                             <div className="border-b border-blue-500 mt-2"></div>
@@ -500,9 +500,9 @@ const TedVideoDetail: React.FC = () => {
                         </div>
 
                         {/* Chat Bot */}
-                        <div style={{ padding: '1px', backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height:'320px'}}>
+                        <div style={{ backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height:'320px'}}>
                             <h3 style={{ padding: '10px', fontSize: '20px', fontWeight: 'bold', color: '#FFFFFF' }}>AI chat bot</h3>
-                            <div style={{ padding: '10px', backgroundColor: '#FFFFFF', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height: '300px', overflow: 'hidden' }}>
+                            <div style={{ padding: '10px', backgroundColor: '#FFFFFF', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height: '300px', overflow: 'hidden' }}>
                                 <div style={{ flex: 1, overflowY: 'auto' as const, marginBottom: '10px', paddingRight: '10px', wordWrap: 'break-word' }}>
                                     {messages.map((message, index) => (
                                         <div key={index} style={{ textAlign: message.user ? 'right' : 'left', marginBottom: '10px' }}>
@@ -511,7 +511,7 @@ const TedVideoDetail: React.FC = () => {
                                                     display: 'inline-block',
                                                     padding: '8px',
                                                     borderRadius: '10px',
-                                                    background: message.user ? '#E5E5E5' : '#00B4D8',
+                                                    background: message.user ? '#E5E5E5' : '#5B99C2',
                                                     maxWidth: '100%',
                                                     maxHeight:'100%',
                                                     wordWrap: 'break-word',
