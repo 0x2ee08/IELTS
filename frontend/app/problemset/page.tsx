@@ -21,6 +21,7 @@ const ProblemsPage: React.FC = () => {
             });
             const result = await response.json();
 
+            console.log(result.problemlist);
             // Update state with the list of problems
             setProblems(result.problemlist || []); // Ensure it's an array
         } catch (error) {
@@ -49,7 +50,7 @@ const ProblemsPage: React.FC = () => {
             }}>
                 {problems.length > 0 ? (
                     problems.map((problem, idx) => {
-                        const link = `/loader/problem?id=${problem.problem_id}`;
+                        const link = `/loader/problem?id=${problem.id}`;
                         return (
                             <div key={idx}>
                                 <div className="my-1"></div> 
@@ -57,7 +58,7 @@ const ProblemsPage: React.FC = () => {
                                     <div 
                                         className="p-4 rounded-lg"
                                     > 
-                                        <p className="font-bold">{problem.problem_id}</p>
+                                        <p className="font-bold">{problem.id}</p>
                                     </div>  
                                 </a>
                             </div>

@@ -124,6 +124,14 @@ const MainContent: React.FC = () => {
     return timediff(d, timeISO);
   };
 
+  const tformatVirtual = (startTimeISO: string, endTimeISO: string): string => {
+    const startTime = new Date(startTimeISO);
+    const endTime = new Date(endTimeISO);
+    
+    const days = Math.floor((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24));
+    return (days < 2 ? `${String(days)} ngày` : timediff(startTimeISO, endTimeISO));
+  };
+
   return (
     <div className="flex flex-col lg:flex-row justify-between space-y-8 lg:space-y-0 lg:space-x-8 px-8 lg:px-12 py-8">
       {/* Left Section: Upcoming Contest and Virtual Tests */}
@@ -161,7 +169,7 @@ const MainContent: React.FC = () => {
                 {pastContest ? pastContest.map((contest, index) => (
                     <Link href={`/contests/${contest.id}`} key={index} className="cursor-pointer border border-black rounded-lg p-4 shadow hover:shadow-lg transition">
                         <h3 className="font-semibold text-[#0077B6] hover:underline">{contest.problemName}</h3>
-                        <p className="text-gray-500">{timediff(contest.startTime, contest.endTime)}</p>
+                        <p className="text-gray-500">{tformatVirtual(contest.startTime, contest.endTime)}</p>
                         <p className="text-gray-500">32 bài nộp</p>
                         <p className="text-gray-500">4301 bình luận</p>
                         <p className="text-blue-500 mt-2">40 câu hỏi</p>

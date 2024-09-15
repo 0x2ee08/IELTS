@@ -57,7 +57,8 @@ router.post('/generateSpeakingTask1_onlyOne', authenticateToken, async (req, res
 });
 
 router.post('/create_speaking_problem', authenticateToken, async (req, res) => {
-    const { taskArray } = req.body;
+    const { problemName, accessUser, startTime, endTime, taskArray } = req.body;
+    const username = req.user;
     const time_created = new Date();
 
     const db = await connectToDatabase();
@@ -67,12 +68,60 @@ router.post('/create_speaking_problem', authenticateToken, async (req, res) => {
     const nextProblemId = count + 1;
 
     const result = await problemCollection.insertOne({
-        problem_id: String(nextProblemId),
+        id: String(nextProblemId),
         type: "Speaking",
         taskArray: taskArray || [],
+        accessUser: accessUser,
+        startTime: startTime,
+        endTime: endTime,
+        problemName: problemName,
+        created_by: username.username,
+        userAnswer: [],
     });
 
     res.json({ success: true, message: 'Problem created successfully' });
+});
+
+router.post('/getSpeakingLexicalResource', authenticateToken, async (req, res) => {
+    const { question, answer } = req.body;
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{ role: 'system', content: `For this question: ${question}. Give me ielts band and improvement about vocabulary of this answer: ${answer}
+            Only give me the result, no title, opening, or anything else\n
+            Give me the ielts band of original answer first\n
+            Check each word seperately in the answer, if the word is wrong in any category, format it as [wrong_word](correct_word - reason why it false), wrong_word and correct_word must be different.\n
+            For example:\n
+            [BAND]: 6.5 [E]: You [is](are - wrong to be) [play](playing - wrong ...)\n
+            The wordr_i is the word in answer. Check word seperately and orderly (if this word is false or not good)`}],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    res.json({content: response.data.choices[0].message.content.trim()});
+});
+
+router.post('/getSpeakingGrammar', authenticateToken, async (req, res) => {
+    const { question, answer } = req.body;
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{ role: 'system', content: `For this question: ${question}. Give me ielts band and improvement about grammar of this answer: ${answer}
+            Only give me the result, no title, opening, or anything else\n
+            Give me the ielts band of original answer first\n
+            Check each word seperately in the answer, if the word is wrong in any category, format it as [wrong_word](correct_word - reason why it false), wrong_word and correct_word must be different.\n
+            For example:\n
+            [BAND]: 6.5 [E]: You [is](are - wrong to be) [play](playing - wrong ...)\n
+            The wordr_i is the word in answer. Check word seperately and orderly (if this word is false or not good)`}],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    res.json({content: response.data.choices[0].message.content.trim()});
 });
 
 module.exports = router;

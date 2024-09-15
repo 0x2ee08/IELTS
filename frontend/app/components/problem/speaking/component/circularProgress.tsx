@@ -12,9 +12,9 @@ interface CircularProgressWithCountdownProps {
 
 const CircularProgressWithCountdown: React.FC<CircularProgressWithCountdownProps> = ({
   progress,
-  size = 120,
-  backgroundColor = '#7695FF', // Default background color
-  foregroundColor = '#B5C0D0', // Default foreground color
+  size = 200,
+  backgroundColor = '#006fee',
+  foregroundColor = '#dcdcdc',
 }) => {
   return (
     <div className='flex flex-col items-center'>
@@ -23,18 +23,18 @@ const CircularProgressWithCountdown: React.FC<CircularProgressWithCountdownProps
       </div>
       <div className='mt-4'>
         <Box sx={{ position: 'relative', display: 'inline-flex', width: size, height: size }}>
-          <CircularProgress
+          {/* <CircularProgress
             variant="determinate"
             value={100}
             size={size}
             sx={{ color: backgroundColor, position: 'absolute', top: 0, left: 0, zIndex: 1 }}
-          />
+          /> */}
           <CircularProgress
             variant="determinate"
             value={progress}
             size={size}
             sx={{
-              color: foregroundColor,
+              color: backgroundColor,
               position: 'absolute',
               top: 0,
               left: 0,

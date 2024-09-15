@@ -1,0 +1,17 @@
+.dot-green {
+    background-color: rgb(1, 181, 1);
+}
+
+.dot-orange {
+    background-color: rgb(252, 186, 65);
+}
+
+.dot-red {
+    background-color: red;
+}
+
+.dot-before::before {
+    content: '•';
+    margin-right: 0.5rem;
+    color: black;
+  }
