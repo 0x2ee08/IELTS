@@ -20,6 +20,7 @@ const generateSpeakingRoutes = require('./routes/genSpeakingRoutes');
 const contestRoutes = require('./routes/contestRoutes');
 const problemsRoutes = require('./routes/problemsRoutes')
 const generateListeningRoutes = require('./routes/genListeningRoutes');
+const graderWritingTask2 = require('./routes/graderWritingTask2');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -47,6 +48,7 @@ app.use('/api', contestRoutes);
 app.use('/api', generateListeningRoutes);
 app.use('/api', generateSpeakingRoutes);
 app.use('/api', problemsRoutes);
+app.use('/api', graderWritingTask2);
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

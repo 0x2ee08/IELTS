@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import Head from "next/head";
 import Header from '../components/Header';
 import { Button } from "@nextui-org/react"
+import config from '../config';
 
 
 export default function WritingGrader() {
@@ -11,14 +12,48 @@ export default function WritingGrader() {
     // State for the prompt and essay inputs
     const [prompt, setPrompt] = useState("");
     const [essay, setEssay] = useState("");
+    const [evaluation, setEvaluation] = useState([]);
+    const [hasbeenGraded, setHasBeenGraded] = useState(false);
 
     // Handle the form submission
     const handleSubmit = (e) => {
         e.preventDefault();
+
         // Add logic to grade the essay or send the data to a backend API
+        const data = {
+            prompt: prompt,
+            response: essay
+        };
+
+        // Retrieve the token (example: from localStorage or sessionStorage)
+        const token = localStorage.getItem('token');  // Or sessionStorage.getItem('token')
+
+        // Make sure the token exists before making the request
+        if (!token) {
+            console.error("Token not found, please log in.");
+            return;
+        }
+
+        fetch(`${config.API_BASE_URL}api/writing`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`  // Add the token to the Authorization header
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                setEvaluation(data);
+                setHasBeenGraded(true)
+                console.log(evaluation);
+            })
+            .catch(error => console.error('Error:', error));
+
         console.log("Prompt:", prompt);
         console.log("Essay:", essay);
     };
+
 
     // Function to auto-resize the textarea
     const handleTextareaChange = (e, setState) => {
@@ -65,8 +100,34 @@ export default function WritingGrader() {
                         <h2 className="text-2xl font-semibold mb-4">Grading Results</h2>
                         <div className="border p-4 rounded-lg h-15 bg-gray-50">
                             {/* This section can display grading results, feedback, or additional info */}
-                            <p className="text-gray-700">Grading results or feedback will appear here once the essay is submitted.</p>
+                            {hasbeenGraded ? (
+                                evaluation && evaluation.length > 0 ? (
+                                    <ul>
+                                        {evaluation.map((item, index) => {
+                                            // Check if the item is an object and has the expected properties
+                                            if (item && typeof item === 'object' && 'type' in item && 'band' in item && 'detailed_response' in item) {
+                                                return (
+                                                    <li key={index} className="mb-2">
+                                                        <p><strong>Type:</strong> {item.type}</p>
+                                                        <p><strong>Band:</strong> {item.band}</p>
+                                                        <p><strong>Feedback:</strong> {item.detailed_response}</p>
+                                                    </li>
+                                                );
+                                            } else {
+                                                console.error('Unexpected data format:', item);
+                                                return <li key={index} className="mb-2">Invalid data format</li>;
+                                            }
+                                        })}
+                                    </ul>
+                                ) : (
+                                    <p className="text-gray-700">No evaluation data returned.</p>
+                                )
+                            ) : (
+                                <p className="text-gray-700">Grading results or feedback will appear here once the essay is submitted.</p>
+                            )}
                         </div>
+
+
                     </form>
                 </div>
 
