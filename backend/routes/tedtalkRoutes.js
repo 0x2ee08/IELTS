@@ -122,6 +122,43 @@ router.post('/get_transcript', async (req, res) => {
     }
 });
 
+router.post('/create_quiz', authenticateToken, async (req, res)=> {
+    const {message}=req.body;
+    
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: 'meta-llama/llama-3-8b-instruct:free',
+        "messages": message,
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    res.json({ message: response.data.choices[0].message.content.trim() });
+});
+
+
+router.post('/save_quiz', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { videoId, arr } = req.body;
+    const time_save = new Date();
+
+    try {
+        const db = await connectToDatabase();
+        const noteCollection = db.collection('ted_quiz');
+
+        await noteCollection.insertOne({
+            video_id: videoId,
+            quiz: arr
+        });
+        res.json({ success: true, message: 'Quiz save' });
+
+    } catch (error) {
+        console.error('An error occurred:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 router.post('/send_chat', authenticateToken, async (req, res) => {
     const { message } = req.body;
 
