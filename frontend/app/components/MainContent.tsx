@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import config from '../config';
 import dayjs from 'dayjs';
+import Link from 'next/link';
 
 interface Blog {
   author: string;
@@ -30,6 +31,7 @@ interface Contest {
 const MainContent: React.FC = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [upcomingContest, setUpcomingContest] = useState<Contest[] | null>(null);
+  const [pastContest, setUppastContest] = useState<Contest[] | null>(null);
   const [countdowns, setCountdowns] = useState<string[]>([]);
 
   const get_home_page_bloglist = async () => {
@@ -67,7 +69,14 @@ const MainContent: React.FC = () => {
           const cst = new Date(contest.startTime);
           return cst > currentTime;
         });
+
+        const pastcontest = contests.filter((contest: Contest) => {
+          const cst = new Date(contest.endTime);
+          return cst < currentTime;
+        });
+
         setUpcomingContest(upcoming);
+        setUppastContest(pastcontest);
       })
       .catch(error => {
         console.error('Error fetching contests:', error);
@@ -91,21 +100,28 @@ const MainContent: React.FC = () => {
     }
   }, [upcomingContest]);
 
-  const timeleft = (endTimeISO: string): string => {
-    const startTime = new Date();
+  const timediff = (startTimeISO: string, endTimeISO: string): string => {
+    const startTime = new Date(startTimeISO);
     const endTime = new Date(endTimeISO);
     const diffInMs = endTime.getTime() - startTime.getTime();
+
+    if (diffInMs < 0) return `00 giây`;
     
     const seconds = Math.floor((diffInMs / 1000) % 60);
     const minutes = Math.floor((diffInMs / (1000 * 60)) % 60);
     const hours = Math.floor((diffInMs / (1000 * 60 * 60)) % 24);
     const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-    if (days !== 0) return `${String(days).padStart(2, '0')} ngày ${String(hours).padStart(2, '0')} tiếng ${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
+    if (days !== 0) return `${String(days)} ngày ${String(hours).padStart(2, '0')} tiếng ${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
     if (hours !== 0) return `${String(hours).padStart(2, '0')} tiếng ${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
     if (minutes !== 0) return `${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
 
     return `${String(seconds).padStart(2, '0')} giây`;
+  };
+
+  const timeleft = (timeISO: string): string => {
+    const d = new Date().toISOString();
+    return timediff(d, timeISO);
   };
 
   return (
@@ -121,7 +137,7 @@ const MainContent: React.FC = () => {
                   <h3 className="font-bold text-xl">{contest.problemName}</h3>
                   <p className="text-gray-600">Bắt đầu trong: <span className="font-semibold text-[#0077B6]">{countdowns[cnt]}</span></p>
                   <div className="flex justify-end mt-4">
-                    <button className="px-8 py-3 bg-[#0077B6] text-white rounded-lg" onClick={() => handleRegister(contest.id)}>Đăng ký</button>
+                    <button className="px-8 py-3 bg-[#0077B6] text-white rounded-lg hover:shadow-lg" onClick={() => handleRegister(contest.id)}>Đăng ký</button>
                   </div>
                 </div>
               </div>
@@ -142,16 +158,19 @@ const MainContent: React.FC = () => {
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                {/* Test Card */}
-                {Array(6).fill(0).map((_, index) => (
-                    <div key={index} className="border border-black rounded-lg p-4 shadow hover:shadow-lg transition">
-                        <h3 className="font-semibold text-[#0077B6]">IELTS Cambridge 12 Listening</h3>
-                        <p className="text-gray-500">40 phút</p>
+                {pastContest ? pastContest.map((contest, index) => (
+                    <Link href={`/contests/${contest.id}`} key={index} className="cursor-pointer border border-black rounded-lg p-4 shadow hover:shadow-lg transition">
+                        <h3 className="font-semibold text-[#0077B6] hover:underline">{contest.problemName}</h3>
+                        <p className="text-gray-500">{timediff(contest.startTime, contest.endTime)}</p>
                         <p className="text-gray-500">32 bài nộp</p>
                         <p className="text-gray-500">4301 bình luận</p>
                         <p className="text-blue-500 mt-2">40 câu hỏi</p>
-                    </div>
-                ))}
+                    </Link>
+                )) : (
+                  <p>Loading...</p>
+                )}
+
+                
             </div>
             <div className="flex items-center justify-center mt-4">
                 <button className="text-[#0077B6] mr-4">READ MORE</button>
