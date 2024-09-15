@@ -124,7 +124,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
             </label>
         ))
     );    
-
+    let cnt=0;
     return (
         <div className="reading-contest-page">
             <h1>{contest.problemName}</h1>
@@ -156,10 +156,10 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                 <div className="sections-content">
                     {contest.paragraphs[activeParagraph].sections.map((section: any, secIndex: number) => (
                         <div key={secIndex}>
-                            <h3>Section Type: {section.type}</h3>
+                            <h3>Section Type: {section.type}</h3> 
                             {section.questions.map((question: any, qIndex: number) => (
                                 <div key={qIndex}>
-                                    <p><b>Question:</b> {question.question}</p>
+                                    <p><b>Question {++cnt}:</b> {question.question}</p>
 
                                     {section.type === 'True/False/Not Given' && renderTrueFalseNotGiven(secIndex, qIndex)}
                                     {section.type === 'Yes/No/Not Given' && renderYesNoNotGiven(secIndex, qIndex)}
