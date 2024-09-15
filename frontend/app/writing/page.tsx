@@ -11,6 +11,21 @@ import remarkGfm from 'remark-gfm'
 
 
 export default function WritingGrader() {
+    const cardColors = ['bg-gradient-to-br from-red-500 to-fuchsia-400', 'bg-gradient-to-br from-cyan-500 to-teal-400', 'bg-gradient-to-br from-yellow-300 to-amber-300', 'bg-gradient-to-br from-indigo-500 to-violet-400'];
+
+    const gridContainerStyle = {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)', // 2 equal-width columns
+        gap: '20px', // Adjust the spacing between cards
+        justifyContent: 'center', // Center the entire grid horizontally
+        alignItems: 'center', // Center the entire grid vertically
+    };
+
+    const gridItemStyle = {
+        display: 'flex',
+        justifyContent: 'center', // Center each card horizontally within its cell
+        alignItems: 'center', // Center each card vertically within its cell
+    };
 
     // State for the prompt and essay inputs
     const [prompt, setPrompt] = useState("");
@@ -105,12 +120,13 @@ export default function WritingGrader() {
                             {/* This section can display grading results, feedback, or additional info */}
                             {hasbeenGraded ? (
                                 evaluation && evaluation.length > 0 ? (
-                                    <ul>
-                                        {evaluation.map((item, index) => {
-                                            // Check if the item is an object and has the expected properties
-                                            return (
-                                                <Card className="w-[240px] h-[240px] border-none bg-gradient-to-br from-red-500 to-fuchsia-400">
-                                                    <CardBody className="justify-center items-center pb-0">
+                                    <div style={gridContainerStyle}>
+                                        {evaluation.map((item, index) => (
+                                            <div key={index} style={gridItemStyle}> {/* Wrap each card in a centered flex container */}
+                                                <Card
+                                                    className={`w-[240px] h-[240px] border-none ${cardColors[index % cardColors.length]}`}
+                                                >
+                                                    <CardBody className="flex justify-center items-center pb-0">
                                                         <CircularProgress
                                                             classNames={{
                                                                 svg: "w-36 h-36 drop-shadow-md",
@@ -119,14 +135,14 @@ export default function WritingGrader() {
                                                                 value: "text-3xl font-semibold text-white",
                                                             }}
                                                             value={Number(item['band'])}
-                                                            formatOptions={{ style: "decimal"}}
+                                                            formatOptions={{ style: "decimal" }}
                                                             minValue={0}
                                                             maxValue={9}
                                                             strokeWidth={4}
                                                             showValueLabel={true}
                                                         />
                                                     </CardBody>
-                                                    <CardFooter className="justify-center items-center pt-0">
+                                                    <CardFooter className="flex justify-center items-center pt-0">
                                                         <Chip
                                                             classNames={{
                                                                 base: "border-1 border-white/30",
@@ -138,9 +154,9 @@ export default function WritingGrader() {
                                                         </Chip>
                                                     </CardFooter>
                                                 </Card>
-                                            );
-                                        })}
-                                    </ul>
+                                            </div>
+                                        ))}
+                                    </div>
                                 ) : (
                                     <p className="text-gray-700">No evaluation data returned.</p>
                                 )
@@ -148,8 +164,25 @@ export default function WritingGrader() {
                                 <p className="text-gray-700">Grading results or feedback will appear here once the essay is submitted.</p>
                             )}
                         </div>
-
-
+                        <h2 className="text-2xl font-semibold mb-4">Detailed Feedback</h2>
+                        <div className="border p-4 rounded-lg h-15 bg-gray-50">
+                            {hasbeenGraded ? (
+                                evaluation && evaluation.length > 0 ? (
+                                    <div>
+                                        {evaluation.map((item, index) => (
+                                            <li key={index} className="padding_bottom:25px">
+                                                <Markdown>{`**${item['type']}**`}</Markdown>
+                                                <Markdown>{`${item['response']}`}</Markdown>
+                                            </li>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-700">No feedback data returned.</p>
+                                )
+                            ) : (
+                                <p className="text-gray-700">Grading results or feedback will appear here once the essay is submitted.</p>
+                            )}
+                        </div>
                     </form>
                 </div>
 
