@@ -115,6 +115,15 @@ let contextList = [contextTaskResponse, contextCohesionCoherence, contextLexical
 let typeList = ["the content and logic that the response presented", "the coherence, cohesion and the overall clarity", "the lexical resource", "the grammatical range and its accuracy"];
 let category = ["Task Response", "Cohesion and Coherence", "Lexical Resource", "Grammatical Range and Accuracy"];
 
+function getFeedback(str) {
+    // Split the string into an array of lines
+    const lines = str.split('\n');
+    
+    // Remove the first line and join the rest
+    lines.shift(); // Remove the first line from the array
+    return lines.join('\n'); // Join the remaining lines back into a single string
+}
+
 function getBand(str) {
     for (let i = 0; i < str.length; i++) {
         if (str[i] >= '0' && str[i] <= '9') {
@@ -154,7 +163,7 @@ async function askAiTaskResponse(prompt, response, type) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                "model": "google/gemini-pro-1.5-exp",
+                "model": "google/gemini-flash-1.5",
                 "messages": [
                     { "role": "system", "content": contextList[type] },
                     { "role": "user", "content": formattedPromptResponse }
@@ -167,7 +176,7 @@ async function askAiTaskResponse(prompt, response, type) {
 
         let apiResponse = await verdict.json();
         let response = apiResponse.choices[0].message.content
-        criterion.response = response;
+        criterion.response = getFeedback(response);
         criterion.band = getBand(response);
     } catch (error) {
         console.error("Error:", error);

@@ -3,8 +3,11 @@
 import React, { use, useState } from "react";
 import Head from "next/head";
 import Header from '../components/Header';
-import { Button } from "@nextui-org/react"
+import { Button, CircularProgress, Card, CardBody, CardFooter, Chip } from "@nextui-org/react"
 import config from '../config';
+import { createRoot } from 'react-dom/client'
+import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 
 export default function WritingGrader() {
@@ -45,7 +48,7 @@ export default function WritingGrader() {
             .then(response => response.json())
             .then(data => {
                 setEvaluation(data);
-                setHasBeenGraded(true)
+                setHasBeenGraded(true);
                 console.log(evaluation);
             })
             .catch(error => console.error('Error:', error));
@@ -98,25 +101,44 @@ export default function WritingGrader() {
                             />
                         </div>
                         <h2 className="text-2xl font-semibold mb-4">Grading Results</h2>
-                        <div className="border p-4 rounded-lg h-15 bg-gray-50">
+                        <div>
                             {/* This section can display grading results, feedback, or additional info */}
                             {hasbeenGraded ? (
                                 evaluation && evaluation.length > 0 ? (
                                     <ul>
                                         {evaluation.map((item, index) => {
                                             // Check if the item is an object and has the expected properties
-                                            if (item && typeof item === 'object' && 'type' in item && 'band' in item && 'detailed_response' in item) {
-                                                return (
-                                                    <li key={index} className="mb-2">
-                                                        <p><strong>Type:</strong> {item.type}</p>
-                                                        <p><strong>Band:</strong> {item.band}</p>
-                                                        <p><strong>Feedback:</strong> {item.detailed_response}</p>
-                                                    </li>
-                                                );
-                                            } else {
-                                                console.error('Unexpected data format:', item);
-                                                return <li key={index} className="mb-2">Invalid data format</li>;
-                                            }
+                                            return (
+                                                <Card className="w-[240px] h-[240px] border-none bg-gradient-to-br from-red-500 to-fuchsia-400">
+                                                    <CardBody className="justify-center items-center pb-0">
+                                                        <CircularProgress
+                                                            classNames={{
+                                                                svg: "w-36 h-36 drop-shadow-md",
+                                                                indicator: "stroke-white",
+                                                                track: "stroke-white/10",
+                                                                value: "text-3xl font-semibold text-white",
+                                                            }}
+                                                            value={Number(item['band'])}
+                                                            formatOptions={{ style: "decimal"}}
+                                                            minValue={0}
+                                                            maxValue={9}
+                                                            strokeWidth={4}
+                                                            showValueLabel={true}
+                                                        />
+                                                    </CardBody>
+                                                    <CardFooter className="justify-center items-center pt-0">
+                                                        <Chip
+                                                            classNames={{
+                                                                base: "border-1 border-white/30",
+                                                                content: "text-white/90 text-small font-semibold",
+                                                            }}
+                                                            variant="bordered"
+                                                        >
+                                                            {item['type']}
+                                                        </Chip>
+                                                    </CardFooter>
+                                                </Card>
+                                            );
                                         })}
                                     </ul>
                                 ) : (
