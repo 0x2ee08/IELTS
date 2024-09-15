@@ -11,7 +11,7 @@ import SpeakingPage from './speaking/speaking';
 
 const ProblemDetail: React.FC = () => {
     const params = useSearchParams();
-    const problem_id = params.get('id');
+    const id = params.get('id');
     const router = useRouter();
     const [typeOfProblem, setTypeOfProblem ] = useState('');
 
@@ -33,7 +33,7 @@ const ProblemDetail: React.FC = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ problem_id }),
+                body: JSON.stringify({ id }),
             });
             const result = await response.json();
 

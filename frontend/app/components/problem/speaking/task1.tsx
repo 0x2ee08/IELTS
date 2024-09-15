@@ -5,11 +5,22 @@ import config from '../../../config';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import {Button, ButtonGroup} from "@nextui-org/react";
+import {Link} from "@nextui-org/react";
 
 import CircularProgressWithCountdown from './component/circularProgress';
+import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/react";
 import ResultPage from './component/result';
 import { blob } from 'stream/consumers';
 import { M_PLUS_1 } from 'next/font/google';
+import WebcamStream from './component/WebcamStream';
+import {Textarea} from "@nextui-org/react";
+import {Divider} from "@nextui-org/react";
+import './component/dot.css'
+import { ClockIcon } from './component/ClockIcon';
+import { MicroIcon } from './component/MicroIcon';
+import PentagonChart from './component/pentagonChart';
+import DollarIcon from './component/DollarIcon';
 
 export interface task1QuestionGeneral {
     type: string;
@@ -18,14 +29,22 @@ export interface task1QuestionGeneral {
     questions: string[];
 }
 
+export interface Description {
+    problemName: string;
+    created_by: string;
+    startTime: string;
+    endTime: string;
+}
+
 interface Task1PageProps {
     task: task1QuestionGeneral;
     task_id: number;
-    problem_id: string | null;
+    id: string | null;
+    description: Description;
     onTaskUpdate: (task: task1QuestionGeneral) => void;
 }
 
-const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTaskUpdate }) => {
+const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onTaskUpdate, description }) => {
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [recordingError, setRecordingError] = useState<string | null>(null);
@@ -34,11 +53,12 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
     const [blobArray, setBlobArray] = useState<any[]>([]);
     const [blobRefArray, setBlobRefArray] = useState<any[]>([]);
     const [doneRecording, setDoneRecording] = useState(false);
-    const [saveRecord, setSaveRecord] = useState(false);
+    const [saveRecord, setSaveRecord] = useState(true);
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const audioChunksRef = useRef<Blob[]>([]);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
     const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb';
 
     const [isTesting, setIsTesting] = useState(false);
@@ -47,6 +67,8 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [timeLeft, setTimeLeft] = useState(task.length);
     const [isRecording, setIsRecording] = useState(false);
+    const [pentagonArray, setPentagonArray] = useState([0, 0, 0, 0, 0])
+    const [preProcess, setPreProcess] = useState(false);
 
     const hasInitialize = useRef(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -54,9 +76,15 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
 
     useEffect(() => {
         if (!hasInitialize.current) {
+            console.log(description);
             hasInitialize.current = true;
         }
     }, []);
+
+    useEffect(() => {
+        getSpeakingGrading();
+    });
+
 
     useEffect(() => {
         if (isLoading) {
@@ -100,7 +128,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
                 clearInterval(timerRef.current);
             }
         };
-    }, [isTesting]);
+    }, [isTesting]);    
 
     const startRecording = async () => {
         setAudioBlob(null);
@@ -210,10 +238,10 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
 
     const processBlob = async () => {
         if(!doneRecording) return;
-        console.log(blobArray)
         for(let i=0; i<blobArray.length; i++) {
             const audioBlob = blobArray[i];
             const audioBase64 = await convertBlobToBase64(audioBlob);
+            const audioData = audioBlob;
 
             if (audioBase64.length < 6) {
                 setRecordingError('Recording is too short.');
@@ -227,14 +255,14 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
             }).then(res => res.json())
                 .then(data => {
                     setResponseData(data);
-                    setResult(prevResult => [...prevResult, { data, audioBase64 }]);
+                    setResult(prevResult => [...prevResult, { data, audioData }]);
                 });
         }
         setDoneRecording(false);
     }
 
     const save_record = async() => {
-        console.log(problem_id, result);
+        console.log(id, result);
         const token = localStorage.getItem('token');
         await fetch(`${config.API_BASE_URL}api/add_new_speaking_answer`, {
             method: 'POST',
@@ -242,92 +270,251 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, problem_id, onTask
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ problem_id, result, task_id}),
+            body: JSON.stringify({ id, result, task_id}),   
         });
         setSaveRecord(true);
     }
 
+    const formatDateRange = (startTime: string, endTime: string) => {
+        const startDate = new Date(startTime);
+        const endDate = new Date(endTime);
+        const options: Intl.DateTimeFormatOptions = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        };
+        return `${startDate.toLocaleString(undefined, options)} - ${endDate.toLocaleString(undefined, options)}`;
+    };
+
+    const getSpeakingGrading = async() => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${config.API_BASE_URL}api/getSpeakingGrading`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ id, task_id }),
+        });
+        const result = await response.json();
+        const band = result.band;
+        console.log(band);
+        let pronunciation = 0, fluency = 0, lexical = 0, grammar = 0;
+        let mpronunciation = 0, mfluency = 0, mlexical = 0, mgrammar = 0;
+        for(let i=0; i<band.length; i++) {
+            for(let j=0; j<Number(task.number_of_task); j++) {
+                if(band[i][j].band) {
+                    pronunciation += band[i][j].band.pronunciation;
+                    fluency += band[i][j].band.fluency;
+                    lexical += band[i][j].band.lexical;
+                    grammar += band[i][j].band.grammar;
+                    mpronunciation += 9;
+                    mfluency += 9;
+                    mlexical += 9;
+                    mgrammar += 9;
+                }
+            }
+        }
+        pentagonArray[0] = convertToIELTSBand(pronunciation, mpronunciation);
+        pentagonArray[1] = convertToIELTSBand(fluency, mfluency);
+        pentagonArray[2] = convertToIELTSBand(lexical, mlexical);
+        pentagonArray[3] = convertToIELTSBand(grammar, mgrammar);
+        pentagonArray[4] = convertToIELTSBand(pronunciation + fluency + grammar + lexical, 
+                                        mpronunciation + mfluency + mgrammar + mlexical);
+        console.log(pentagonArray);
+        setPreProcess(true);
+    }
+
+    const convertToIELTSBand = (score: number, maxScore: number) => {
+        const d = maxScore / 9;
+        if(d == 0) return 0;
+        const x = Math.floor(score / d);
+        const lowerBound = x * d;
+        const upperBound = (x + 1) * d;
+        const middle1 = lowerBound + d / 3;
+        const middle2 = lowerBound + 2 * (d / 3);
+        let band = x;
+        if (score >= middle1 && score <= middle2) {
+            band += 0.5;
+        } else if (score > middle2 && score <= upperBound) {
+            band += 1;
+        }
+        return Math.round(Math.min(Math.max(band, 1), 9));
+    }
+
     return (
         <div>
-            <div className='border border-gray-300 px-4 py-2 rounded-md m-4 ml-20 mr-20 mb-5'>
-                <button
-                    onClick={isTesting ? handleStopClick : handleStartClick}
-                    className="px-2 py-1 text-black rounded-md"
-                >
-                    {isTesting ? 'Stop the task' : 'Start the task'}
-                </button>
+            <div className='ml-20 mr-20 mb-10'>
+                <Divider />
             </div>
-            <div className='border border-gray-300 px-4 py-2 rounded-md m-4 ml-20 mr-20'>
+            <div className='flex m-4 ml-20 mr-20 mb-5'>
+                <div className='w-1/3'>
+                    <div className="text-3xl font-bold mb-6">
+                        {description && description.problemName ? description.problemName : null}
+                    </div>
+                    <div className="text-lg dot-before">
+                        Author: {description && description.created_by ? (
+                                    <Link className="text-lg" href={`/loader/profile?id=${description.created_by}`}>
+                                        {description.created_by}
+                                    </Link>
+                                )
+                                    : null
+                                }
+                    </div>
+                    <div className="text-lg dot-before">
+                        Type: Speaking Task 1
+                    </div>
+                    <div className="text-lg dot-before mb-6">
+                        {description ? formatDateRange(description.startTime, description.endTime) : null}
+                    </div>
+                    <Button
+                        onClick={isTesting ? handleStopClick : handleStartClick}
+                        isDisabled={isLoading}
+                        className="mr-4"
+                        color="primary"
+                        style={{ fontSize: '1rem' }}
+                    >
+                        {isTesting ? 'Stop the task' : 'Start the task'}
+                    </Button>
+                    {doneRecording && !isTesting ? (
+                        <Button 
+                            onClick={processBlob}
+                            className="mr-4"
+                            color="primary"
+                            style={{ fontSize: '1rem' }}
+                        >
+                            Process Record
+                        </Button>
+                    ) : (
+                        null
+                    )}
+                    {!saveRecord && !doneRecording && !isTesting ? (
+                        <Button 
+                            onClick={save_record}
+                            className="mr-4"
+                            color="primary"
+                            style={{ fontSize: '1rem' }}
+                        >
+                            Save Record
+                        </Button>
+                    ) : (
+                        null
+                    )}
+                </div>
+
+                <div className='flex flex-col w-1/3 items-center'>
+                    <div className='flex mb-6'>
+                        <ClockIcon/>
+                        <div className='flex flex-col ml-4'>
+                            <div className="text-lg">
+                                Speaking Time
+                            </div>
+                            <div className="text-3xl font-bold">
+                                {task.length} sec
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className='flex mb-6'>
+                        <MicroIcon/>
+                        <div className='flex flex-col ml-4'>
+                            <div className="text-lg">
+                                Number
+                            </div>
+                            <div className="text-3xl font-bold">
+                                {task.number_of_task} records
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className='flex mb-6'>
+                        <DollarIcon/>
+                        <div className='flex flex-col ml-4'>
+                            <div className="text-lg">
+                                Cost of the task
+                            </div>
+                            <div className="text-3xl font-bold">
+                                Free
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {preProcess ? (
+                    <div className='flex flex-col w-1/3 items-center justify-center'>
+                        <PentagonChart data={pentagonArray} />
+                        {/* <PentagonChart /> */}
+                    </div>
+                ) : (
+                    null
+                )}
+            </div>
+
+            {/* Body */}
+            <div className='m-5 ml-20 mr-20'>
+                <Divider className='mb-10'/>
                 {isTesting ? (
                     <div>
                         {isLoading ? (
                             <div className='flex flex-col items-center'>
                                 <CircularProgressWithCountdown 
                                     progress={progress} 
-                                    size={120}
-                                    backgroundColor='#7695FF'
-                                    foregroundColor='#B5C0D0'
+                                    size={150}
+                                    backgroundColor='#006fee'
+                                    foregroundColor='#dcdcdc'
                                 />
                             </div>
                         ) : (
-                            <div>
-                                <div className='flex flex-col items-center'>
-                                    <button 
-                                        onClick={startRecording}
-                                        // disabled={isRecording || timeLeft <= 0}
-                                        className="px-4 py-2 bg-green-500 text-white rounded-md"
-                                    >
-                                        Start Recording
-                                    </button>
-                                    <button 
-                                        onClick={(e) => stopRecording(true)}
-                                        // disabled={!isRecording}
-                                        className="px-4 py-2 bg-red-500 text-white rounded-md mt-2"
-                                    >
-                                        Stop Recording
-                                    </button>
-                                    <Typography variant="h6" className="mt-4">
-                                        Time Left: {timeLeft}s
-                                    </Typography>
+                            <div className='flex mt-8'>
+                                <WebcamStream/>
+                                <div className='flex flex-col w-1/2 ml-4'>
+                                    <div className='flex items-center mb-4'>
+                                        <div className='mr-4 w-auto'>
+                                            <Button 
+                                                onClick={startRecording}
+                                                isDisabled={isRecording || timeLeft <= 0}
+                                                color="success"
+                                                style={{ fontSize: '1rem' }}
+                                            >
+                                                Start recording
+                                            </Button>
+                                        </div>
+                                        <div className='flex-grow text-center mx-4' style={{ fontSize: '1rem' }}>
+                                            Time left: {timeLeft}s
+                                        </div>
+                                        <div className='ml-auto'>
+                                            <Button 
+                                                onClick={(e) => stopRecording(true)}
+                                                isDisabled={!isRecording}
+                                                color="danger"
+                                                style={{ fontSize: '1rem' }}
+                                            >
+                                                Next question
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <Textarea
+                                        style={{ fontSize: '1rem' }}
+                                        placeholder="Enter your note (not available for task 1)"
+                                        className="max-w-full h-40"
+                                        isReadOnly
+                                    />
                                 </div>
                             </div>
                         )}
                     </div>
                 ) : (
                     <div>
-                        {task.questions.length > 0 ? (
-                            task.questions.map((question, idx) => (
-                                <div key={idx}>
-                                    <p>Question {idx + 1}: {question}</p>
-                                </div>
-                            ))
-                        ) : (
-                            <p>No questions found.</p>
-                        )}
-                        <button 
-                            onClick={processBlob}
-                            className="px-4 py-2 bg-blue-500 text-white rounded-md mr-4 mt-4"
-                        >
-                            Process Record
-                        </button>
-                        {!saveRecord && !doneRecording ? (
-                            <button 
-                                onClick={save_record}
-                                className="px-4 py-2 bg-blue-500 text-white rounded-md mr-4 mt-4"
-                            >
-                                Save Record
-                            </button>
-                        ) : (
-                            null
-                        )}
                         <div key={task_id}>
-                            <ResultPage task={task} task_id={task_id} problem_id={problem_id}/>
+                            <ResultPage task={task} task_id={task_id} id={id}/>
                         </div>
                     </div>
                 )}
             </div>
         </div>
     );
-};
+});
 
 export default Task1Page;

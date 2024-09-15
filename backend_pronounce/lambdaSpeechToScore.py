@@ -18,6 +18,24 @@ trainer_SST_lambda['en'] = pronunciationTrainer.getTrainer("en")
 
 transform = Resample(orig_freq=48000, new_freq=16000)
 
+import math
+
+def calculate_pronunciation_accuracy(is_letter_correct_all_words: str) -> int:
+    correct = 0
+    count = 0
+    
+    for letter in is_letter_correct_all_words:
+        if letter == '1':
+            correct += 1
+        if letter == '1' or letter == '0':
+            count += 1
+
+    if count == 0:
+        return 0
+
+    pronunciation_accuracy = math.ceil((correct / count) * 100)
+    return pronunciation_accuracy
+
 
 def lambda_handler(event, context):
 
@@ -83,7 +101,7 @@ def lambda_handler(event, context):
 
     res = {'real_transcript': result['recording_transcript'],
            'ipa_transcript': result['recording_ipa'],
-           'pronunciation_accuracy': str(int(result['pronunciation_accuracy'])),
+           'pronunciation_accuracy': calculate_pronunciation_accuracy(is_letter_correct_all_words),
            'real_transcripts': real_transcripts, 'matched_transcripts': matched_transcripts,
            'real_transcripts_ipa': real_transcripts_ipa, 'matched_transcripts_ipa': matched_transcripts_ipa,
            'pair_accuracy_category': pair_accuracy_category,

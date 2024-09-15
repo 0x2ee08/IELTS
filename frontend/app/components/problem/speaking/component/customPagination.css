@@ -1,0 +1,42 @@
+/* customPagination.css */
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem; /* Adjust the spacing between buttons */
+}
+
+.pagination-button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem; /* Rounded corners */
+    font-size: 1rem; /* Adjust font size as needed */
+    cursor: pointer;
+    transition: background-color 0.3s ease, opacity 0.3s ease; /* Smooth transition for background color and opacity */
+    background-color: #f4f4f5; /* Default background color */
+    color: #000; /* Default text color */
+    position: relative;
+}
+
+/* Hover effect for all buttons */
+.pagination-button:hover {
+    background-color: #e4e4e7; /* Background color on hover */
+    transform: none; /* Ensure no zoom effect */
+}
+
+/* Style for the current page button */
+.current-page {
+    background-color: #006fee; /* Background color for the current page */
+    color: white; /* Text color for the current page */
+}
+
+/* Prevent hover effect on the current page button */
+.current-page:hover {
+    background-color: #006fee; /* Keep the current color on hover */
+}
+
+/* Ensure hover effects do not apply to current page */
+.pagination-button:not(.current-page):hover {
+    background-color: #e4e4e7; /* Background color on hover for non-current page buttons */
+    transform: none; /* Ensure no zoom effect */
+}
