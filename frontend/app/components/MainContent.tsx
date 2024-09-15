@@ -60,10 +60,13 @@ const MainContent: React.FC = () => {
     axios.get(`${config.API_BASE_URL}api/getAllContest`, { headers: { 'Authorization': `Bearer ${token}` } })
       .then(response => {
         const contests = Object.values(response.data) as Contest[];
-        const currentTime = new Date().toISOString();
+        const currentTime = new Date();
 
-        // Split contests into upcoming and past contests
-        const upcoming = contests.filter((contest: Contest) => contest.startTime > currentTime);
+        // Upcoming contest filter
+        const upcoming = contests.filter((contest: Contest) => {
+          const cst = new Date(contest.startTime);
+          return cst > currentTime;
+        });
         setUpcomingContest(upcoming);
       })
       .catch(error => {
@@ -87,30 +90,6 @@ const MainContent: React.FC = () => {
       return () => clearInterval(interval);
     }
   }, [upcomingContest]);
-
-  const formatDate = (isoString: string): JSX.Element => {
-    const date = new Date(isoString);
-    const utc7Offset = 7 * 60;
-    const localTime = new Date(date.getTime() + utc7Offset * 60 * 1000);
-    const formattedDate = localTime.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit'
-    }).replace(',', '/').replace(' ', '/');
-    
-    const formattedTime = localTime.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    });
-
-    return (
-      <>
-        {formattedDate} {formattedTime}
-        <span style={{ verticalAlign: 'super', fontSize: '10px' }}>UTC+7</span>
-      </>
-    );
-  };
 
   const timeleft = (endTimeISO: string): string => {
     const startTime = new Date();
@@ -136,19 +115,19 @@ const MainContent: React.FC = () => {
         {/* Upcoming Contest */}
         <section className="bg-white p-6 rounded-lg">
           <h2 className="text-lg font-semibold">UPCOMING CONTEST</h2>
-          <div className="bg-white-100 p-6 rounded-lg mt-4 border border-black">
             {upcomingContest ? upcomingContest.map((contest, cnt) =>
               <div key={cnt}>
-                <h3 className="font-bold text-xl">{contest.problemName}</h3>
-                <p className="text-gray-600">Bắt đầu trong: <span className="font-semibold text-[#0077B6]">{countdowns[cnt]}</span></p>
-                <div className="flex justify-end mt-4">
-                  <button className="px-8 py-3 bg-[#0077B6] text-white rounded-lg" onClick={() => handleRegister(contest.id)}>Đăng ký</button>
+                <div className="bg-white-100 p-6 rounded-lg mt-4 border border-black">
+                  <h3 className="font-bold text-xl">{contest.problemName}</h3>
+                  <p className="text-gray-600">Bắt đầu trong: <span className="font-semibold text-[#0077B6]">{countdowns[cnt]}</span></p>
+                  <div className="flex justify-end mt-4">
+                    <button className="px-8 py-3 bg-[#0077B6] text-white rounded-lg" onClick={() => handleRegister(contest.id)}>Đăng ký</button>
+                  </div>
                 </div>
               </div>
             ) : (
               <p>Loading...</p>
             )}
-          </div>
         </section>
 
         {/* Virtual Tests */}
