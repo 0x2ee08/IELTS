@@ -32,49 +32,59 @@ export default function WritingGrader() {
     const [essay, setEssay] = useState("");
     const [evaluation, setEvaluation] = useState([]);
     const [hasbeenGraded, setHasBeenGraded] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     // Handle the form submission
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault(); // Prevent default form submission
+        setLoading(true); // Set loading state to true when starting the async operation
+    
         // Add logic to grade the essay or send the data to a backend API
         const data = {
             prompt: prompt,
             response: essay
         };
-
+    
         // Retrieve the token (example: from localStorage or sessionStorage)
         const token = localStorage.getItem('token');  // Or sessionStorage.getItem('token')
-
+    
         // Make sure the token exists before making the request
         if (!token) {
             console.error("Token not found, please log in.");
+            setLoading(false); // Reset loading state if no token is found
             return;
         }
-
-        fetch(`${config.API_BASE_URL}api/writing`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`  // Add the token to the Authorization header
-            },
-            body: JSON.stringify(data)
-        })
-            .then(response => response.json())
-            .then(data => {
-                setEvaluation(data);
-                setHasBeenGraded(true);
-                console.log(evaluation);
-            })
-            .catch(error => console.error('Error:', error));
-
+    
+        try {
+            const response = await fetch(`${config.API_BASE_URL}api/writing`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`  // Add the token to the Authorization header
+                },
+                body: JSON.stringify(data)
+            });
+    
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+    
+            const result = await response.json();
+            setEvaluation(result);
+            setHasBeenGraded(true);
+            console.log(result);
+        } catch (error) {
+            console.error('Error:', error);
+        } finally {
+            setLoading(false); // Ensure loading state is reset regardless of success or failure
+        }
+    
         console.log("Prompt:", prompt);
         console.log("Essay:", essay);
     };
 
-
     // Function to auto-resize the textarea
-    const handleTextareaChange = (e, setState) => {
+    const handleTextareaChange = (e:any, setState:any) => {
         const textarea = e.target;
         setState(textarea.value);
 
@@ -85,11 +95,6 @@ export default function WritingGrader() {
 
     return (
         <div className="flex flex-col min-h-screen w-full">
-            <Head>
-                <title>IELTS Writing Grader</title>
-                <link rel="icon" href="/favicon.ico" />
-            </Head>
-
             <Header />
 
             {/* Two-panel layout */}
@@ -102,25 +107,58 @@ export default function WritingGrader() {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Prompt Input (now a textarea) */}
                         <div>
-                            <label className="block text-lg font-medium mb-2" htmlFor="prompt">
-                                Enter Writing Prompt:
-                            </label>
+                            <label className="block text-lg font-medium mb-2" htmlFor="prompt" style={{fontWeight:'bold'}}>Writing Prompt:</label>
                             <textarea
                                 id="prompt"
                                 value={prompt}
                                 onChange={(e) => handleTextareaChange(e, setPrompt)}
                                 className="w-full p-3 border rounded-lg"
-                                placeholder="Enter the task 2 prompt here"
+                                placeholder="Enter the prompt here"
                                 style={{ overflow: 'hidden', resize: 'none' }} // Disable manual resizing
                                 rows={4} // Initial height for prompt
                             />
                         </div>
+                    </form>
+                    {/* Essay Textarea */}
+                    <div>
+                        <label className="block text-lg font-medium mb-2" htmlFor="essay" style={{fontWeight:'bold'}}>Your Essay:</label>
+                        <textarea
+                            id="essay"
+                            value={essay}
+                            onChange={(e) => handleTextareaChange(e, setEssay)}
+                            className="w-full p-3 border rounded-lg"
+                            placeholder="Write your essay here..."
+                            style={{ overflow: 'hidden', resize: 'none' }} // Disable manual resizing
+                            rows={6} // Initial height for essay
+                        />
+                    </div>
+
+                    {/* Submit Button */}
+                    <div>
+                        <form onSubmit={handleSubmit}>
+                            <Button
+                                color="success"
+                                type="submit"
+                                className="w-full py-2 px-4 rounded-lg transition-colors"
+                                // onClick={handleSubmit}
+                                disabled={loading}
+                            >
+                                {loading ? 'Loading...' : 'Grade Essay'}
+                            </Button>    
+                        </form>
+                    </div>
+                </div>
+
+                {/* Right panel for grading results or additional content */}
+                <div className="w-1/2 p-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <h2 className="text-2xl font-semibold mb-4">Grading Results</h2>
                         <div>
                             {/* This section can display grading results, feedback, or additional info */}
                             {hasbeenGraded ? (
                                 evaluation && evaluation.length > 0 ? (
-                                    <div style={gridContainerStyle}>
+                                    !loading ? (
+                                        <div style={gridContainerStyle}>
                                         {evaluation.map((item, index) => (
                                             <div key={index} style={gridItemStyle}> {/* Wrap each card in a centered flex container */}
                                                 <Card
@@ -157,6 +195,10 @@ export default function WritingGrader() {
                                             </div>
                                         ))}
                                     </div>
+                                    ):(
+                                        <div className="border p-4 rounded-lg h-15 bg-gray-50"><p className="text-gray-700">Loading...</p></div>
+                                    )
+                                    
                                 ) : (
                                     <p className="text-gray-700">No evaluation data returned.</p>
                                 )
@@ -168,14 +210,18 @@ export default function WritingGrader() {
                         <div className="border p-4 rounded-lg h-15 bg-gray-50">
                             {hasbeenGraded ? (
                                 evaluation && evaluation.length > 0 ? (
-                                    <div>
-                                        {evaluation.map((item, index) => (
-                                            <li key={index} className="padding_bottom:25px">
-                                                <Markdown>{`**${item['type']}**`}</Markdown>
-                                                <Markdown>{`${item['response']}`}</Markdown>
-                                            </li>
-                                        ))}
-                                    </div>
+                                    !loading ? (
+                                        <div>
+                                            {evaluation.map((item, index) => (
+                                                <li key={index} className="padding_bottom:25px">
+                                                    <Markdown>{`**${item['type']}**`}</Markdown>
+                                                    <Markdown>{`${item['response']}`}</Markdown>
+                                                </li>
+                                            ))}
+                                        </div>    
+                                    ):(
+                                        <p className="text-gray-700">Loading...</p>
+                                    )
                                 ) : (
                                     <p className="text-gray-700">No feedback data returned.</p>
                                 )
@@ -183,38 +229,7 @@ export default function WritingGrader() {
                                 <p className="text-gray-700">Grading results or feedback will appear here once the essay is submitted.</p>
                             )}
                         </div>
-                    </form>
-                </div>
-
-                {/* Right panel for grading results or additional content */}
-                <div className="w-1/2 p-6">
-                    {/* Essay Textarea */}
-                    <div>
-                        <label className="block text-lg font-medium mb-2" htmlFor="essay">
-                            Enter Your Essay:
-                        </label>
-                        <textarea
-                            id="essay"
-                            value={essay}
-                            onChange={(e) => handleTextareaChange(e, setEssay)}
-                            className="w-full p-3 border rounded-lg"
-                            placeholder="Write your essay here..."
-                            style={{ overflow: 'hidden', resize: 'none' }} // Disable manual resizing
-                            rows={6} // Initial height for essay
-                        />
-                    </div>
-
-                    {/* Submit Button */}
-                    <div>
-                        <Button
-                            color="success"
-                            type="submit"
-                            className="w-full py-2 px-4 rounded-lg transition-colors"
-                            onClick={handleSubmit}
-                        >
-                            Grade Essay
-                        </Button>
-                    </div>
+                    </form>                   
                 </div>
             </main>
         </div>
