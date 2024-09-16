@@ -155,7 +155,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
 
                                     {section.type === 'True/False/Not Given' && renderTrueFalseNotGiven(secIndex, qIndex)}
                                     {section.type === 'Yes/No/Not Given' && renderYesNoNotGiven(secIndex, qIndex)}
-                                    {section.type === 'Fill in the blank with one word' && renderFillInTheBlank(secIndex, qIndex)}
+                                    {section.type === 'Fill in the blank with one word only' && renderFillInTheBlank(secIndex, qIndex)}
                                     {section.type === 'Fill in the blank with no more than two words' && renderFillInTheBlank(secIndex, qIndex)}
                                     {section.type === 'Matching Heading' && renderMatchingType(secIndex, qIndex, section)}
                                     {section.type === 'Matching Paragraph Information' && renderMatchingType(secIndex, qIndex, section)}
