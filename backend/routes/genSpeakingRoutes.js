@@ -62,7 +62,7 @@ router.post('/create_speaking_problem', authenticateToken, async (req, res) => {
     const time_created = new Date();
 
     const db = await connectToDatabase();
-    const problemCollection = db.collection('problem');
+    const problemCollection = db.collection('contest');
 
     const count = await problemCollection.countDocuments();
     const nextProblemId = count + 1;

@@ -16,7 +16,7 @@ const router = express.Router();
 router.post('/get_problemlist', authenticateToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
-        const problemsCollection = db.collection('problem');
+        const problemsCollection = db.collection('contest');
 
         const result = await problemsCollection.find({}, { projection: { id: 1, _id: 0 } })
             .sort({ time_created: -1 })
@@ -33,7 +33,7 @@ router.post('/get_problem_type', authenticateToken, async (req, res) => {
     const { id } = req.body;
     try {
         const db = await connectToDatabase();
-        const problemsCollection = db.collection('problem');
+        const problemsCollection = db.collection('contest');
 
         const result = await problemsCollection.findOne({id: id}, { projection: { type: 1,_id: 0 } })
 
@@ -49,7 +49,7 @@ router.post('/getProblemDescription', authenticateToken, async (req, res) => {
     const username = req.user;
     try {
         const db = await connectToDatabase();
-        const problemsCollection = db.collection('problem');
+        const problemsCollection = db.collection('contest');
 
         const result = await problemsCollection.findOne({id: id}, { projection: { problemName: 1, startTime: 1, endTime: 1, created_by: 1,_id: 0 } })
 
@@ -64,7 +64,7 @@ router.post('/getSpeakingProblem', authenticateToken, async (req, res) => {
     const { id } = req.body;
     try {
         const db = await connectToDatabase();
-        const problemsCollection = db.collection('problem');
+        const problemsCollection = db.collection('contest');
 
         const result = await problemsCollection.findOne({id: id})
 
@@ -81,7 +81,7 @@ router.post('/getSpeakingAnswer', authenticateToken, async (req, res) => {
     const { username } = req.user;
     try {
         const db = await connectToDatabase();
-        const problemsCollection = db.collection('problem');
+        const problemsCollection = db.collection('contest');
 
         const result = await problemsCollection.findOne({id: id})
         const userAnswer = result.userAnswer.find(answer => answer.username === username);
@@ -100,7 +100,7 @@ router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
 
     try {
         const db = await connectToDatabase();
-        const problemCollection = db.collection('problem');
+        const problemCollection = db.collection('contest');
 
         const problem = await problemCollection.findOne({ id });
         const userAnswerIndex = problem.userAnswer.findIndex(answer => answer.username === username);
@@ -143,10 +143,11 @@ router.post('/addSpeakingGrading', authenticateToken, async (req, res) => {
 
     try {
         const db = await connectToDatabase();
-        const problemCollection = db.collection('problem');
+        const problemCollection = db.collection('contest');
 
         const problem = await problemCollection.findOne({ id });
         const userAnswerIndex = problem.userAnswer.findIndex(answer => answer.username === username);
+
         const userAnswer = problem.userAnswer[userAnswerIndex];
 
         let cnt = -1;
@@ -187,15 +188,17 @@ router.post('/getSpeakingGrading', authenticateToken, async (req, res) => {
 
     try {
         const db = await connectToDatabase();
-        const problemCollection = db.collection('problem');
+        const problemCollection = db.collection('contest');
 
         const problem = await problemCollection.findOne({ id });
         const userAnswerIndex = problem.userAnswer.findIndex(answer => answer.username === username);
-        const userAnswer = problem.userAnswer[userAnswerIndex];
 
-        const band = userAnswer.result.filter(item => item.task_id === task_id);
-
-        res.json({ success: true, band: band });
+        if(userAnswerIndex === -1) res.json({ success: true, band: [] });
+        else {
+            const userAnswer = problem.userAnswer[userAnswerIndex];
+            const band = userAnswer.result.filter(item => item.task_id === task_id);
+            res.json({ success: true, band: band });
+        }
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Internal server error' });

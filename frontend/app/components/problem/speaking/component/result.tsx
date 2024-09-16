@@ -81,6 +81,9 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
     const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb';
     const [isGrading, setIsGrading] = useState(0);
     const [saveGrading, setSaveGrading] = useState(true);
+    const [userAudio, setUserAudio] = useState<string[]>(() => 
+        new Array(Number(task.number_of_task)).fill('')
+    );
 
     const hasInitialize = useRef(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -125,22 +128,66 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
     };
 
     const playSpeechFromWord = async (text: string) => {
+        let audioBase64 = "";
         await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromText`, {
             method: "post",
             body: JSON.stringify({ "text": text }),
             headers: { "X-Api-Key": STScoreAPIKey }
-        });
-
-        const audio = new Audio('../../../../backend_pronounce/audio.wav');
-        audio.play()
-            .then(() => console.log('Audio is playing'))
-            .catch((error) => console.error('Error playing audio:', error));
+        }).then(res => res.json())
+            .then(data => {
+                audioBase64 = data['audioBase64']
+            });
+        const audioData = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
+        const arrayBuffer = audioData.buffer;
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.start(0);
+        source.onended = () => {
+            console.log('Playback finished');
+        };
     };
 
-    const replayAudio = (base64Audio: string, startTime: number, endTime: number) => {
-    };    
+    const getAudio = async (idx: number, audioUrl: string) => {
+        let audioBase64 = ""
+        await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromDrive`, {
+            method: "post",
+            body: JSON.stringify({ url: audioUrl }),
+            headers: { "X-Api-Key": STScoreAPIKey }
+        }).then(res => res.json())
+            .then(data => {
+                audioBase64 = data['audioBase64']
+            });
+        userAudio[idx] = audioBase64;
+    }
+
+    const replayAudio = async (key: number, startTime: number, endTime: number) => {
+        try {
+            let audioBase64 = userAudio[key];
+
+            const audioData = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
+            const arrayBuffer = audioData.buffer;
+
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+            const startOffset = startTime;
+            const endOffset = endTime - startTime;
+            source.start(0, startOffset, endOffset);
+            source.onended = () => {
+                console.log('Playback finished');
+            };
+        } catch (error) {
+            console.error('Error downloading audio:', error);
+        }
+    };
 
     const getColoredMatchedTranscript = (
+                    key: number,
                     matchedTranscript: string,
                     is_letter_correct_all_words: string,
                     real_transcripts_ipa: string,
@@ -153,6 +200,8 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
         const start_time = real_start_time;
         let end_time = real_end_time;
         let coloredWords = [];
+
+        getAudio(key, audioData);
 
         for (let word_idx = 0; word_idx < currentTextWords.length; word_idx++) {
             const currentWord = currentTextWords[word_idx];
@@ -178,7 +227,7 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
                     }}
                 >
                     <span
-                        onClick={() => replayAudio(audioData, start_time[word_idx], end_time[word_idx])}
+                        onClick={() => replayAudio(key, start_time[word_idx], end_time[word_idx])}
                         style={{ cursor: 'pointer', display: 'block' }}
                     >
                         {wordTemp}
@@ -371,6 +420,7 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
                                             <div className='text-right' style={{ maxWidth: '90%' }}>
                                                 <div style={{display: 'inline-block'}}>
                                                     {getColoredMatchedTranscript(
+                                                        parseInt(key),
                                                         value?.data?.matched_transcripts,
                                                         value?.data?.is_letter_correct_all_words,
                                                         value?.data?.real_transcripts_ipa,
