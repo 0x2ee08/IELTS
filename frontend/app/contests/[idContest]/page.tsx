@@ -41,7 +41,7 @@ const ContestDetailPage = () => {
     // Render the contest component based on contest type
     switch (contest.type) {
         case 'Reading':
-            return (<><Header/><ReadingContest contest={contest} /><Footer /></>);
+            return (<><Header/><ReadingContest contest={contest} /></>);
         case 'Listening':
             return (<><Header/><ListeningContest contest={contest} /><Footer /></>);
         case 'Writing':

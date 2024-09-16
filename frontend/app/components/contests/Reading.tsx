@@ -126,18 +126,10 @@ const ReadingContest = ({ contest }: { contest: any }) => {
     );    
     let cnt=0;
     return (
+        <>
         <div className="reading-contest-page">
-            <h1>{contest.problemName}</h1>
-            <p>Start Time: {new Date(contest.startTime).toLocaleString()}</p>
-            <p>End Time: {new Date(contest.endTime).toLocaleString()}</p>
-
-            <div>
-                {contest.paragraphs.map((paragraph: any, index: number) => (
-                    <button key={index} onClick={() => handleParagraphSwitch(index)}>
-                        Paragraph {index + 1}
-                    </button>
-                ))}
-            </div>
+            {/* <p>Start Time: {new Date(contest.startTime).toLocaleString()}</p>
+            <p>End Time: {new Date(contest.endTime).toLocaleString()}</p> */}
 
             <div className="contest-layout" style={{ height: `${windowHeight - 150}px` }}>
                 <div className="paragraph-content">
@@ -177,9 +169,26 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                     ))}
                 </div>
             </div>
-
-            <button onClick={handleSubmit}>Submit Answers</button>
         </div>
+        <header className="sticky bottom-0 bg-gray-200 dark:bg-gray-400 bg-opacity-90 text-white backdrop-blur-sm shadow-sm z-50">
+            <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-center py-5"> 
+                    <div>
+                        <span className="text-black"> Paragraph: </span> 
+                        {contest.paragraphs.map((paragraph: any, index: number) => (
+                            <button 
+                            className={`rounded-full p-2 ml-2 ${activeParagraph === index ? 'bg-[#3d5a80]' : 'bg-[#0077B6]'}`}
+                            key={index}
+                             onClick={() => handleParagraphSwitch(index)}>
+                                {index + 1}
+                            </button>
+                        ))}
+                    </div>   
+                    <button className="bg-[#0077B6] rounded p-2" onClick={handleSubmit}>Submit Answers</button>
+                </div>
+            </div>
+        </header>
+        </>
     );
 };
 
