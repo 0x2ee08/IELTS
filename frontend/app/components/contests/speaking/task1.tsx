@@ -2,25 +2,25 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import config from '../../../config';
-import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import {Button, ButtonGroup} from "@nextui-org/react";
 import {Link} from "@nextui-org/react";
+import {CircularProgress} from "@nextui-org/react";
 
-import CircularProgressWithCountdown from './circularProgress';
+import CircularProgressWithCountdown from './dataDisplayers/circularProgress';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/react";
-import ResultPage from './result';
+import ResultPage from './dataDisplayers/result';
 import { blob } from 'stream/consumers';
 import { M_PLUS_1 } from 'next/font/google';
-import WebcamStream from './WebcamStream';
+import WebcamStream from './dataDisplayers/WebcamStream';
 import {Textarea} from "@nextui-org/react";
 import {Divider} from "@nextui-org/react";
-import './dot.css'
-import { ClockIcon } from './ClockIcon';
-import { MicroIcon } from './MicroIcon';
-import PentagonChart from './pentagonChart';
-import DollarIcon from './DollarIcon';
+import './cssCustomFiles/dot.css'
+import { ClockIcon } from './icons/ClockIcon';
+import { MicroIcon } from './icons/MicroIcon';
+import PentagonChart from './dataDisplayers/pentagonChart';
+import DollarIcon from './icons/DollarIcon';
 
 export interface task1QuestionGeneral {
     type: string;
@@ -72,6 +72,7 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
     const [isRecording, setIsRecording] = useState(false);
     const [pentagonArray, setPentagonArray] = useState([0, 0, 0, 0, 0])
     const [preProcess, setPreProcess] = useState(false);
+    const [isProcess, setIsProcess] = useState(false);
 
     const hasInitialize = useRef(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -114,6 +115,7 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
             timerRef.current = setInterval(() => {
                 setTimeLeft((prevTime) => {
                     if (prevTime <= 1) {
+                        handleStopClick();
                         stopRecording(false);
                         return 0;
                     }
@@ -262,6 +264,7 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
     };
 
     const processBlob = async () => {
+        setIsProcess(true);
         if(!doneRecording) return;
         for(let i=0; i<blobArray.length; i++) {
             const audioBlob = blobArray[i];
@@ -293,6 +296,7 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
                 });
         }
         setDoneRecording(false);
+        setIsProcess(false);
     }
 
     const save_record = async() => {

@@ -6,7 +6,7 @@ import config from '../../config';
 import { useSearchParams } from "next/navigation";
 import { useRouter } from 'next/navigation';
 import Task1Page from './speaking/task1';
-import CustomPagination from './speaking/customPagination';
+import CustomPagination from './speaking/dataDisplayers/customPagination';
 
 export interface task1QuestionGeneral {
     type: string,
