@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip, Divider } from '@nextui-org/react';
-import { EyeIcon } from './EyeIcon';
-import './dot.css';
-import './error.css'
+import { EyeIcon } from '../icons/EyeIcon';
+import '../cssCustomFiles/dot.css';
+import '../cssCustomFiles/error.css'
 
 interface Feedback {
     pronunciation: string;

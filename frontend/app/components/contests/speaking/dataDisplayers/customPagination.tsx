@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './customPagination.css';
+import '../cssCustomFiles/customPagination.css';
 
 interface CustomPaginationProps {
     total: number;

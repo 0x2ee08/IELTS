@@ -7,6 +7,8 @@ import json
 import lambdaTTS
 import lambdaSpeechToScore
 import lambdaGetSample
+import lambdaSaveToGGDrive
+import lambdaGetAudioFromDrive
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -23,6 +25,16 @@ def main():
 def getAudioFromText():
     event = {'body': json.dumps(request.get_json(force=True))}
     return lambdaTTS.lambda_handler(event, [])
+
+@app.route(rootPath+'/getAudioFromDrive', methods=['POST'])
+def getAudioFromDrive():
+    event = {'body': json.dumps(request.get_json(force=True))}
+    return lambdaGetAudioFromDrive.lambda_handler(event, [])
+
+@app.route(rootPath+'/saveToGGDrive', methods=['POST'])
+def saveToGGDrive():
+    event = {'body': json.dumps(request.get_json(force=True))}
+    return lambdaSaveToGGDrive.lambda_handler(event, [])
 
 @app.route(rootPath+'/getSample', methods=['POST'])
 def getNext():

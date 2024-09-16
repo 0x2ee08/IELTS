@@ -2,25 +2,25 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import config from '../../../config';
-import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import {Button, ButtonGroup} from "@nextui-org/react";
 import {Link} from "@nextui-org/react";
+import {CircularProgress} from "@nextui-org/react";
 
-import CircularProgressWithCountdown from './component/circularProgress';
+import CircularProgressWithCountdown from './dataDisplayers/circularProgress';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/react";
-import ResultPage from './component/result';
+import ResultPage from './dataDisplayers/result';
 import { blob } from 'stream/consumers';
 import { M_PLUS_1 } from 'next/font/google';
-import WebcamStream from './component/WebcamStream';
+import WebcamStream from './dataDisplayers/WebcamStream';
 import {Textarea} from "@nextui-org/react";
 import {Divider} from "@nextui-org/react";
-import './component/dot.css'
-import { ClockIcon } from './component/ClockIcon';
-import { MicroIcon } from './component/MicroIcon';
-import PentagonChart from './component/pentagonChart';
-import DollarIcon from './component/DollarIcon';
+import './cssCustomFiles/dot.css'
+import { ClockIcon } from './icons/ClockIcon';
+import { MicroIcon } from './icons/MicroIcon';
+import PentagonChart from './dataDisplayers/pentagonChart';
+import DollarIcon from './icons/DollarIcon';
 
 export interface task1QuestionGeneral {
     type: string;
@@ -60,6 +60,9 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb';
+    const [questionAudio, questionUserAudio] = useState<string[]>(() => 
+        new Array(task.number_of_task).fill('')
+    );
 
     const [isTesting, setIsTesting] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -69,6 +72,7 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
     const [isRecording, setIsRecording] = useState(false);
     const [pentagonArray, setPentagonArray] = useState([0, 0, 0, 0, 0])
     const [preProcess, setPreProcess] = useState(false);
+    const [isProcess, setIsProcess] = useState(false);
 
     const hasInitialize = useRef(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -76,7 +80,7 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
 
     useEffect(() => {
         if (!hasInitialize.current) {
-            console.log(description);
+            preprocess();
             hasInitialize.current = true;
         }
     }, []);
@@ -111,6 +115,7 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
             timerRef.current = setInterval(() => {
                 setTimeLeft((prevTime) => {
                     if (prevTime <= 1) {
+                        handleStopClick();
                         stopRecording(false);
                         return 0;
                     }
@@ -129,6 +134,20 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
             }
         };
     }, [isTesting]);    
+
+    const preprocess = async () => {
+        for(let i=0; i<Number(task.number_of_task); i++) {
+            console.log(i, task.questions[i]);
+            await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromText`, {
+                method: "post",
+                body: JSON.stringify({ "text": task.questions[i] }),
+                headers: { "X-Api-Key": STScoreAPIKey }
+            }).then(res => res.json())
+                .then(data => {
+                    questionAudio[i] = data['audioBase64']
+                });
+        }
+    }
 
     const startRecording = async () => {
         setAudioBlob(null);
@@ -178,7 +197,7 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
         setCurrentQuestionIndex((prevIndex) => {
             if (prevIndex < task.questions.length - 1) {
                 if(!played) {
-                    playSpeechFromWord(task.questions[prevIndex + 1]);
+                    playSpeechFromWord(prevIndex + 1);
                     played = true;
                 }
                 return prevIndex + 1;
@@ -191,18 +210,25 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
         });
     };
 
-    const playSpeechFromWord = async (text: string) => {
-        await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromText`, {
-            method: "post",
-            body: JSON.stringify({ "text": text }),
-            headers: { "X-Api-Key": STScoreAPIKey }
-        });
-
-        const audio = new Audio('../../../../backend_pronounce/audio.wav');
-        audio.play()
-            .then(() => console.log('Audio is playing'))
-            .catch((error) => console.error('Error playing audio:', error));
+    const playSpeechFromWord = async (idx: number) => {
+        try {
+            const audioBase64 = questionAudio[idx];
+            const audioData = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
+            const arrayBuffer = audioData.buffer;
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+            source.start(0);
+            source.onended = () => {
+                console.log('Playback finished');
+            };
+        } catch (error) {
+            console.error('Error playing audio:', error);
+        }
     };
+    
 
     const convertBlobToBase64 = (blob: Blob): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -214,6 +240,7 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
             reader.readAsDataURL(blob);
         });
     };
+    
 
     const handleStartClick = () => {
         setBlobArray([]);
@@ -226,7 +253,7 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
         setTimeout(() => {
             setIsLoading(false);
             setTimeLeft(task.length);
-            playSpeechFromWord(task.questions[0]);
+            playSpeechFromWord(0);
         }, 10000);
     };
 
@@ -237,16 +264,26 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
     };
 
     const processBlob = async () => {
+        setIsProcess(true);
         if(!doneRecording) return;
         for(let i=0; i<blobArray.length; i++) {
             const audioBlob = blobArray[i];
             const audioBase64 = await convertBlobToBase64(audioBlob);
-            const audioData = audioBlob;
+            let audioData = "";
 
             if (audioBase64.length < 6) {
                 setRecordingError('Recording is too short.');
                 return;
             }
+
+            await fetch(`${config.API_PRONOUNCE_BASE_URL}/saveToGGDrive`, {
+                method: "post",
+                body: JSON.stringify({ "audioBase64": audioBase64 }),
+                headers: { "X-Api-Key": STScoreAPIKey }
+            }).then(res => res.json())
+                .then(data => {
+                    audioData = data['audioData'];
+                });
 
             await fetch(`${config.API_PRONOUNCE_BASE_URL}/GetAccuracyFromRecordedAudio`, {
                 method: "post",
@@ -259,10 +296,10 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
                 });
         }
         setDoneRecording(false);
+        setIsProcess(false);
     }
 
     const save_record = async() => {
-        console.log(id, result);
         const token = localStorage.getItem('token');
         await fetch(`${config.API_BASE_URL}api/add_new_speaking_answer`, {
             method: 'POST',
@@ -300,7 +337,6 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
         });
         const result = await response.json();
         const band = result.band;
-        console.log(band);
         let pronunciation = 0, fluency = 0, lexical = 0, grammar = 0;
         let mpronunciation = 0, mfluency = 0, mlexical = 0, mgrammar = 0;
         for(let i=0; i<band.length; i++) {
@@ -323,7 +359,6 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
         pentagonArray[3] = convertToIELTSBand(grammar, mgrammar);
         pentagonArray[4] = convertToIELTSBand(pronunciation + fluency + grammar + lexical, 
                                         mpronunciation + mfluency + mgrammar + mlexical);
-        console.log(pentagonArray);
         setPreProcess(true);
     }
 

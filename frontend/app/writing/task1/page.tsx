@@ -36,51 +36,6 @@ export default function WritingGrader() {
 
     // Handle the form submission
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault(); // Prevent default form submission
-        setLoading(true); // Set loading state to true when starting the async operation
-    
-        // Add logic to grade the essay or send the data to a backend API
-        const data = {
-            prompt: prompt,
-            response: essay
-        };
-    
-        // Retrieve the token (example: from localStorage or sessionStorage)
-        const token = localStorage.getItem('token');  // Or sessionStorage.getItem('token')
-    
-        // Make sure the token exists before making the request
-        if (!token) {
-            console.error("Token not found, please log in.");
-            setLoading(false); // Reset loading state if no token is found
-            return;
-        }
-    
-        try {
-            const response = await fetch(`${config.API_BASE_URL}api/writing`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`  // Add the token to the Authorization header
-                },
-                body: JSON.stringify(data)
-            });
-    
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-    
-            const result = await response.json();
-            setEvaluation(result);
-            setHasBeenGraded(true);
-            console.log(result);
-        } catch (error) {
-            console.error('Error:', error);
-        } finally {
-            setLoading(false); // Ensure loading state is reset regardless of success or failure
-        }
-    
-        console.log("Prompt:", prompt);
-        console.log("Essay:", essay);
     };
 
     // Function to auto-resize the textarea
@@ -101,7 +56,7 @@ export default function WritingGrader() {
             <main className="flex-grow flex w-full h-screen">
                 {/* Left panel for writing prompt and essay input */}
                 <div className="w-1/2 p-6 border-r h-full overflow-y-auto">
-                    <h1 className="text-3xl font-bold mb-6 text-left">IELTS Writing Grader (Task 2)</h1>
+                    <h1 className="text-3xl font-bold mb-6 text-left">IELTS Writing Grader (Task 1 Academic)</h1>
 
                     {/* Form for entering prompt and essay */}
                     <form onSubmit={handleSubmit} className="space-y-6">

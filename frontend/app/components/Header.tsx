@@ -64,7 +64,7 @@ const Header: React.FC = () => {
     };
 
     return (
-        <header className="sticky top-0 bg-white dark:bg-gray-400 bg-opacity-90 backdrop-blur-sm text-black shadow-sm z-50">
+        <header className="sticky top-0 bg-white dark:bg-gray-400 bg-opacity-90 backdrop-blur-sm shadow-sm z-50">
             <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center py-5">
                     {/* Logo and left-side menu button */}
@@ -80,7 +80,6 @@ const Header: React.FC = () => {
                     {/* Right-side links */}
                     <nav className={`md:flex md:space-x-4 ${isMenuOpen ? 'block' : 'hidden md:block'}`}>
                         <NavLink href="/contests" text="Contests" />
-                        <NavLink href="/problemset" text="Problems" />
                         <NavLink href="/blogs" text="Blogs" />
                         <NavLink href="/writing" text="Writing" />
                         <NavLink href="/flashcards" text="Flash Cards" />
