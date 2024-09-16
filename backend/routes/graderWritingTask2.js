@@ -180,7 +180,7 @@ async function askAiTaskResponse(prompt, response, type) {
                     }
                 },
                 "top_p": 1,
-                "temperature": 0.3,
+                "temperature": 0.2,
                 "repetition_penalty": 1,
             })
         });
@@ -193,7 +193,7 @@ async function askAiTaskResponse(prompt, response, type) {
             criterion["band"] = 9;
             return criterion
         }
-        else if (criterion["band"] >= 6 && criterion["positiveresponse"].length > ((criterion["negativeresponse"].length)/4)*3){
+        else if (criterion["band"] >= 6 && criterion["positiveresponse"].length > ((criterion["negativeresponse"].length)/2)*3){
             criterion["band"] = criterion["band"] + 1;
         }
         criterion["response"] = criterion["positiveresponse"] + "\n" + criterion["negativeresponse"];
