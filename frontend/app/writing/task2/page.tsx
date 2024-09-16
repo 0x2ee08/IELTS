@@ -2,9 +2,9 @@
 
 import React, { use, useState } from "react";
 import Head from "next/head";
-import Header from '../components/Header';
+import Header from '../../components/Header';
 import { Button, CircularProgress, Card, CardBody, CardFooter, Chip } from "@nextui-org/react"
-import config from '../config';
+import config from '../../config';
 import { createRoot } from 'react-dom/client'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
