@@ -30,18 +30,24 @@ const ContestPage: React.FC = () => {
             .then(response => {
                 const contests = Object.values(response.data) as Contest[]; // Cast to Contest[]
                 const currentTime = new Date().toISOString();
-
+    
                 // Split contests into upcoming and past contests
-                const upcoming = contests.filter((contest: Contest) => contest.startTime > currentTime);
-                const past = contests.filter((contest: Contest) => contest.endTime < currentTime);
-
+                const upcoming = contests
+                    .filter((contest: Contest) => contest.endTime > currentTime)
+                    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+    
+                // Sort past contests by endTime in descending order
+                const past = contests
+                    .filter((contest: Contest) => contest.endTime < currentTime)
+                    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+    
                 setUpcomingContest(upcoming);
                 setPastContest(past);
             })
             .catch(error => {
                 console.error('Error fetching contests:', error);
             });
-    }, []);
+    }, []);    
 
     const handleRegister = (contestId: string) => {
         console.log(`Registering for contest with ID: ${contestId}`);
