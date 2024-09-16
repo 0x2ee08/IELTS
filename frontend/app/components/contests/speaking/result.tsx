@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import config from '../../../../config';
+import config from '../../../config';
 import { Accordion, AccordionItem } from '@nextui-org/react';
 import { Card, CardHeader, CardBody, Divider, CardFooter } from "@nextui-org/react";
 import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Tooltip} from "@nextui-org/react";

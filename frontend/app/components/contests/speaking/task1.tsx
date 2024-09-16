@@ -8,19 +8,19 @@ import Typography from '@mui/material/Typography';
 import {Button, ButtonGroup} from "@nextui-org/react";
 import {Link} from "@nextui-org/react";
 
-import CircularProgressWithCountdown from './component/circularProgress';
+import CircularProgressWithCountdown from './circularProgress';
 import {Card, CardHeader, CardBody, CardFooter} from "@nextui-org/react";
-import ResultPage from './component/result';
+import ResultPage from './result';
 import { blob } from 'stream/consumers';
 import { M_PLUS_1 } from 'next/font/google';
-import WebcamStream from './component/WebcamStream';
+import WebcamStream from './WebcamStream';
 import {Textarea} from "@nextui-org/react";
 import {Divider} from "@nextui-org/react";
-import './component/dot.css'
-import { ClockIcon } from './component/ClockIcon';
-import { MicroIcon } from './component/MicroIcon';
-import PentagonChart from './component/pentagonChart';
-import DollarIcon from './component/DollarIcon';
+import './dot.css'
+import { ClockIcon } from './ClockIcon';
+import { MicroIcon } from './MicroIcon';
+import PentagonChart from './pentagonChart';
+import DollarIcon from './DollarIcon';
 
 export interface task1QuestionGeneral {
     type: string;
