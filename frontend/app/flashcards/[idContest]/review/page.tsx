@@ -20,6 +20,10 @@ const VocabReviewPage = () => {
   const [currentIndices, setCurrentIndices] = useState<number[]>([]);
   const [currentLevel, setCurrentLevel] = useState<number>(2);
   const [interactionList, setInteractionList] = useState<VocabEntry[]>([]);
+  const [paused, setPaused] = useState<boolean>(false);
+  const [quizIndex, setQuizIndex] = useState<number>(0);
+  const [userAnswer, setUserAnswer] = useState<string>('');
+  const [feedback, setFeedback] = useState<string>('');
 
   const { idContest } = useParams();
   const searchParams = useSearchParams();
@@ -88,6 +92,11 @@ const VocabReviewPage = () => {
     updateCurrentIndex();
   };
 
+  const handleButtonClickPause = () => {
+    setPaused(true);
+    setQuizIndex(0);
+  };
+
   const updateCurrentIndex = () => {
     setCurrentIndices((prevIndices) => {
       let newIndices = [...prevIndices];
@@ -119,6 +128,25 @@ const VocabReviewPage = () => {
     setInteractionList((prevList) => [...prevList, currentWord]);
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserAnswer(e.target.value);
+  };
+
+  const handleSubmitAnswer = () => {
+    const currentWord = interactionList[quizIndex];
+    if (userAnswer.trim().toLowerCase() === currentWord.meaning.toLowerCase()) {
+      setFeedback('Correct!');
+    } else {
+      setFeedback('Incorrect!');
+    }
+    setUserAnswer('');
+    if (quizIndex < interactionList.length - 1) {
+      setQuizIndex((prevIndex) => prevIndex + 1);
+    } else {
+      setQuizIndex(-1); // Indicate completion
+    }
+  };
+
   return (
     <>
       <Head>
@@ -127,27 +155,38 @@ const VocabReviewPage = () => {
       <Header />
       <main>
         <h1>Review Vocabulary for {title}</h1>
-        {vocabLevels[currentLevel]?.[currentIndices[currentLevel]] && (
-          <div className="card">
-            <strong className='text-5xl'>{vocabLevels[currentLevel][currentIndices[currentLevel]].word}</strong>
-            <em className='text-2xl'>({vocabLevels[currentLevel][currentIndices[currentLevel]].phonetics})</em>
-            <div className="buttons">
-              <button onClick={handleButtonClickEasy}>Easy</button>
-              <button onClick={handleButtonClickHard}>Hard</button>
-              <button onClick={handleButtonClickSkip}>Skip</button>
+        {!paused ? (
+          vocabLevels[currentLevel]?.[currentIndices[currentLevel]] && (
+            <div className="card">
+              <strong className='text-5xl'>{vocabLevels[currentLevel][currentIndices[currentLevel]].word}</strong>
+              <em className='text-2xl'>({vocabLevels[currentLevel][currentIndices[currentLevel]].phonetics})</em>
+              <div className="buttons">
+                <button onClick={handleButtonClickEasy}>Easy</button>
+                <button onClick={handleButtonClickHard}>Hard</button>
+                <button onClick={handleButtonClickSkip}>Skip</button>
+                <button onClick={handleButtonClickPause}>Pause</button>
+              </div>
             </div>
+          )
+        ) : quizIndex >= 0 ? (
+          <div className="quiz">
+            <div>
+              <strong className='text-5xl'>{interactionList[quizIndex].word}</strong>
+            </div>
+            <input 
+              type="text" 
+              value={userAnswer} 
+              onChange={handleInputChange}
+              placeholder="Type your answer"
+            />
+            <button onClick={handleSubmitAnswer}>Submit</button>
+            <p>{feedback}</p>
+          </div>
+        ) : (
+          <div>
+            <h2>Well done!</h2>
           </div>
         )}
-        <div>
-          <h2>User Interaction List</h2>
-          <ul>
-            {interactionList.map((entry, index) => (
-              <li key={index}>
-                {entry.word} ({entry.phonetics}): {entry.meaning}
-              </li>
-            ))}
-          </ul>
-        </div>
       </main>
       <Footer />
     </>
