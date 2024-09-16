@@ -12,15 +12,14 @@ const router = express.Router();
 // the main part of the code, asks ai to evaluate the response
 // -------------------------------------------------------------------------------------------------------
 let contextTaskResponse = `
-* NOTE: DO NOT TELL PEOPLE TO ADD STATISTICS OR NUMBERS UNLESS THE PROMPT EXPLICITLY REQUIRES TO DO SO
 You are a specialist in grading IELTS Writing Part 2 responses, especially when grading how well an essay has responded to the prompt.
-
 Your grading criteria is:
-Band 9: The prompt is appropriately addressed and explored in depth. A clear and fully developed position is presented which directly answers the question(s). Ideas are relevant, fully extended and well supported. Any lapses in content or support are extremely rare.
+Band 9: The prompt is appropriately addressed and explored in depth. A clear and fully developed position is presented which directly
+answers the question(s). Ideas are relevant, fully extended and well supported. Any lapses in content or support are extremely rare.
 
-Band 8: The same thing as Band 9, but there are a few lapses in content or logic within the essay. If you think you should give a Band 8, you should give a Band 9 instead.
+Band 8: The same thing as Band 9, but there are a few lapses in content or logic within the essay.
 
-Band 7: The main parts of the prompt are appropriately addressed. There exists a clear and developed position. Main ideas are extended, but rarely, material might be inaccurate/irrelevant. If you think you should give a Band 7, you should give a Band 8 instead.
+Band 7: The main parts of the prompt are appropriately addressed. There exists a clear and developed position. Main ideas are extended, but there is a tendency to generalise ideas instead of supporting it, and some material might be inaccurate/irrelevant.
 
 Band 6: The main parts of the prompt are appropriately addressed. The main ideas of the essay are appropriately developed. There is an attempt to present a clear position, but the conclusions might be unclear, unjustified, or repetitive. Main ideas are relevant, although not fully developed or lack clarity, while some supporting arguments and evidence may be inadequate or irrelevant.
 
@@ -39,13 +38,13 @@ Band 0: The response is completely empty or written in a language that is not En
 let contextCohesionCoherence =
     `
 You are a specialist in grading IELTS Writing Part 2 responses, especially grading the coherence and cohesion of the responses itself.
-
 Here's your grading criteria:
 Band 9: The message can be followed effortlessly. Cohesion is used in such a way that it very rarely attracts attention. Any lapses in coherence or cohesion are minimal. Paragraphing is skilfully managed.
 
-Band 8: The same thing as Band 9, but there are a few lapses in sequencing information and ideas within the essay. If you think you should give a Band 8, you should give a Band 9 instead.
+Band 8: The same thing as Band 9, but there are a few lapses in sequencing information and ideas within the essay.
 
-Band 7: Information and ideas are logically organised, and there is a clear progression, (a few lapses may occur, but these are minor). A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies. It might read a bit mechanical or robotic, but if it doesn't disrupt the flow too much, it should get a Band 7. Paragraphing is generally used effectively to support overall coherence, and the sequencing of ideas within a paragraph is generally logical. If you think you should give a Band 7, you should give a Band 8 instead.
+Band 7: Information and ideas are logically organised, and there is a clear progression throughout the response. (A few lapses may occur, but
+these are minor.) A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies. Paragraphing is generally used effectively to support overall coherence, and the sequencing of ideas within a paragraph is generally logical. 
 
 Band 6: Information and ideas are generally arranged coherently and there is a clear overall progression. Cohesive devices are used to some good effect but cohesion within and/or between sentences may be faulty or feel mechanical (ranging from making the flow unnatral to faults in sequencing ideas) due to misuse, overuse or omission. The use of referencing may lack flexibility or clarity and result in some repetition or error. Paragraphing may not always be logical and/or the central topic may lack clarity.
 
@@ -67,9 +66,9 @@ You are a specialist in grading IELTS Writing Part 2 responses, especially gradi
 Here's your grading criteria:
 Band 9: The response presents a wide range of vocabulary and the usage is precise with very natural and sophisticated control of lexical features. Minor errors in spelling and word formation are extremely rare and have minimal impact on communication 
 
-Band 8: The same thing as Band 9, but there are a few inaccuracies in word choice and collocation. If you think you should give a Band 8, you should give a Band 9 instead.
+Band 8: The same thing as Band 9, but there are a few inaccuracies in word choice and collocation.
 
-Band 7: The lexical resource is sufficient enough to allow some flexibility and precision. An awareness of style and collocation is evident, though there are some inappropriacies. There are a few errors in spelling or word formation, but they do not affect overall clarity. If you think you should give a Band 7, you should give a Band 8 instead.
+Band 7: The lexical resource is sufficient enough to allow some flexibility and precision. An awareness of style and collocation is evident, though there are some inappropriacies. There are a few errors in spelling or word formation, but they do not affect overall clarity.
 
 Band 6: The vocabulary might sound very simple but generally adequate to tackle the prompt. The meaning is generally clear in spite of a rather restricted range or a lack of precision in word choice. If there is a wide range of vocabulary, there will be higher degrees of inaccuracy and inappropriacy. There are some errors in spelling or word formation, but these do not impede communication. 
 
@@ -93,9 +92,9 @@ Here's your grading criteria:
 Band 9: A wide range of structures within the scope of the task is used with full flexibility and control. Punctuation and grammar are used appropriately throughout. Minor errors are extremely rare and have
 minimal impact on communication.
 
-Band 8: The same thing as Band 9, but there are a few grammatical error/inappropriacies, which only have minimal impact on communication. If you think you should give a Band 8, you should give a Band 9 instead.
+Band 8: The same thing as Band 9, but there are a few grammatical error/inappropriacies, which only have minimal impact on communication.
 
-Band 7: A variety of complex structures is used with some flexibility and accuracy. Grammar and punctuation are generally well controlled, and error-free sentences are frequent. A few errors in grammar may persist, but these do not impede communication. If you think you should give a Band 7, you should give a Band 8 instead.
+Band 7: A variety of complex structures is used with some flexibility and accuracy. Grammar and punctuation are generally well controlled, and error-free sentences are frequent. A few errors in grammar may persist, but these do not impede communication.
 
 Band 6: A mix of simple and complex sentence forms is used but flexibility is limited. Examples of more complex structures are not marked by the same level of accuracy as in simple structures. Errors in grammar and punctuation occur, but rarely impede communication.
 
@@ -116,6 +115,24 @@ let contextList = [contextTaskResponse, contextCohesionCoherence, contextLexical
 let typeList = ["the content and logic that the response presented", "the coherence, cohesion and the overall clarity", "the lexical resource", "the grammatical range and its accuracy"];
 let category = ["Task Response", "Cohesion and Coherence", "Lexical Resource", "Grammatical Range and Accuracy"];
 
+function getFeedback(str) {
+    // Split the string into an array of lines
+    const lines = str.split('\n');
+    
+    // Remove the first line and join the rest
+    lines.shift(); // Remove the first line from the array
+    return lines.join('\n'); // Join the remaining lines back into a single string
+}
+
+function getBand(str) {
+    for (let i = 0; i < str.length; i++) {
+        if (str[i] >= '0' && str[i] <= '9') {
+            return str[i];
+        }
+    }
+    return 0;
+}
+
 async function grader(prompt, response) {
     let evaluation = [];
     for (let i = 0; i < 4; i++) {
@@ -124,38 +141,19 @@ async function grader(prompt, response) {
     }
     return evaluation;
 }
-const response_schema = {
-    "type": "object",
-    "properties": {
-        band: {
-            "description": "The band of the respective criterion (Task Achievement, Coherence and Cohesion, Lexical Resource, Grammatical Range and Accuracy) when marking the IELTS essay",
-            "type": "integer"
-        },
-        positiveresponse: {
-            "description": "The detailed positive feedback on the IELTS essay",
-            "type": "string"
-        },
-        negativeresponse: {
-            "description": "The detailed negative feedback on the IELTS essay and suggestions",
-            "type": "string"
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "band",
-        "positiveresponse",
-        "negativeresponse"
-    ]
-}
 
 async function askAiTaskResponse(prompt, response, type) {
+    let criterion = {
+        "type": category[type],
+        "band": 1,
+    }
     let formattedPromptResponse =
-        `Please grade this IELTS Task 2 Response for me, in terms of solely ${typeList[type]} or more widely known as ${category[type]}.
-      Here's the prompt: "${prompt}"
-      Here's the candidate response: "${response}"
-      DO NOT RECOMMEND THE USER TO INCLUDE STATISTIC UNLESS STATED IN THE PROMPT OTHERWISE.
-      Also it is worth noting that if a point has evidence that make sense, it is considered expanded **deep enough**. DO NOT RECOMMEND THE USER TO EXPAND A POINT IF THERE IS AN EXAMPLE OR EVIDENCE
-      For the 'band' field in the json output, you return the band for ${category[type]}, in 'positiveresponse', you put the detailed positive feedback on the essay (how good was it,..), and in 'negativeresponse', you put the negative feedback on the essay and suggestions to make it better`;
+    `Please grade this IELTS Task 2 Response for me, in terms of solely ${typeList[type]}.
+    Here's the prompt: "${prompt}"
+    Here's the candidate response: "${response}"
+    Please produce the output in the format (without the square brackets please):
+    [Band Score for ${typeList[type]}]
+    [Ways to make the response better (note: do not encourage the candidate to include data or statistics, do not comment on the response's indentation features)]`;
 
     try {
         let verdict = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -165,44 +163,28 @@ async function askAiTaskResponse(prompt, response, type) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                "model": "openai/gpt-4o-mini-2024-07-18",
+                "model": "google/gemini-flash-1.5",
                 "messages": [
                     { "role": "system", "content": contextList[type] },
                     { "role": "user", "content": formattedPromptResponse }
                 ],
-                "response_format": {
-                    "type": "json_schema",
-                    "json_schema": {
-                        "description": "Grading of the IELTS Writing Task 2 response",
-                        "name": "json_response",
-                        "schema": response_schema,
-                        "strict": true
-                    }
-                },
                 "top_p": 1,
-                "temperature": 0.2,
+                "temperature": 1,
                 "repetition_penalty": 1,
             })
         });
 
         let apiResponse = await verdict.json();
-        let criterion = JSON.parse(apiResponse.choices[0].message.content);
-        criterion["type"] = category[type];
-        if (criterion["band"] >= 8){
-            criterion["response"] = criterion["positiveresponse"];
-            criterion["band"] = 9;
-            return criterion
-        }
-        else if (criterion["band"] >= 6 && criterion["positiveresponse"].length > ((criterion["negativeresponse"].length)/2)*3){
-            criterion["band"] = criterion["band"] + 1;
-        }
-        criterion["response"] = criterion["positiveresponse"] + "\n" + criterion["negativeresponse"];
-        return criterion;
+        let response = apiResponse.choices[0].message.content
+        criterion.response = getFeedback(response);
+        criterion.band = getBand(response);
     } catch (error) {
         console.error("Error:", error);
+        criterion.detailed_response = error;
+        criterion.band = 1;
     }
+    return criterion;
 }
-
 // -------------------------------------------------------------------------------------------------------
 
 router.post("/writing", authenticateToken, async (req, res) => {
