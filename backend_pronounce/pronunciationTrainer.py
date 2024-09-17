@@ -118,6 +118,7 @@ class PronunciationTrainer:
         pronunciation_categories = self.getWordsPronunciationCategory(
             current_words_pronunciation_accuracy)
 
+
         result = {'recording_transcript': recording_transcript,
                   'real_and_transcribed_words': real_and_transcribed_words,
                   'recording_ipa': recording_ipa, 'start_time': start_time, 'end_time': end_time,

@@ -2,20 +2,20 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import config from '../../../config';
 
-export interface task1QuestionGeneral {
+export interface task2QuestionGeneral {
     type: string,
     number_of_task: string,
     length: number;
     questions: string[],
 }
 
-interface Task1PageProps {
-    onTaskUpdate: (task: task1QuestionGeneral) => void;
+interface Task2PageProps {
+    onTaskUpdate: (task: task2QuestionGeneral) => void;
 }
 
-const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
-    const [task, setTask] = useState<task1QuestionGeneral>({
-        type: "Task 1",
+const Task2Page: React.FC<Task2PageProps> = ({ onTaskUpdate }) => {
+    const [task, setTask] = useState<task2QuestionGeneral>({
+        type: "Task 2",
         number_of_task: '',
         length: 300,
         questions: [],
@@ -42,7 +42,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
         if(inputValue === "") {
             setTask((prevTask) => ({
                 ...prevTask,
-                type: "Task 1",
+                type: "Task 2",
                 number_of_task: '',
                 length: 300,
                 questions: [],
@@ -99,9 +99,9 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
         }));
     };
 
-    const generateSpeakingTask1 = async (number_of_task: number) => {
+    const generateSpeakingTask2 = async (number_of_task: number) => {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${config.API_BASE_URL}api/generateSpeakingTask1`, {
+        const response = await fetch(`${config.API_BASE_URL}api/generateSpeakingTask2`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -119,9 +119,9 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
         }));
     };
 
-    const generateSpeakingTask1_onlyOne = async (index: number) => {
+    const generateSpeakingTask2_onlyOne = async (index: number) => {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${config.API_BASE_URL}api/generateSpeakingTask1_onlyOne`, {
+        const response = await fetch(`${config.API_BASE_URL}api/generateSpeakingTask2_onlyOne`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
                         ))}
                     </select>
                     <button
-                        onClick={() => generateSpeakingTask1(Number(task.number_of_task))}
+                        onClick={() => generateSpeakingTask2(Number(task.number_of_task))}
                         className="px-2 rounded-md ml-2"
                         disabled={isNaN(Number(task.number_of_task)) || Number(task.number_of_task) < 2 || Number(task.number_of_task) > 12}
                     >
@@ -195,7 +195,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
                             onChange={(e) => handleQuestionChange(index, e.target.value)}
                         />
                         <button
-                            onClick={() => generateSpeakingTask1_onlyOne(index)}
+                            onClick={() => generateSpeakingTask2_onlyOne(index)}
                             className="px-4 rounded-md ml-2 whitespace-nowrap"
                         >
                             Generate only this question
@@ -207,4 +207,4 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
     );
 };
 
-export default Task1Page;
+export default Task2Page;

@@ -6,6 +6,8 @@ import config from '../config';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import Link from 'next/link';
 import { format } from 'path';
 
@@ -30,41 +32,38 @@ const ContestPage: React.FC = () => {
             .then(response => {
                 const contests = Object.values(response.data) as Contest[]; // Cast to Contest[]
                 const currentTime = new Date().toISOString();
-
+    
                 // Split contests into upcoming and past contests
-                const upcoming = contests.filter((contest: Contest) => contest.startTime > currentTime);
-                const past = contests.filter((contest: Contest) => contest.endTime < currentTime);
-
+                const upcoming = contests
+                    .filter((contest: Contest) => contest.endTime > currentTime)
+                    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+    
+                // Sort past contests by endTime in descending order
+                const past = contests
+                    .filter((contest: Contest) => contest.endTime < currentTime)
+                    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+    
                 setUpcomingContest(upcoming);
                 setPastContest(past);
             })
             .catch(error => {
                 console.error('Error fetching contests:', error);
             });
-    }, []);
+    }, []);    
 
     const handleRegister = (contestId: string) => {
         console.log(`Registering for contest with ID: ${contestId}`);
     };
 
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
     const formatDate = (isoString: string): JSX.Element => {
-        // Parse the ISO string into a Date object
-        const date = new Date(isoString);
-    
-        // Shift the time to UTC+7
-        const utc7Offset = 7 * 60; // Offset in minutes (UTC+7 is 7 hours ahead of UTC)
-        const localTime = new Date(date.getTime() + utc7Offset * 60 * 1000);
-        const formattedDate = localTime.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: '2-digit'
-        }).replace(',', '/').replace(' ', '/');
-        
-        const formattedTime = localTime.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
+        // Convert to UTC+7 timezone
+        const timeInUTC7 = dayjs(isoString).tz('Asia/Bangkok');
+
+        // Format date and time
+        const formattedDate = timeInUTC7.format('DD/MMM/YYYY');
+        const formattedTime = timeInUTC7.format('HH:mm');
     
         return (
                 <>

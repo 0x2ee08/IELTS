@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import config from '../../config';
 import Task1Page from './speaking/task1';
+import Task2Page from './speaking/task2';
+import Task3Page from './speaking/task3';
 
 // Utility function to generate a random string
 const generateRandomString = (length: number): string => {
@@ -21,6 +23,10 @@ const SpeakingPage: React.FC = () => {
     const [taskArray, setTaskArray] = useState<any[]>([]);
     const [idList, setIdList] = useState<{ id: string, speaking_id: string }[]>([]);
     const [selectedTask, setSelectedTask] = useState<string>('Task 1');
+    const [problemName, setProblemName] = useState('');
+    const [accessUser, setAccessUser] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
 
     const hasInitialize = useRef(false);
 
@@ -87,6 +93,10 @@ const SpeakingPage: React.FC = () => {
         switch (id) {
             case 'Task 1':
                 return <Task1Page onTaskUpdate={(task: any) => handleTaskUpdate(task, idx)} />;
+            case 'Task 2':
+                return <Task2Page onTaskUpdate={(task: any) => handleTaskUpdate(task, idx)} />;
+            case 'Task 3':
+                return <Task3Page onTaskUpdate={(task: any) => handleTaskUpdate(task, idx)} />;
             default:
                 return null;
         }
@@ -100,7 +110,7 @@ const SpeakingPage: React.FC = () => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify({ taskArray }),
+            body: JSON.stringify({ problemName, accessUser, startTime, endTime, taskArray }),
         });
         const result = await response.json();
         if(result.success) {
@@ -115,6 +125,34 @@ const SpeakingPage: React.FC = () => {
 
     return (
         <div>
+            <input
+                key={"name"}
+                type="text"
+                placeholder={`Name`}
+                className="border border-gray-300 px-4 py-2 rounded-md w-full h-10 my-2"
+                value={problemName}
+                onChange={(e) => setProblemName(e.target.value)}
+            />
+            <input
+                key={"name"}
+                type="text"
+                placeholder={`Access User (comma separated, blank for public access)`}
+                className="border border-gray-300 px-4 py-2 rounded-md w-full h-10 my-2"
+                value={accessUser}
+                onChange={(e) => setAccessUser(e.target.value)}
+            />
+            <div className='flex space-x-4'>
+                <input 
+                    type="datetime-local" 
+                    className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
+                    onChange={(e) => setStartTime(e.target.value)}
+                />
+                <input 
+                    type="datetime-local" 
+                    className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
+                    onChange={(e) => setEndTime(e.target.value)}
+                />
+            </div>
             <div className='mt-4'>
                 {idList.map((item, idx) => (
                     <div key={item.speaking_id} className="border border-gray-300 rounded-md p-4 mb-4">

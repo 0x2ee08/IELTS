@@ -38,6 +38,7 @@ const Header: React.FC = () => {
     const [username, setUsername] = useState<string | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [role, setRole] = useState<string | null>(null);
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
         // Check for logged-in user
@@ -64,7 +65,7 @@ const Header: React.FC = () => {
     };
 
     return (
-        <header className="sticky top-0 bg-white dark:bg-gray-400 bg-opacity-90 backdrop-blur-sm text-black shadow-sm z-50">
+        <header className="sticky top-0 bg-white dark:bg-gray-400 bg-opacity-90 backdrop-blur-sm shadow-sm z-50">
             <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center py-5">
                     {/* Logo and left-side menu button */}
@@ -80,9 +81,18 @@ const Header: React.FC = () => {
                     {/* Right-side links */}
                     <nav className={`md:flex md:space-x-4 ${isMenuOpen ? 'block' : 'hidden md:block'}`}>
                         <NavLink href="/contests" text="Contests" />
-                        <NavLink href="/problemset" text="Problems" />
                         <NavLink href="/blogs" text="Blogs" />
-                        <NavLink href="/writing" text="Writing" />
+                        <div
+                            onMouseEnter={() => setIsHovered(true)}
+                            onMouseLeave={() => setIsHovered(false)}
+                        >
+                            <NavLink href="" text="Writing" />
+                            {isHovered &&(
+                                <div style={{position: 'absolute',backgroundColor: 'white', padding:'5px', borderRadius:'10px'}}>
+                                    <NavLink href="/writing/task1" text="Task 1" />
+                                    <NavLink href="/writing/task2" text="Task 2" />
+                                </div>)}
+                        </div>
                         <NavLink href="/flashcards" text="Flash Cards" />
                         <NavLink href="/tedtalk" text="Ted Talk" />
 

@@ -124,6 +124,14 @@ const MainContent: React.FC = () => {
     return timediff(d, timeISO);
   };
 
+  const tformatVirtual = (startTimeISO: string, endTimeISO: string): string => {
+    const startTime = new Date(startTimeISO);
+    const endTime = new Date(endTimeISO);
+    
+    const days = Math.floor((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24));
+    return (days < 2 ? `${String(days)} ngày` : timediff(startTimeISO, endTimeISO));
+  };
+
   return (
     <div className="flex flex-col lg:flex-row justify-between space-y-8 lg:space-y-0 lg:space-x-8 px-8 lg:px-12 py-8">
       {/* Left Section: Upcoming Contest and Virtual Tests */}
@@ -137,8 +145,14 @@ const MainContent: React.FC = () => {
                   <h3 className="font-bold text-xl">{contest.problemName}</h3>
                   <p className="text-gray-600">Bắt đầu trong: <span className="font-semibold text-[#0077B6]">{countdowns[cnt]}</span></p>
                   <div className="flex justify-end mt-4">
-                    <button className="px-8 py-3 bg-[#0077B6] text-white rounded-lg hover:shadow-lg" onClick={() => handleRegister(contest.id)}>Đăng ký</button>
+                    <button 
+                      className="px-8 py-3 bg-[#0077B6] text-white rounded-lg hover:shadow-xl hover:bg-[#005f89] transition-all duration-300 ease-in-out transform hover:scale-95"
+                      onClick={() => handleRegister(contest.id)}
+                    >
+                      Đăng ký
+                    </button>
                   </div>
+
                 </div>
               </div>
             ) : (
@@ -151,17 +165,23 @@ const MainContent: React.FC = () => {
             <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold">VIRTUAL TESTS</h2>
                 <div className="flex space-x-2">
-                    <button className="px-4 py-1 bg-white text-[#0077B6] rounded-lg border border-[#0077B6] hover:bg-[#0077B6] hover:text-white hover:border-white">Lastest</button>
-                    <button className="px-4 py-1 bg-white text-[#0077B6] rounded-lg border border-[#0077B6] hover:bg-[#0077B6] hover:text-white hover:border-white">Difficulty</button>
-                    <button className="px-4 py-1 bg-white text-[#0077B6] rounded-lg border border-[#0077B6] hover:bg-[#0077B6] hover:text-white hover:border-white">Progress</button>
-                    <button className="text-gray-500">&#128269;</button>
+                  <button className="px-4 py-1 bg-white text-[#0077B6] rounded-lg border border-[#0077B6] hover:bg-[#0077B6] hover:text-white hover:border-white transition-all duration-300 ease-in-out hover:shadow-lg">
+                    Latest
+                  </button>
+                  <button className="px-4 py-1 bg-white text-[#0077B6] rounded-lg border border-[#0077B6] hover:bg-[#0077B6] hover:text-white hover:border-white transition-all duration-300 ease-in-out hover:shadow-lg">
+                    Difficulty
+                  </button>
+                  <button className="px-4 py-1 bg-white text-[#0077B6] rounded-lg border border-[#0077B6] hover:bg-[#0077B6] hover:text-white hover:border-white transition-all duration-300 ease-in-out hover:shadow-lg">
+                    Progress
+                  </button>
+                  <button className="text-gray-500">&#128269;</button>
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                 {pastContest ? pastContest.map((contest, index) => (
                     <Link href={`/contests/${contest.id}`} key={index} className="cursor-pointer border border-black rounded-lg p-4 shadow hover:shadow-lg transition">
                         <h3 className="font-semibold text-[#0077B6] hover:underline">{contest.problemName}</h3>
-                        <p className="text-gray-500">{timediff(contest.startTime, contest.endTime)}</p>
+                        <p className="text-gray-500">{tformatVirtual(contest.startTime, contest.endTime)}</p>
                         <p className="text-gray-500">32 bài nộp</p>
                         <p className="text-gray-500">4301 bình luận</p>
                         <p className="text-blue-500 mt-2">40 câu hỏi</p>
