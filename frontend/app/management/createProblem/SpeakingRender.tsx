@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import config from '../../config';
 import Task1Page from './speaking/task1';
+import Task2Page from './speaking/task2';
+import Task3Page from './speaking/task3';
 
 // Utility function to generate a random string
 const generateRandomString = (length: number): string => {
@@ -91,6 +93,10 @@ const SpeakingPage: React.FC = () => {
         switch (id) {
             case 'Task 1':
                 return <Task1Page onTaskUpdate={(task: any) => handleTaskUpdate(task, idx)} />;
+            case 'Task 2':
+                return <Task2Page onTaskUpdate={(task: any) => handleTaskUpdate(task, idx)} />;
+            case 'Task 3':
+                return <Task3Page onTaskUpdate={(task: any) => handleTaskUpdate(task, idx)} />;
             default:
                 return null;
         }
