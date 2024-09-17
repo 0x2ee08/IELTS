@@ -3,9 +3,37 @@
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import './Reading.css';
+import { time } from 'console';
 
 const ReadingContest = ({ contest }: { contest: any }) => {
     const [activeParagraph, setActiveParagraph] = useState(0);
+    const initialTime = 60 * 60; // 60 minutes in seconds
+
+    const [timeLeft, setTimeLeft] = useState<number>(initialTime);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setTimeLeft((prevTime) => {
+                if (prevTime <= 0) {
+                    clearInterval(timer); // Stop the timer when time is up
+                    return 0;
+                }
+                return prevTime - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer); // Cleanup interval on component unmount
+    }, []);
+
+    const formatTime = (seconds: number) => {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds
+            .toString()
+            .padStart(2, '0')}`;
+    };
+
+
     const [userAnswers, setUserAnswers] = useState<any>(() => {
         // Try to get stored answers from the cookie when the component mounts
         const savedAnswers = Cookies.get('readingContestAnswers');
@@ -184,7 +212,10 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                             </button>
                         ))}
                     </div>   
-                    <button className="bg-[#0077B6] rounded p-2" onClick={handleSubmit}>Submit Answers</button>
+                    <div>
+                        <span className="text-black mr-4 font-black">Time: {formatTime(timeLeft)} </span>
+                        <button className="bg-[#0077B6] rounded p-2" onClick={handleSubmit}>Submit Answers</button>
+                    </div>
                 </div>
             </div>
         </header>
