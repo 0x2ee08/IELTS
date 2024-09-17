@@ -21,7 +21,7 @@ router.post('/generateSpeakingTask1', authenticateToken, async (req, res) => {
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: model,
         messages: [{ role: 'system', content: `Give me ${number_of_task} speaking task 1 questions that the following conditions hold:\n
-            - The topic is similar to contestant's life\n
+            - The topic is around contestant's life and simple\n
             - Only give me the question, no title, opening, or anything else\n
             - Question 1 is always something like 'can you introduct yourself' (with paraphrase)\n
             For example:\n
@@ -43,10 +43,54 @@ router.post('/generateSpeakingTask1_onlyOne', authenticateToken, async (req, res
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: model,
         messages: [{ role: 'system', content: `Give me one speaking task 1 questions that the following conditions hold:\n
-            - The topic is similar to contestant's personal life\n
+            - The topic is around contestant's life and simple\n
             - Only give me the question, no title, opening, or anything else\n
             For example:\n
             What is ...`}],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    res.json({content: response.data.choices[0].message.content.trim()});
+});
+
+router.post('/generateSpeakingTask2', authenticateToken, async (req, res) => {
+    const { number_of_task } = req.body;
+
+    const db = await connectToDatabase();
+    const blogsCollection = db.collection(`problemset`);
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{ role: 'system', content: `Give me ${number_of_task} speaking task 1 questions that the following conditions hold:\n
+            - The topic is one of this (describe an experience (movie, book, event, ...), describe a person, places, work and study, ...)\n
+            - Only give me the question, no title, opening, or anything else\n
+            - Question 1 is always something like 'can you introduct yourself' (with paraphrase)\n
+            For example:\n
+            [Q1]: Describe ...\n
+            [Q2]: Introduce ...\n
+            ...\n
+            [Q${number_of_task}] What your ...`}],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    res.json({content: response.data.choices[0].message.content.trim()});
+});
+
+router.post('/generateSpeakingTask2_onlyOne', authenticateToken, async (req, res) => {
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{ role: 'system', content: `Give me one speaking task 1 questions that the following conditions hold:\n
+            - The topic is one of this (describe an experience (movie, book, event, ...), describe a person, places, work and study, ...)\n
+            - Only give me the question, no title, opening, or anything else\n
+            For example:\n
+            Describe ...`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
