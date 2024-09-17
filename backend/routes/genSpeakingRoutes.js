@@ -134,10 +134,9 @@ router.post('/getSpeakingLexicalResource', authenticateToken, async (req, res) =
         messages: [{ role: 'system', content: `For this question: ${question}. Give me ielts band and improvement about vocabulary of this answer: ${answer}
             Only give me the result, no title, opening, or anything else\n
             Give me the ielts band of original answer first\n
-            Check each word seperately in the answer, if the word is wrong in any category, format it as [wrong_word](correct_word - reason why it false), wrong_word and correct_word must be different.\n
-            For example:\n
-            [BAND]: 6.5 [E]: You [is](are - wrong to be) [play](playing - wrong ...)\n
-            The wordr_i is the word in answer. Check word seperately and orderly (if this word is false or not good)`}],
+            Then, check each word seperately in the answer, if the word is wrong in any category, format it as [wrong_word](correct_word - reason why it false), wrong_word and correct_word must be different.\n
+            For example: the original answer is "word1 word2 word3 ...". Then you need to return:\n
+            [BAND]: {number} [E]: word1 [word2](correct_word2 - error_word2) word3... \n`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
