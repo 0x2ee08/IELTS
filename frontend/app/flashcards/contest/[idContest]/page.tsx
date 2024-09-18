@@ -4,11 +4,11 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Head from 'next/head';
-import Footer from '../../components/Footer';
-import Header from '../../components/Header';
+import Footer from '../../../components/Footer';
+import Header from '../../../components/Header';
 import { useSearchParams, useParams } from 'next/navigation';
-import config from '../../config'; 
-import '../../VocabPage.css'; // Import a CSS file for styling
+import config from '../../../config'; 
+import '../../../VocabPage.css'; // Import a CSS file for styling
 
 interface VocabEntry {
   word: string;

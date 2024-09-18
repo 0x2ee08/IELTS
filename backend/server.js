@@ -50,6 +50,9 @@ app.use('/api', generateSpeakingRoutes);
 app.use('/api', problemsRoutes);
 app.use('/api', graderWritingTask2);
 
+const flashcardsRoutes = require('./routes/flashcards');
+app.use('/api/flashcards', flashcardsRoutes);
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
