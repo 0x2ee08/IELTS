@@ -80,7 +80,6 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
 
     useEffect(() => {
         if (!hasInitialize.current) {
-            preprocess();
             hasInitialize.current = true;
         }
     }, []);
@@ -249,6 +248,7 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
         setIsLoading(true);
         setProgress(0);
         setCurrentQuestionIndex(0);
+        preprocess();
 
         setTimeout(() => {
             setIsLoading(false);
