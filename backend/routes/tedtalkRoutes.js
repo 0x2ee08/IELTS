@@ -124,6 +124,7 @@ router.post('/get_transcript', async (req, res) => {
 
 router.post('/send_chat', authenticateToken, async (req, res) => {
     const { message } = req.body;
+    console.log(message);
 
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: MODEL_CHATBOT_NAME,
