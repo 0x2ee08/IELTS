@@ -86,7 +86,7 @@ const VocabPage: React.FC = () => {
       <main>
         <h1>Vocabulary for {title}</h1>
         <h2>
-          <Link href={`/flashcards/${idContest}/review?title=${encodeURIComponent(title)}`}>
+          <Link href={`/flashcards/contest/${idContest}/review?title=${encodeURIComponent(title)}`}>
             Review
           </Link>
         </h2>
