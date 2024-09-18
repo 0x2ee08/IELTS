@@ -4,11 +4,15 @@ import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import './Reading.css';
 import { time } from 'console';
+import axios from 'axios';
+import config from '../../config';
+import { useRouter } from 'next/navigation';
 
 const ReadingContest = ({ contest }: { contest: any }) => {
     const [activeParagraph, setActiveParagraph] = useState(0);
     const [initialState, setInitialState] = useState(true);
     const initialTime = 60 * 60; // 60 minutes in seconds
+    const router = useRouter();
 
     const [timeLeft, setTimeLeft] = useState<number>(initialTime);
 
@@ -80,7 +84,20 @@ const ReadingContest = ({ contest }: { contest: any }) => {
 
     const handleSubmit = () => {
         saveAnswersToCookie(userAnswers); // Ensure the latest answers are saved
-        alert('Your answers have been saved.');
+
+        const token = localStorage.getItem('token');
+        axios.post(`${config.API_BASE_URL}api/submit_contest_reading`, 
+            { contest: contest.id, answer: userAnswers},
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            // router.push('/' + response.submitID);
+
+            saveAnswersToCookie({});
+        })
+        .catch(error => alert('Error!'))
+        .finally(() => {
+        });
     };
 
     const renderTrueFalseNotGiven = (sectionIndex: number, questionIndex: number) => (
@@ -164,6 +181,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
         ))
     );    
     let cnt=0;
+    console.log(contest);
     return (
         <>
         <div className="reading-contest-page">
