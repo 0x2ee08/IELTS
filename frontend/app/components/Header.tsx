@@ -38,6 +38,7 @@ const Header: React.FC = () => {
     const [username, setUsername] = useState<string | null>(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [role, setRole] = useState<string | null>(null);
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
         // Check for logged-in user
@@ -81,7 +82,17 @@ const Header: React.FC = () => {
                     <nav className={`md:flex md:space-x-4 ${isMenuOpen ? 'block' : 'hidden md:block'}`}>
                         <NavLink href="/contests" text="Contests" />
                         <NavLink href="/blogs" text="Blogs" />
-                        <NavLink href="/writing" text="Writing" />
+                        <div
+                            onMouseEnter={() => setIsHovered(true)}
+                            onMouseLeave={() => setIsHovered(false)}
+                        >
+                            <NavLink href="" text="Writing" />
+                            {isHovered &&(
+                                <div style={{position: 'absolute',backgroundColor: 'white', padding:'5px', borderRadius:'10px'}}>
+                                    <NavLink href="/writing/task1" text="Task 1" />
+                                    <NavLink href="/writing/task2" text="Task 2" />
+                                </div>)}
+                        </div>
                         <NavLink href="/flashcards" text="Flash Cards" />
                         <NavLink href="/tedtalk" text="Ted Talk" />
 

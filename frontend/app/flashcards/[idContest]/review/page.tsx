@@ -24,6 +24,8 @@ const VocabReviewPage = () => {
   const [quizIndex, setQuizIndex] = useState<number>(0);
   const [userAnswer, setUserAnswer] = useState<string>('');
   const [feedback, setFeedback] = useState<string>('');
+  const [showNextButton, setShowNextButton] = useState<boolean>(false);
+  const [incorrectList, setIncorrectList] = useState<VocabEntry[]>([]);
 
   const { idContest } = useParams();
   const searchParams = useSearchParams();
@@ -137,9 +139,16 @@ const VocabReviewPage = () => {
     if (userAnswer.trim().toLowerCase() === currentWord.meaning.toLowerCase()) {
       setFeedback('Correct!');
     } else {
-      setFeedback('Incorrect!');
+      setFeedback(`Incorrect!\nCorrect answer: ${currentWord.meaning}`);
+      setIncorrectList((prevList) => [...prevList, currentWord]);
     }
     setUserAnswer('');
+    setShowNextButton(true);
+  };
+
+  const handleNextQuestion = () => {
+    setFeedback('');
+    setShowNextButton(false);
     if (quizIndex < interactionList.length - 1) {
       setQuizIndex((prevIndex) => prevIndex + 1);
     } else {
@@ -173,17 +182,26 @@ const VocabReviewPage = () => {
             <div>
               <strong className='text-5xl'>{interactionList[quizIndex].word}</strong>
             </div>
-            <input 
-              type="text" 
-              value={userAnswer} 
+            <input
+              type="text"
+              value={userAnswer}
               onChange={handleInputChange}
               placeholder="Type your answer"
             />
-            <button onClick={handleSubmitAnswer}>Submit</button>
-            <p>{feedback}</p>
+            <button onClick={handleSubmitAnswer} disabled={showNextButton}>Submit</button>
+            <p style={{ whiteSpace: "pre-wrap" }}>{feedback}</p>
+            {showNextButton && <button onClick={handleNextQuestion}>Next Question</button>}
           </div>
         ) : (
           <div>
+            <h2>Incorrect Words</h2>
+            <ul>
+              {incorrectList.map((entry, index) => (
+                <li key={index}>
+                  {entry.word}: {entry.meaning}
+                </li>
+              ))}
+            </ul>
             <h2>Well done!</h2>
           </div>
         )}
