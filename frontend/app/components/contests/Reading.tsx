@@ -7,23 +7,34 @@ import { time } from 'console';
 
 const ReadingContest = ({ contest }: { contest: any }) => {
     const [activeParagraph, setActiveParagraph] = useState(0);
+    const [initialState, setInitialState] = useState(true);
     const initialTime = 60 * 60; // 60 minutes in seconds
 
     const [timeLeft, setTimeLeft] = useState<number>(initialTime);
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setTimeLeft((prevTime) => {
-                if (prevTime <= 0) {
-                    clearInterval(timer); // Stop the timer when time is up
-                    return 0;
-                }
-                return prevTime - 1;
-            });
-        }, 1000);
-
-        return () => clearInterval(timer); // Cleanup interval on component unmount
+        setInitialState(true);
     }, []);
+
+    useEffect(() => {
+        if(!initialState) {
+            const timer = setInterval(() => {
+                setTimeLeft((prevTime) => {
+                    if (prevTime <= 0) {
+                        clearInterval(timer); // Stop the timer when time is up
+                        return 0;
+                    }
+                    return prevTime - 1;
+                });
+            }, 1000);
+    
+            return () => clearInterval(timer); // Cleanup interval on component unmount
+        }
+    }, [initialState]);
+
+    const handleInitialState = () => {
+        setInitialState(false);
+    };
 
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
@@ -156,9 +167,20 @@ const ReadingContest = ({ contest }: { contest: any }) => {
     return (
         <>
         <div className="reading-contest-page">
-            {/* <p>Start Time: {new Date(contest.startTime).toLocaleString()}</p>
-            <p>End Time: {new Date(contest.endTime).toLocaleString()}</p> */}
-
+            {initialState && <div className="overlay">
+                <div className="contest-alert" > 
+                    <div>
+                    <p> Thời gian làm: 60p</p>
+                    <p> Bắt đầu tình thời gian sau khi bấm </p>
+                        <button
+                            onClick={handleInitialState}
+                        >
+                            Bắt Đầu 
+                        </button>
+                    </div>
+                </div>
+            </div>
+            }
             <div className="contest-layout" style={{ height: `${windowHeight - 150}px` }}>
                 <div className="paragraph-content">
                     <h2>{contest.paragraphs[activeParagraph].title}</h2>
@@ -198,7 +220,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                 </div>
             </div>
         </div>
-        <header className="sticky bottom-0 bg-gray-200 dark:bg-gray-400 bg-opacity-90 text-white backdrop-blur-sm shadow-sm z-50">
+        {!initialState && <header className="sticky bottom-0 bg-gray-200 dark:bg-gray-400 bg-opacity-90 text-white backdrop-blur-sm shadow-sm z-50">
             <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center py-5"> 
                     <div>
@@ -219,6 +241,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                 </div>
             </div>
         </header>
+        }
         </>
     );
 };
