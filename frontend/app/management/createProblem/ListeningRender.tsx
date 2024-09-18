@@ -1,1216 +1,152 @@
-// ListeningRender.tsx
-'use client';
+'use client'
 
 import React, { useState } from 'react';
-import axios from 'axios';
-import config from '../../config';
-import { TopologyDescription } from 'mongodb';
-import VoiceSelector from './listening/voiceSelector';
 
-export interface Question {
-    question: string;
-    answer: string;
-    explanation: string;
-    options: string;
-}
+const YOUR_API_KEY = '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';
 
-export interface Section {
-    type: string;
-    questions: Question[];
-    options: string[];
-    isOpen: boolean;
-}
+const TableFilling = () => {
+    const [script, setScript] = useState('');
+    const [mcqs, setMcqs] = useState<{ question: string, answers: string[] }[]>([]); // Store question and answers separately
+    const [error, setError] = useState('');
+    const [isMcqButtonVisible, setMcqButtonVisible] = useState(false); // For showing the "Generate MCQs" button
+    const [selectedAnswers, setSelectedAnswers] = useState<{ [index: number]: string }>({}); // To track selected answers for each question
 
-export interface Paragraph {
-    title: string;
-    content: string;
-    sections: Section[];
-    isOpen: boolean;
-    vocabularyIsOpen: boolean;
-}
+    // Function to generate the random script (without questions, just the script)
+    const generateRandomScript = async () => {
+        try {
+            const message = `Generate a random topic script for the IELTS Listening Table Filling section without any bold text, special characters, or additional text. Provide only the script.`;
 
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: 'POST',
+                headers: {
+                    "Authorization": `Bearer ${YOUR_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "model": "openai/gpt-4o",
+                    "messages": [
+                        { "role": "user", "content": message },
+                    ],
+                })
+            });
 
-const ReadingRender: React.FC = () => {
-    const [paragraphs, setParagraphs] = useState<Paragraph[]>([
-        { 
-            title: '', 
-            content: '', 
-            sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], 
-            isOpen: true,
-            vocabularyIsOpen: false
-        }
-    ]);;
-
-    const [problemName, setProblemName] = useState('');
-    const [accessUser, setAccessUser] = useState('');
-    const [startTime, setStartTime] = useState('');
-    const [endTime, setEndTime] = useState('');
-    const [newOption, setNewOption] = useState('');
-    const [globalOptions, setGlobalOptions] = useState<string[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [useVocab, setUseVocab] = useState(false);
-
-    const handleAddGlobalOption = (pIndex: number, sIndex: number) => {
-        if (newOption.trim() !== '') {
-            const updatedParagraphs = [...paragraphs];
-            updatedParagraphs[pIndex].sections[sIndex].options.push(newOption.trim());
-            setParagraphs(updatedParagraphs);
-            setGlobalOptions([...globalOptions, newOption.trim()]);
-            setNewOption(''); // Clear the input after adding
-        }
-    };
-    // const handleDeleteGlobalOption = (optIndex: number) => {
-    //     setGlobalOptions(globalOptions.filter((_, index) => index !== optIndex));
-    // };
-
-    const handleDeleteGlobalOption = (optIndex: number) => {
-        const optionToDelete = globalOptions[optIndex];
-        
-        // Remove the option from globalOptions
-        const updatedGlobalOptions = globalOptions.filter((_, index) => index !== optIndex);
-        setGlobalOptions(updatedGlobalOptions);
-        
-        // Remove the option from each section's options array
-        const updatedParagraphs = paragraphs.map(paragraph => {
-            const updatedSections = paragraph.sections.map(section => ({
-                ...section,
-                options: section.options.filter(option => option !== optionToDelete),
-            }));
-            return {
-                ...paragraph,
-                sections: updatedSections,
-            };
-        });
-    
-        setParagraphs(updatedParagraphs);
-    };
-
-    const questionTypes = [
-        "Choose a question type",
-        "Form Completion",
-        "Directions",
-        "Map Labeling",
-        "Short Answer Quesion",
-        "Multiple Choices",
-        "Matching Feature",
-    ];
-
-    const toggleParagraph = (index: number) => {
-        setParagraphs(paragraphs.map((para, i) => i === index ? { ...para, isOpen: !para.isOpen } : para));
-    };
-
-    const toggleSection = (pIndex: number, sIndex: number) => {
-        const newParagraphs = [...paragraphs];
-        newParagraphs[pIndex].sections[sIndex].isOpen = !newParagraphs[pIndex].sections[sIndex].isOpen;
-        setParagraphs(newParagraphs);
-    };
-
-    const toggleVocabulary = (pIndex: number) => {
-        const newParagraphs = [...paragraphs];
-        newParagraphs[pIndex].vocabularyIsOpen = !newParagraphs[pIndex].vocabularyIsOpen;
-        setParagraphs(newParagraphs);
-    };
-    
-    const [vocabLevels, setVocabLevels] = useState<VocabularyLevels>({
-        A1: [],
-        A2: [],
-        B1: [],
-        B2: [],
-        C1: [],
-        C2: []
-    });
-
-    const preprocessWord = (word: string) => {
-        return word.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-    };
-
-    type VocabularyLevels = {
-        A1: string[];
-        A2: string[];
-        B1: string[];
-        B2: string[];
-        C1: string[];
-        C2: string[];
-    };
-
-    const determineWordLevel = (words: string) =>{
-        return "A1";
-    }
-    
-    
-    const categorizeVocabulary = (content: string) => {
-        const wordLevels: VocabularyLevels = {
-            A1: [],
-            A2: [],
-            B1: [],
-            B2: [],
-            C1: [],
-            C2: []
-        };
-    
-        const words = content.split(/\s+/).map(preprocessWord);
-    
-        words.forEach(word => {
-            const level = determineWordLevel(word); // This should return 'A1', 'A2', 'B1', etc.
-            if (level && wordLevels[level as keyof VocabularyLevels]) {
-                wordLevels[level as keyof VocabularyLevels].push(word);
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(`HTTP error! Status: ${response.status}, Message: ${err.message}`);
             }
-        });
-    
-        // Remove duplicates from each level
-        for (const level in wordLevels) {
-            if (wordLevels.hasOwnProperty(level)) {
-                wordLevels[level as keyof VocabularyLevels] = Array.from(new Set(wordLevels[level as keyof VocabularyLevels]));
+
+            const data = await response.json();
+            const messageContent = data.choices[0]?.message?.content || 'No content available';
+            setScript(messageContent.trim()); // Trim any extra whitespace
+            setError('');
+            setMcqButtonVisible(true); // Show the "Generate MCQs" button after generating the script
+
+        } catch (error) {
+            console.error('Fetch error:', error);
+            setError(`An error occurred: ` + error);
+            setScript('');
+            setMcqButtonVisible(false); // Hide the button if there's an error
+        }
+    };
+
+    // Function to generate MCQs based on the generated script (well-formatted questions)
+    const generateMCQs = async () => {
+        try {
+            const message = `Create 5 multiple choice questions for IELTS Listening based on the following script, without special characters or additional text or endlines. Format each question with simple labels A, B, C, and D for the answers. Use plain text for clarity:\n\n${script}`;
+
+            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                method: 'POST',
+                headers: {
+                    "Authorization": `Bearer ${YOUR_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "model": "openai/gpt-4o",
+                    "messages": [
+                        { "role": "user", "content": message },
+                    ],
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(`HTTP error! Status: ${response.status}, Message: ${err.message}`);
             }
+
+            const data = await response.json();
+            const mcqContent = data.choices[0]?.message?.content || 'No MCQs available';
+
+            // Parsing the MCQ content to extract question and answer options
+            const parsedMcqs = mcqContent.split('\n\n').map((mcq: string) => {
+                const lines = mcq.split('\n');
+                const question = lines[0]; // The first line is the question
+                const answers = lines.slice(1).filter(Boolean); // Remove empty answers (if any)
+                return { question, answers };
+            });
+
+            setMcqs(parsedMcqs);
+
+        } catch (error) {
+            console.error('Fetch error:', error);
+            setError(`An error occurred while generating MCQs: ` + error);
+            setMcqs([]);
         }
-    
-        return wordLevels;
-    };
-    
-
-    const handleInputChange = (pIndex: number, field: 'title' | 'content', value: string) => {
-        const newParagraphs = [...paragraphs];
-        newParagraphs[pIndex][field] = value;
-        setVocabLevels(categorizeVocabulary(value));
-        setParagraphs(newParagraphs);
     };
 
-    const handleSectionChange = (pIndex: number, sIndex: number, value: string) => {
-        const newParagraphs = [...paragraphs];
-        newParagraphs[pIndex].sections[sIndex].type = value;
-        setParagraphs(newParagraphs);
+    // Function to handle checkbox selection
+    const handleAnswerSelection = (questionIndex: number, answer: string) => {
+        setSelectedAnswers(prevSelected => ({
+            ...prevSelected,
+            [questionIndex]: answer, // Store the selected answer for the given question
+        }));
     };
 
-    const handleQuestionChange = (pIndex: number, sIndex: number, qIndex: number, value: string, field: 'question' | 'answer' | 'explanation' | 'options') => {
-        const newParagraphs = [...paragraphs];
-        newParagraphs[pIndex].sections[sIndex].questions[qIndex][field] = value;
-        setParagraphs(newParagraphs);
-    };
-
-    const addParagraph = () => {
-        setParagraphs([...paragraphs, { title: '', content: '', sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], isOpen: true, vocabularyIsOpen: false }]);
-    };
-
-    const addSection = (pIndex: number) => {
-        const newParagraphs = [...paragraphs];
-        newParagraphs[pIndex].sections.push({ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options:'' }], isOpen: true });
-        setParagraphs(newParagraphs);
-    };
-
-    const addQuestion = (pIndex: number, sIndex: number) => {
-        const newParagraphs = [...paragraphs];
-        newParagraphs[pIndex].sections[sIndex].questions.push({ question: '', answer: '', explanation: '', options:'' });
-        setParagraphs(newParagraphs);
-    };
-
-    const deleteParagraph = (pIndex: number) => {
-        setParagraphs(paragraphs.filter((_, i) => i !== pIndex));
-    };
-
-    const deleteSection = (pIndex: number, sIndex: number) => {
-        const newParagraphs = [...paragraphs];
-        newParagraphs[pIndex].sections = newParagraphs[pIndex].sections.filter((_, i) => i !== sIndex);
-        setParagraphs(newParagraphs);
-    };
-
-    const deleteQuestion = (pIndex: number, sIndex: number, qIndex: number) => {
-        const newParagraphs = [...paragraphs];
-        newParagraphs[pIndex].sections[sIndex].questions = newParagraphs[pIndex].sections[sIndex].questions.filter((_, i) => i !== qIndex);
-        setParagraphs(newParagraphs);
-    };
-
-    const handleAccessUserChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let value = e.target.value;
-        
-        // Automatically add a space after each comma if not already present
-        value = value.replace(/,\s*/g, ', ');
-
-        setAccessUser(value);
-    };
-
-    const handleGeneratePara = (pIndex: number, title: string, content: string) => {
-        // Retrieve token from localStorage
-        setIsLoading(true);
-        // console.log(isLoading);
-
-        const token = localStorage.getItem('token');
-        // Make an API request with the title and content
-        axios.post(`${config.API_BASE_URL}api/generateReadingParagraph`, 
-            { title, content },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            // Update the paragraph with the API response data
-            const updatedParagraphs = paragraphs.map((para, index) => 
-                index === pIndex ? { ...para, title: response.data.title, content: response.data.content } : para
-            );
-            setParagraphs(updatedParagraphs);
-            setVocabLevels(categorizeVocabulary(response.data.content));
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-
-    };
-
-    const handleGenerateYNNQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        // Retrieve token from localStorage
-        const token = localStorage.getItem('token');
-        setIsLoading(true);
-        // Make an API request with the title and content
-        axios.post(`${config.API_BASE_URL}api/generateReadingYNN`, 
-            { title, content },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            const data = response.data;
-            const newParagraphs = [...paragraphs];
-            Object.keys(data).forEach((key, qIndex) => {
-                const questionData = data[key];
-                // Ensure there is a question entry for this index
-                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
-                }
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
-            });
-
-            // Update the state with the new questions
-            setParagraphs(newParagraphs);
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-    };
-
-    const handleGenerateTFNQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        // Retrieve token from localStorage
-        const token = localStorage.getItem('token');
-        setIsLoading(true);
-        // Make an API request with the title and content
-        axios.post(`${config.API_BASE_URL}api/generateReadingTFNG`, 
-            { title, content },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            const data = response.data;
-            const newParagraphs = [...paragraphs];
-            Object.keys(data).forEach((key, qIndex) => {
-                const questionData = data[key];
-                // Ensure there is a question entry for this index
-                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
-                }
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
-            });
-
-            // Update the state with the new questions
-            setParagraphs(newParagraphs);
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-    };
-
-    const handleGenerateFillOneWordQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        const token = localStorage.getItem('token');
-
-        setIsLoading(true);
-    
-        axios.post(`${config.API_BASE_URL}api/generateReadingFillOneWord`, 
-            { title, content },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            const data = response.data;
-            const newParagraphs = [...paragraphs];
-            Object.keys(data).forEach((key, qIndex) => {
-                const questionData = data[key];
-                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
-                }
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
-            });
-    
-            setParagraphs(newParagraphs);
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-    };
-    
-
-    const handleGenerateFillTwoWordQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        const token = localStorage.getItem('token');
-
-        setIsLoading(true);
-    
-        axios.post(`${config.API_BASE_URL}api/generateReadingFillTwoWords`, 
-            { title, content },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            const data = response.data;
-            const newParagraphs = [...paragraphs];
-            Object.keys(data).forEach((key, qIndex) => {
-                const questionData = data[key];
-                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
-                }
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question;
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer.trim()                       // Removes space from the beginning and end of the string
-                .replace(/,\s+/g, ',');
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation;
-            });
-    
-            setParagraphs(newParagraphs);
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-    };
-    
-
-    const handleGenerateMatchingHeadingQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        const token = localStorage.getItem('token');
-        setIsLoading(true);
-        axios.post(
-            `${config.API_BASE_URL}api/generateReadingMatchingHeading`, 
-            { title, content },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            const data = response.data;
-            const newParagraphs = [...paragraphs];
-    
-            // Iterate over the keys in the response data (e.g., "1", "2", etc.)
-            Object.keys(data).forEach((key, qIndex) => {
-                if (key !== "options") { // Skip the "options" key
-                    const questionData = data[key];
-    
-                    // Update the corresponding question in the state
-                    const newQuestion: Question = {
-                        question: questionData.question,
-                        answer: questionData.answer,
-                        explanation: questionData.explanation,
-                        options: ''  // This field might not be needed if options are handled differently
-                    };
-    
-                    // Update the section with the new question
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = newQuestion;
-                } else {
-                    // Update the options in the section
-                    newParagraphs[pIndex].sections[sIndex].options = data[key];
-                }
-            });
-    
-            // Update the state with the new paragraphs
-            setParagraphs(newParagraphs);
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-    };
-    
-    
-    
-    const handleGenerateMatchingParagraphInfoQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        const token = localStorage.getItem('token');
-        setIsLoading(true);
-        axios.post(`${config.API_BASE_URL}api/generateReadingMatchingParagraphInfo`, 
-            { title, content },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            const data = response.data;
-            const newParagraphs = [...paragraphs];
-    
-            // Iterate over the keys in the response data (e.g., "1", "2", etc.)
-            Object.keys(data).forEach((key, qIndex) => {
-                if (key !== "options") { // Skip the "options" key
-                    const questionData = data[key];
-    
-                    // Update the corresponding question in the state
-                    const newQuestion: Question = {
-                        question: questionData.question,
-                        answer: questionData.answer,
-                        explanation: questionData.explanation,
-                        options: ''  // This field might not be needed if options are handled differently
-                    };
-    
-                    // Update the section with the new question
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = newQuestion;
-                } else {
-                    // Update the options in the section
-                    newParagraphs[pIndex].sections[sIndex].options = data[key];
-                }
-            });
-    
-            // Update the state with the new paragraphs
-            setParagraphs(newParagraphs);
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-    };
-    
-    
-    const handleGenerateMatchingFeaturesQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        const token = localStorage.getItem('token');
-        setIsLoading(true);
-    
-        axios.post(`${config.API_BASE_URL}api/generateReadingMatchingFeatures`, 
-            { title, content },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            const data = response.data;
-            const newParagraphs = [...paragraphs];
-    
-            // Iterate over the keys in the response data (e.g., "1", "2", etc.)
-            Object.keys(data).forEach((key, qIndex) => {
-                if (key !== "options") { // Skip the "options" key
-                    const questionData = data[key];
-    
-                    // Update the corresponding question in the state
-                    const newQuestion: Question = {
-                        question: questionData.question,
-                        answer: questionData.answer,
-                        explanation: questionData.explanation,
-                        options: ''  // This field might not be needed if options are handled differently
-                    };
-    
-                    // Update the section with the new question
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = newQuestion;
-                } else {
-                    // Update the options in the section
-                    newParagraphs[pIndex].sections[sIndex].options = data[key];
-                }
-            });
-    
-            // Update the state with the new paragraphs
-            setParagraphs(newParagraphs);
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-    };
-    
-
-    const handleGenerateMatchingSentenceEndingQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        const token = localStorage.getItem('token');
-
-        setIsLoading(true);
-    
-        axios.post(`${config.API_BASE_URL}api/generateReadingMatchingSentenceEnding`, 
-            { title, content },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            const data = response.data;
-            const newParagraphs = [...paragraphs];
-    
-            // Iterate over the keys in the response data (e.g., "1", "2", etc.)
-            Object.keys(data).forEach((key, qIndex) => {
-                if (key !== "options") { // Skip the "options" key
-                    const questionData = data[key];
-    
-                    // Update the corresponding question in the state
-                    const newQuestion: Question = {
-                        question: questionData.question,
-                        answer: questionData.answer,
-                        explanation: questionData.explanation,
-                        options: ''  // This field might not be needed if options are handled differently
-                    };
-    
-                    // Update the section with the new question
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = newQuestion;
-                } else {
-                    // Update the options in the section
-                    newParagraphs[pIndex].sections[sIndex].options = data[key];
-                }
-            });
-    
-            // Update the state with the new paragraphs
-            setParagraphs(newParagraphs);
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-    };
-    
-
-    const handleGenerateMultipleChoiceOneAnswerQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        // Retrieve token from localStorage
-        const token = localStorage.getItem('token');
-
-        setIsLoading(true);
-    
-        // Make an API request with the title and content
-        axios.post(`${config.API_BASE_URL}api/generateReadingMCQOA`, 
-            { title, content },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            const data = response.data;
-    
-            const newParagraphs = [...paragraphs];
-    
-            Object.keys(data).forEach((key, qIndex) => {
-                const questionData = data[key];
-                // Ensure there is a question entry for this index
-                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
-                }
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question.trim();
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options
-                .map((option: string) => option.trim())
-                .join(', ')
-                .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-            });
-    
-            // Update the state with the new questions
-            setParagraphs(newParagraphs);
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-    };
-    
-
-    const handleGenerateMultipleChoiceMultipleAnswerQuestion = (pIndex: number, sIndex: number, title: string, content: string) => {
-        // Retrieve token from localStorage
-        const token = localStorage.getItem('token');
-
-        setIsLoading(true);
-    
-        // Make an API request with the title and content
-        axios.post(`${config.API_BASE_URL}api/generateReadingMCQMA`, 
-            { title, content },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            const data = response.data;
-    
-            const newParagraphs = [...paragraphs];
-            console.log("HEY");
-            Object.keys(data).forEach((key, qIndex) => {
-                console.log("HI");
-                const questionData = data[key];
-                console.log(questionData);
-                console.log(key);
-                // Ensure there is a question entry for this index
-                if (!newParagraphs[pIndex].sections[sIndex].questions[qIndex]) {
-                    newParagraphs[pIndex].sections[sIndex].questions[qIndex] = { question: '', answer: '', explanation: '', options: '' };
-                }
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].question = questionData.question.trim();
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].answer = questionData.answer.trim()                       // Removes space from the beginning and end of the string
-                .replace(/,\s+/g, ',');
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                newParagraphs[pIndex].sections[sIndex].questions[qIndex].options = questionData.options
-                .map((option: string) => option.trim())
-                .join(', ')
-                .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-            });
-    
-            // Update the state with the new questions
-            setParagraphs(newParagraphs);
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-    };
-
-    const handleGenerateQuestion = (pIndex: number, sIndex: number) => {
-        if (!paragraphs[pIndex].title || !paragraphs[pIndex].content){
-            alert("Paragraph is empty");
-            return;
-        }
-        const selectedParagraph = paragraphs[pIndex];
-        const selectedSection = selectedParagraph.sections[sIndex];
-        const title = selectedParagraph.title;
-        const content = selectedParagraph.content;
-        // console.log(selectedSection.type);
-        switch (selectedSection.type) {
-            case 'Yes/No/Not given':
-                handleGenerateYNNQuestion(pIndex, sIndex, title, content);
-                break;
-            case 'True/False/Not Given':
-                handleGenerateTFNQuestion(pIndex, sIndex, title, content);
-                break;
-            case 'Fill in the blank with one word only':
-                handleGenerateFillOneWordQuestion(pIndex, sIndex, title, content);
-                break;
-            case 'Fill in the blank with no more than two words':
-                handleGenerateFillTwoWordQuestion(pIndex, sIndex, title, content);
-                break;
-            case 'Matching Heading':
-                handleGenerateMatchingHeadingQuestion(pIndex, sIndex, title, content);
-                break;
-            case 'Matching Paragraph Information':
-                handleGenerateMatchingParagraphInfoQuestion(pIndex, sIndex, title, content);
-                break;
-            case 'Matching Features':
-                handleGenerateMatchingFeaturesQuestion(pIndex, sIndex, title, content);
-                break;
-            case 'Matching Sentence Endings':
-                handleGenerateMatchingSentenceEndingQuestion(pIndex, sIndex, title, content);
-                break;
-            case 'Multiple Choice One Answer':
-                handleGenerateMultipleChoiceOneAnswerQuestion(pIndex, sIndex, title, content);
-                break;
-            case 'Multiple Choice Multiple Answer':
-                handleGenerateMultipleChoiceMultipleAnswerQuestion(pIndex, sIndex, title, content);
-                break;
-            default:
-                console.error('Unknown question type:', selectedSection.type);
-        }
-        
-    };
-
-    const createProblem = () => {
-        // console.log(problemName);
-        // console.log(paragraphs);
-
-        //add contest id
-        setIsLoading(true);
-
-        const token = localStorage.getItem('token');
-
-        axios.post(`${config.API_BASE_URL}api/createContestReading`, {
-            paragraphs,
-            problemName,
-            accessUser,
-            startTime,
-            endTime,
-            useVocab,
-            "type" : "Reading"
-        }, 
-        { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-        .then(response => {
-            const data = response.data;
-            alert(data['status']);
-            console.log(data);
-            window.location.reload();
-        })
-        .catch(error => alert(error.response.data.error))
-        .finally(() => {
-            // console.log('Setting isLoading to false');
-            setIsLoading(false);
-        });
-    };
-
-
-    const renderParagraphs = () => (
-        <div className='py-4'>
-            <input 
-                type="text" 
-                placeholder='Name' 
-                className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
-                onChange={(e) => setProblemName(e.target.value)}
-                // value={paragraph.title} 
-                // onChange={(e) => handleInputChange(pIndex, 'title', e.target.value)}
-            />
-            <input 
-                type="text" 
-                placeholder='Access User (comma separated, blank for public access)' 
-                className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
-                value={accessUser}
-                onChange={handleAccessUserChange}
-            />
-            <div className='flex space-x-4'>
-                <input 
-                    type="datetime-local" 
-                    className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
-                    onChange={(e) => setStartTime(e.target.value)}
-                />
-                <input 
-                    type="datetime-local" 
-                    className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
-                    onChange={(e) => setEndTime(e.target.value)}
-                />
-            </div>
-            <div className="my-4 space-x-4">
-                <div className="my-4 flex  space-x-4">
-                    <p className="font-semibold mb-0">Use Vocabulary (For students to learn through flashcards):</p>
-                    <div className="flex items-center space-x-4 ml-4">
-                        <label className="flex items-center space-x-2">
-                            <input 
-                                type="radio" 
-                                name="useVocab" 
-                                value="yes" 
-                                checked={useVocab} 
-                                onChange={() => setUseVocab(true)}
-                            />
-                            <span>Yes</span>
-                        </label>
-                        <label className="flex items-center space-x-2">
-                            <input 
-                                type="radio" 
-                                name="useVocab" 
-                                value="no" 
-                                checked={!useVocab} 
-                                onChange={() => setUseVocab(false)}
-                            />
-                            <span>No</span>
-                        </label>
-                    </div>
-                </div>
-                {useVocab && (
-                    <p className="text-red-600 ">Warning: Creating the contest may take an insanely long time (5 to 15 minutes) due to vocabulary processing.</p>
-                )}
-            </div>
-
-            {paragraphs.map((paragraph, pIndex) => (
-                <div key={pIndex} className="border border-gray-300 rounded-md p-4 mb-4">
-                    <div onClick={() => toggleParagraph(pIndex)} className="cursor-pointer flex justify-between items-center">
-                        <div className='mb-4'>
-                            {`Paragraph ${pIndex + 1}`}
-                        </div>
-                        <div>
-                            <span>{paragraph.isOpen ? '-' : '+'}</span>
-                            <button 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteParagraph(pIndex);
-                                }} 
-                                className="px-2 rounded-md ml-2"
-                            >
-                                x
-                            </button>
-                        </div>
-                    </div>
-                    {paragraph.isOpen && (
-                        <div>
-                            <div className=''>
-                                <VoiceSelector 
-                                    tts= {paragraph.content}
-                                />
-                            </div>
-                            <div className='flex'>
-                                <input 
-                                    type="text" 
-                                    placeholder='Title / Topic' 
-                                    className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
-                                    value={paragraph.title} 
-                                    onChange={(e) => handleInputChange(pIndex, 'title', e.target.value)}
-                                    disabled = {isLoading}
-                                />
-                                <button 
-                                    onClick={() => handleGeneratePara(pIndex, paragraph.title, paragraph.content)}
-                                    // onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
-                                    className="px-2 rounded-md ml-2"
-                                    disabled={isLoading}
-                                >
-                                    Generate
-                                </button>
-                            </div>
-        
-                            <textarea 
-                                placeholder='Content' 
-                                className="border border-gray-300 px-4 py-2 rounded-md w-full h-64 my-2" 
-                                value={paragraph.content} 
-                                onChange={(e) => handleInputChange(pIndex, 'content', e.target.value)}
-                                disabled = {isLoading}
-                            ></textarea>
-
-                            {/* <div className="border border-gray-300 rounded-md p-4 mb-4">
-                                <div 
-                                    onClick={() => toggleVocabulary(pIndex)} 
-                                    className="cursor-pointer flex justify-between items-center"
-                                >
-                                    <h4>Vocabulary</h4>
-                                    <span>{paragraph.vocabularyIsOpen ? '-' : '+'}</span>
-                                </div>
-                                {paragraph.vocabularyIsOpen && (
-                                    <table className="w-full mt-2">
-                                        <thead>
-                                            <tr>
-                                                <th className="text-left">Level</th>
-                                                <th className="text-left">Words</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {Object.keys(vocabLevels).map(level => (
-                                                <tr key={level}>
-                                                    <td className="font-bold">{level}</td>
-                                                    <td>{vocabLevels[level as keyof VocabularyLevels].join(', ')}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                )}
-                            </div> */}
-
-                            {paragraph.sections.map((section, sIndex) => (
-                                <div key={sIndex} className="border border-gray-300 rounded-md p-4 mb-4">
-                                    <div onClick={() => toggleSection(pIndex, sIndex)} className="cursor-pointer flex justify-between items-center">
-                                        <h4>{`Section ${sIndex + 1}`}</h4>
-                                        <div>
-                                            <span>{section.isOpen ? '-' : '+'}</span>
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    deleteSection(pIndex, sIndex);
-                                                }} 
-                                                className=" px-2 rounded-md ml-2"
-                                            >
-                                                x
-                                            </button>
-                                        </div>
-                                    </div>
-                                    {section.isOpen && (
-                                        <div>
-                                            <div className='flex'>
-                                                <select 
-                                                    className="border border-gray-300 px-3 py-2 rounded-md w-full my-2" 
-                                                    value={section.type} 
-                                                    onChange={(e) => handleSectionChange(pIndex, sIndex, e.target.value)}
-                                                >
-                                                    {questionTypes.map((type, i) => (
-                                                        <option key={i} value={type}>{type}</option>
-                                                    ))}
-                                                </select>
-
-                                                <button 
-                                                    onClick={() => handleGenerateQuestion(pIndex, sIndex)}
-                                                    className="px-2 rounded-md ml-2"
-                                                    disabled={!paragraph.title || !paragraph.content || isLoading}
-                                                >
-                                                    Generate
-                                                </button>
-                                            </div>
-
-                                            {section.type === 'Matching Heading' || section.type === 'Matching Paragraph Information' || section.type === 'Matching Features' || section.type === 'Matching Sentence Endings' ? (
-                                                <>
-                                                    <div className="my-4 flex">
-                                                        <input 
-                                                            type="text" 
-                                                            placeholder="Add new option" 
-                                                            className="border border-gray-300 px-4 py-2 rounded-md w-full mb-2"
-                                                            value={newOption}
-                                                            onChange={(e) => setNewOption(e.target.value)}
-                                                        />
-                                                        <button 
-                                                            onClick={() => handleAddGlobalOption(pIndex,sIndex)} 
-                                                            className=" rounded-md px-3"
-                                                        >
-                                                            Add
-                                                        </button>
-                                                    </div>
-
-                                                    <div className="my-4">
-                                                        {globalOptions.map((option, optIndex) => (
-                                                            <div key={optIndex} className="flex items-center mb-2">
-                                                                <input 
-                                                                    type="text" 
-                                                                    className="border border-gray-300 px-4 py-2 rounded-md w-full ml-2" 
-                                                                    value={option} 
-                                                                    readOnly
-                                                                />
-                                                                <button 
-                                                                    onClick={() => handleDeleteGlobalOption(optIndex)} 
-                                                                    className="px-2 rounded-md ml-2 text-red-500"
-                                                                >
-                                                                    Delete
-                                                                </button>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </>
-                                            ):(
-                                                <></>
-                                            )}
-                                            
-                                            {section.questions.map((q, qIndex) => (
-                                                <div key={qIndex} className="my-2">
-                                                    {section.type === 'Yes/No/Not given' || section.type === 'True/False/Not Given' ? (
-                                                        <>
-                                                        <div className="flex items-center">
-                                                            <input 
-                                                                type="text" 
-                                                                placeholder={`Question ${qIndex + 1}`} 
-                                                                className="border border-gray-300 px-4 py-2 rounded-md w-full mr-2" 
-                                                                value={q.question} 
-                                                                onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'question')}
-                                                            />
-                                                    
-                                                            <div className="flex justify-center items-center w-1/2 space-x-4">
-                                                                {section.type === 'Yes/No/Not given' ? (
-                                                                    <>
-                                                                        <label className="flex items-center space-x-1">
-                                                                            <input 
-                                                                                type="radio" 
-                                                                                name={`answer-${pIndex}-${sIndex}-${qIndex}`} 
-                                                                                value="Yes"
-                                                                                checked={q.answer === 'Yes'}
-                                                                                onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
-                                                                            />
-                                                                            <span>Yes</span>
-                                                                        </label>
-                                                                        <label className="flex items-center space-x-1">
-                                                                            <input 
-                                                                                type="radio" 
-                                                                                name={`answer-${pIndex}-${sIndex}-${qIndex}`} 
-                                                                                value="No"
-                                                                                checked={q.answer === 'No'}
-                                                                                onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
-                                                                            />
-                                                                            <span>No</span>
-                                                                        </label>
-                                                                        <label className="flex items-center space-x-1">
-                                                                            <input 
-                                                                                type="radio" 
-                                                                                name={`answer-${pIndex}-${sIndex}-${qIndex}`} 
-                                                                                value="Not Given"
-                                                                                checked={q.answer === 'Not Given'}
-                                                                                onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
-                                                                            />
-                                                                            <span>NG</span>
-                                                                        </label>
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <label className="flex items-center space-x-1">
-                                                                            <input 
-                                                                                type="radio" 
-                                                                                name={`answer-${pIndex}-${sIndex}-${qIndex}`} 
-                                                                                value="True"
-                                                                                checked={q.answer === 'True'}
-                                                                                onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
-                                                                            />
-                                                                            <span>True</span>
-                                                                        </label>
-                                                                        <label className="flex items-center space-x-1">
-                                                                            <input 
-                                                                                type="radio" 
-                                                                                name={`answer-${pIndex}-${sIndex}-${qIndex}`} 
-                                                                                value="False"
-                                                                                checked={q.answer === 'False'}
-                                                                                onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
-                                                                            />
-                                                                            <span>False</span>
-                                                                        </label>
-                                                                        <label className="flex items-center space-x-1">
-                                                                            <input 
-                                                                                type="radio" 
-                                                                                name={`answer-${pIndex}-${sIndex}-${qIndex}`} 
-                                                                                value="Not Given"
-                                                                                checked={q.answer === 'Not Given'}
-                                                                                onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
-                                                                            />
-                                                                            <span>NG</span>
-                                                                        </label>
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                    
-                                                            <button 
-                                                                onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
-                                                                className="px-2 rounded-md ml-2 text-red-600"
-                                                            >
-                                                                x
-                                                            </button>
-                                                        </div>
-                                                    </>
-                                                    
-                                                    ) : section.type === 'Matching Heading' || section.type === 'Matching Paragraph Information' || section.type === 'Matching Features' || section.type === 'Matching Sentence Endings' ? (
-                                                        <>
-                                                            <div className='flex'>
-                                                                <input 
-                                                                    type="text" 
-                                                                    placeholder={`Question ${qIndex + 1}`} 
-                                                                    className="border border-gray-300 px-4 py-2 rounded-md w-full mr-2" 
-                                                                    value={q.question} 
-                                                                    onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'question')}
-                                                                />
-                                                                <select 
-                                                                    className="border border-gray-300 px-4 py-2 rounded-md w-full" 
-                                                                    value={q.answer}
-                                                                    onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
-                                                                >
-                                                                    <option value="">Select an option</option>
-                                                                    {section.options.map((option, optIndex) => (
-                                                                        <option key={optIndex} value={option}>{option}</option>
-                                                                    ))}
-                                                                </select>
-                                                                <button 
-                                                                    onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
-                                                                    className="px-2 rounded-md ml-2 text-red-600"
-                                                                >
-                                                                    x
-                                                                </button>
-                                                            </div>
-                                                        </>
-                                                    ) : section.type === 'Multiple Choice One Answer' || section.type === 'Multiple Choice Multiple Answer' ? (
-                                                        <div>
-                                                            <div className='flex'>
-                                                                <input 
-                                                                    type="text" 
-                                                                    placeholder={`Question ${qIndex + 1}`} 
-                                                                    className="border border-gray-300 px-4 py-2 rounded-md w-full mb-2" 
-                                                                    value={q.question} 
-                                                                    onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'question')}
-                                                                />
-                                                                <button 
-                                                                    onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
-                                                                    className="px-2 rounded-md ml-2"
-                                                                >
-                                                                    x
-                                                                </button>
-                                                            </div>
-                                                            
-                                                            <div>
-                                                                {q.options.split(',').map((option, optIndex) => {
-                                                                    const selectedOptions = q.answer ? q.answer.split(',') : [];
-                                                                    return (
-                                                                        <div key={optIndex} className="flex items-center mb-2">
-                                                                            <input 
-                                                                                type="checkbox" 
-                                                                                name={`options-${pIndex}-${sIndex}-${qIndex}`} 
-                                                                                value={option}
-                                                                                checked={selectedOptions.includes(option)}
-                                                                                onChange={(e) => {
-                                                                                    let updatedAnswer = [...selectedOptions];
-                                                                                    if (e.target.checked) {
-                                                                                        updatedAnswer.push(option);
-                                                                                    } else {
-                                                                                        updatedAnswer = updatedAnswer.filter(ans => ans !== option);
-                                                                                    }
-                                                                                    handleQuestionChange(pIndex, sIndex, qIndex, updatedAnswer.join(','), 'answer');
-                                                                                }}
-                                                                            />
-                                                                            <input 
-                                                                                type="text" 
-                                                                                placeholder={`Option ${optIndex + 1}`} 
-                                                                                className="border border-gray-300 px-4 py-2 rounded-md w-full ml-2" 
-                                                                                value={option} 
-                                                                                onChange={(e) => {
-                                                                                    const updatedOptions = q.options.split(',');
-                                                                                    updatedOptions[optIndex] = e.target.value;
-                                                                                    handleQuestionChange(pIndex, sIndex, qIndex, updatedOptions.join(','), 'options');
-                                                                                }}
-                                                                            />
-                                                                            <button 
-                                                                                onClick={() => {
-                                                                                    const updatedOptions = q.options.split(',');
-                                                                                    updatedOptions.splice(optIndex, 1); // Remove the option at the current index
-                                                                                    handleQuestionChange(pIndex, sIndex, qIndex, updatedOptions.join(','), 'options');
-                                                                                }} 
-                                                                                className="px-2 rounded-md ml-2 text-red-500"
-                                                                            >
-                                                                                Delete
-                                                                            </button>
-                                                                        </div>
-                                                                    );
-                                                                })}
-                                                                <button 
-                                                                    onClick={() => {
-                                                                        const updatedOptions = q.options.split(',');
-                                                                        updatedOptions.push('');
-                                                                        handleQuestionChange(pIndex, sIndex, qIndex, updatedOptions.join(','), 'options');
-                                                                    }} 
-                                                                    className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2"
-                                                                >
-                                                                    +
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <div className='flex'>
-                                                            <input 
-                                                                type="text" 
-                                                                placeholder={`Question ${qIndex + 1}`} 
-                                                                className="border border-gray-300 px-4 py-2 rounded-md w-full mr-2" 
-                                                                value={q.question} 
-                                                                onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'question')}
-                                                            />
-                                                            <input 
-                                                                type="text" 
-                                                                placeholder="Answer" 
-                                                                className="border border-gray-300 px-4 py-2 rounded-md w-full" 
-                                                                value={q.answer} 
-                                                                onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    <textarea 
-                                                        placeholder='Explanation' 
-                                                        className="border border-gray-300 px-4 py-2 rounded-md w-full my-2 h-20"
-                                                        value={q.explanation}
-                                                        onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'explanation')}
-                                                    ></textarea>
-                                                </div>
-                                            ))}
-
-                                            <button 
-                                                onClick={() => addQuestion(pIndex, sIndex)} 
-                                                className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2"
-                                            >
-                                                +
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                            <button 
-                                onClick={() => addSection(pIndex)} 
-                                className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2"
-                            >
-                                +
-                            </button>
-                        </div>
-                    )}
-                </div>
-            ))}
-            <button 
-                onClick={addParagraph} 
-                className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2"
-            >
-                +
+    return (
+        <div>
+            <button onClick={generateRandomScript}>
+                Generate Script
             </button>
-            <br />
-            <button 
-                onClick={createProblem} 
-                className="bg-green-500 text-white px-4 py-2 rounded-md mt-4"
-                disabled={isLoading}
-            >
-                Create Problem
-            </button>
+
+            {script && (
+                <div>
+                    <pre>{script}</pre>
+                </div>
+            )}
+
+            {/* Show the button for generating MCQs only after the script is generated */}
+            {isMcqButtonVisible && (
+                <button onClick={generateMCQs}>
+                    Generate MCQs
+                </button>
+            )}
+
+            {mcqs.length > 0 && (
+                <div>
+                    {mcqs.map((mcq, index) => (
+                        <div key={index}>
+                            <p><strong>{mcq.question}</strong></p>
+                            {/* Render answers with checkboxes, one answer per question */}
+                            <div>
+                                {mcq.answers.map((answer, answerIndex) => (
+                                    <label key={answerIndex} style={{ display: 'block' }}>
+                                        <input
+                                            type="radio"
+                                            name={`question-${index}`}
+                                            checked={selectedAnswers[index] === answer}
+                                            onChange={() => handleAnswerSelection(index, answer)}
+                                        />
+                                        {answer} {/* Displaying A, B, C, D */}
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {error && <p style={{ color: 'red' }}>{error}</p>}
         </div>
     );
-
-    return renderParagraphs();
 };
 
-export default ReadingRender;
+export default TableFilling;
