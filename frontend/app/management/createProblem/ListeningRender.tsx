@@ -14,7 +14,7 @@ interface MCQ {
     answers: string[];
 }
 
-const TableFilling = () => {
+const ListeningPage = () => {
     const [script, setScript] = useState<Script | null>(null);
     const [mcqs, setMcqs] = useState<{ question: string, answers: string[] }[]>([]); // Store question and answers separately
     const [error, setError] = useState('');
@@ -119,4 +119,4 @@ const TableFilling = () => {
     );
 };
 
-export default TableFilling;
+export default ListeningPage;
