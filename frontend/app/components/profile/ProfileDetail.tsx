@@ -54,7 +54,6 @@ const ProfileDetail: React.FC = () => {
                         <img src={(data && data.avatar) || '/default-avatar.png'} alt="Avatar" className="w-24 h-24 rounded-full" />
                     </div>
                     <p><strong>Username:</strong> {data?.username ?? 'N/A'}</p>
-                    <p><strong>Email:</strong> {data?.email ?? 'N/A'}</p>
                     <p><strong>Name:</strong> {data?.name ?? 'N/A'}</p>
                     <p><strong>School:</strong> {data?.school ?? 'N/A'}</p>
                     <p><strong>Class:</strong> {data?.class_ ?? 'N/A'}</p>

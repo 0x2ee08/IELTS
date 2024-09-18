@@ -155,7 +155,7 @@ router.post('/get_data_profile_as_guest', authenticateToken, async (req, res) =>
     const db = await connectToDatabase();
     const tasksCollection = db.collection(`users`);
 
-    const result = await tasksCollection.findOne({ username: username });
+    const result = await tasksCollection.findOne({ username: username },{ projection: { token: 0, createdAt: 0, password: 0, _id: 0, tokens: 0, email: 0 } });
 
     if(!result) res.status(404).json({ error: 'Failed to update user info' });
     else res.json({id: result.insertedId, result});
