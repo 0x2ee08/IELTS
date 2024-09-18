@@ -27,6 +27,7 @@ export interface task1QuestionGeneral {
     number_of_task: string;
     length: number;
     questions: string[];
+    audioData: string[];
 }
 
 export interface Description {
@@ -136,9 +137,9 @@ const Task1Page: React.FC<Task1PageProps> = React.memo(({ task, task_id, id, onT
     const preprocess = async () => {
         for(let i=0; i<Number(task.number_of_task); i++) {
             console.log(i, task.questions[i]);
-            await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromText`, {
+            await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromDrive`, {
                 method: "post",
-                body: JSON.stringify({ "text": task.questions[i] }),
+                body: JSON.stringify({ "url": task.audioData[i] }),
                 headers: { "X-Api-Key": STScoreAPIKey }
             }).then(res => res.json())
                 .then(data => {

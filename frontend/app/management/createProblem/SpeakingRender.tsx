@@ -27,6 +27,7 @@ const SpeakingPage: React.FC = () => {
     const [accessUser, setAccessUser] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
+    const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb';
 
     const hasInitialize = useRef(false);
 
@@ -103,6 +104,27 @@ const SpeakingPage: React.FC = () => {
     };
 
     const create_speaking_problem = async () => {
+        for(let i=0; i<taskArray.length; i++) {
+            console.log(taskArray[i]);
+            for(let j=0; j<taskArray[i].number_of_task; j++) {
+                await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromText`, {
+                    method: "post",
+                    body: JSON.stringify({ "text": taskArray[i].questions[j] }),
+                    headers: { "X-Api-Key": STScoreAPIKey }
+                }).then(res => res.json())
+                    .then(data => {
+                        taskArray[i].audioData[j] = data['audioBase64'];
+                    });
+                await fetch(`${config.API_PRONOUNCE_BASE_URL}/saveToGGDrive`, {
+                    method: "post",
+                    body: JSON.stringify({ "audioBase64": taskArray[i].audioData[j] }),
+                    headers: { "X-Api-Key": STScoreAPIKey }
+                }).then(res => res.json())
+                    .then(data => {
+                        taskArray[i].audioData[j] = data['audioData'];
+                    });
+            }
+        }
         const token = localStorage.getItem('token');
         const response = await fetch(`${config.API_BASE_URL}api/create_speaking_problem`, {
             method: 'POST',
@@ -189,7 +211,7 @@ const SpeakingPage: React.FC = () => {
             </div>
             <button
                 onClick={create_speaking_problem}
-                className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="px-4 py-2 bg-blue-500 text-white rounded-md"
             >
                 Create Problem
             </button>
