@@ -25,7 +25,7 @@ def lambda_handler(event, context):
 
     # Prepare the response
     res = {'audioBase64': audio_base64_with_prefix}
-
+    
     os.remove(file_path)
 
     return json.dumps(res)

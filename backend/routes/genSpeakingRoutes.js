@@ -89,9 +89,11 @@ router.post('/generateSpeakingTask2_onlyOne', authenticateToken, async (req, res
         model: generateModel,
         messages: [{ role: 'system', content: `Give me one speaking task 1 questions that the following conditions hold:\n
             - The topic is one of this (describe an experience (movie, book, event, ...), describe a person, places, work and study, ...)\n
-            - Only give me the question, no title, opening, or anything else\n
+            - Only give me the question, the suggestion, no title, opening, or anything else\n
             For example:\n
-            Describe ...`}],
+            Describe ... You should say:
+            - Where ... When
+            - Why ...`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -112,7 +114,6 @@ router.post('/generateSpeakingTask3', authenticateToken, async (req, res) => {
         messages: [{ role: 'system', content: `Give me ${number_of_task} speaking task 1 questions that the following conditions hold:\n
             - The topic is about society problem, interest, trend, ...\n
             - Only give me the question, no title, opening, or anything else\n
-            - Question 1 is always something like 'can you introduct yourself' (with paraphrase)\n
             For example:\n
             [Q1]: Describe ...\n
             [Q2]: Introduce ...\n

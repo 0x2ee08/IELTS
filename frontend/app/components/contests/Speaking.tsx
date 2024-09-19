@@ -6,6 +6,8 @@ import config from '../../config';
 import { useSearchParams } from "next/navigation";
 import { useRouter } from 'next/navigation';
 import Task1Page from './speaking/task1';
+import Task2Page from './speaking/task2';
+import Task3Page from './speaking/task3';
 import CustomPagination from './speaking/dataDisplayers/customPagination';
 
 export interface task1QuestionGeneral {
@@ -13,6 +15,7 @@ export interface task1QuestionGeneral {
     number_of_task: string,
     length: number;
     questions: string[],
+    audioData: string[],
 }
 
 interface SpeakingPageProps {
@@ -74,6 +77,28 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({id}) => {
             case "Task 1":
                 return (
                     <Task1Page
+                        key={currentPage}
+                        task={task}
+                        task_id={task_id}
+                        id={id}
+                        description={description}
+                        onTaskUpdate={(task: any) => handleTaskUpdate()}
+                    />
+                );
+            case "Task 2":
+                return (
+                    <Task2Page
+                        key={currentPage}
+                        task={task}
+                        task_id={task_id}
+                        id={id}
+                        description={description}
+                        onTaskUpdate={(task: any) => handleTaskUpdate()}
+                    />
+                );
+            case "Task 3":
+                return (
+                    <Task3Page
                         key={currentPage}
                         task={task}
                         task_id={task_id}
