@@ -109,4 +109,40 @@ router.post('/generate_listening_table_filling', authenticateToken, async (req, 
     }
 });
 
+router.post('/generate_listening_short_answer_question', authenticateToken, async (req, res) => {
+    const { script } = req.body; // Destructure script from the request body
+    const message = `Create 4 short answer questions for IELTS Listening based on the following script, with the answer for each question is NO MORE THAN 2 WORDS, without special characters or additional text. Provide questions with four options labeled A, B, C, and D:\n\n${script.content}`;
+
+    try {
+        const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+            model: model,
+            messages: [{
+                role: 'system',
+                content: message,
+            }], 
+        }, {
+            headers: {
+                'Authorization': `Bearer ${openRouterApiKey}`,
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const evaluation = response.data.choices[0].message.content.trim();
+
+        // Format the response into MCQs
+        const mcqs = evaluation.split('\n\n').map(mcq => {
+            const lines = mcq.split('\n').map(line => line.trim()).filter(line => line);
+            const question = lines[0] || ''; // First line is the question
+            const answers = lines.slice(1); // Rest are answer options
+            return { question, answers };
+        }).filter(mcq => mcq.question); // Remove MCQs with no question
+
+        res.json(mcqs); // Send back the formatted MCQs
+
+    } catch (error) {
+        console.error('Error generating listening questions:', error);
+        res.status(500).json({ message: 'Error generating listening questions', error });
+    }
+});
+
 module.exports = router;

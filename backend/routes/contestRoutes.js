@@ -463,7 +463,8 @@ router.get('/getAllSubmission', authenticateToken, async (req, res) => {
                 wrong: submission.result.wrong,
                 empty: submission.result.empty,
                 total: submission.result.total,
-                submit_time: submission.submit_time
+                submit_time: submission.submit_time,
+                submit_by: submission.submit_by
             };
         });
 
@@ -567,6 +568,39 @@ router.post('/getSubmission', authenticateToken, async (req, res) => {
                 user_answer: submission.answer,
                 contest_title: contest.problemName,
                 correct_answer: transformData(contest)
+        };
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(200).json(response);
+        }
+    } catch (error) {
+        console.error("Error retrieving submissions:", error);
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Error retrieving submissions" });
+        }
+    }
+});
+
+router.post('/getContestTitle', authenticateToken, async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const Collection = db.collection('user_answer_reading');
+        const { username } = req.user;
+        const { contestID } = req.body;
+        
+        const contestCollection = db.collection('contest');
+        const contest = await contestCollection.findOne({ id: contestID });
+        // console.log(submission.contestID);
+
+        if (!contest || (contest.accessUser !== "" && !contest.accessUser.split(',').includes(username))) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        
+        let response = {
+                title: contest.problemName
         };
 
         // Ensure only one response is sent

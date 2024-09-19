@@ -49,6 +49,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
     };
 
 
+
     const [userAnswers, setUserAnswers] = useState<any>(() => {
         // Try to get stored answers from the cookie when the component mounts
         const savedAnswers = Cookies.get('readingContestAnswers-' + contest.id);
@@ -98,53 +99,98 @@ const ReadingContest = ({ contest }: { contest: any }) => {
         .finally(() => {
         });
     };
-
-    const renderTrueFalseNotGiven = (sectionIndex: number, questionIndex: number) => (
-        ['True', 'False', 'Not Given'].map((option: string) => (
-            <label key={option}>
-                <input
-                    type="radio"
-                    name={`question-${sectionIndex}-${questionIndex}`}
-                    value={option}
-                    checked={userAnswers[activeParagraph]?.[sectionIndex]?.[questionIndex] === option}
-                    onChange={(e) => handleAnswerChange(sectionIndex, questionIndex, e.target.value)}
-                /> {option}
-            </label>
-        ))
-    );
-
-    const renderYesNoNotGiven = (sectionIndex: number, questionIndex: number) => (
-        ['Yes', 'No', 'Not Given'].map((option: string) => (
-            <label key={option}>
-                <input
-                    type="radio"
-                    name={`question-${sectionIndex}-${questionIndex}`}
-                    value={option}
-                    checked={userAnswers[activeParagraph]?.[sectionIndex]?.[questionIndex] === option}
-                    onChange={(e) => handleAnswerChange(sectionIndex, questionIndex, e.target.value)}
-                /> {option}
-            </label>
-        ))
-    );
+    function integerToRoman(num: number): string {
+        const romanMap: { [key: number]: string } = {
+            0: '',
+            1: 'i',
+            2: 'ii',
+            3: 'iii',
+            4: 'iv',
+            5: 'v',
+            6: 'vi',
+            7: 'vii',
+            8: 'viii',
+            9: 'ix',
+            10: 'x',
+            11: 'xi',
+            12: 'xii',
+            13: 'xiii',
+            14: 'xiv',
+            15: 'xv'
+        };
     
-    const renderFillInTheBlank = (sectionIndex: number, questionIndex: number) => (
-        <input
-            type="text"
-            placeholder="Answer"
+        return romanMap[num];
+    }
+    
+    const replaceDotsWithTextarea = (sectionIndex: number, questionIndex: number, content: string): JSX.Element[] => {
+        const parts = content.split('........');
+        return parts.flatMap((part, index) => (
+          index < parts.length - 1
+            ? [<span key={index}>{part}</span>, <input 
+            key={index + '_textarea'}
+            className="border-0 border-b-2 border-black focus:border-black focus:outline-none text-center"
             value={userAnswers[activeParagraph]?.[sectionIndex]?.[questionIndex] || ''}
             onChange={(e) => handleAnswerChange(sectionIndex, questionIndex, e.target.value)}
-        />
-    );
-    
-    const renderMatchingType = (sectionIndex: number, questionIndex: number, section: any) => (
+            ></input>]
+            : [<span key={index}>{part}</span>]
+        ));
+      };
+
+    const renderTrueFalseNotGiven = (sectionIndex: number, questionIndex: number) => (
         <select 
             value={userAnswers[activeParagraph]?.[sectionIndex]?.[questionIndex] || ''}
             onChange={(e) => handleAnswerChange(sectionIndex, questionIndex, e.target.value)}>
-            {section.options.map((option: string, oIndex: number) => (
+            {['','True', 'False', 'Not Given'].map((option: string, oIndex: number) => (
                 <option key={oIndex} value={option}>{option}</option>
             ))}
         </select>
     );
+
+    const renderYesNoNotGiven = (sectionIndex: number, questionIndex: number) => (
+        ['','Yes', 'No', 'Not Given'].map((option: string) => (
+            <label key={option}>
+                <input
+                    type="radio"
+                    name={`question-${sectionIndex}-${questionIndex}`}
+                    value={option}
+                    checked={userAnswers[activeParagraph]?.[sectionIndex]?.[questionIndex] === option}
+                    onChange={(e) => handleAnswerChange(sectionIndex, questionIndex, e.target.value)}
+                /> {option}
+            </label>
+        ))
+    );
+
+    const renderMatchingTable = (section: any) => {
+        return <div className='flex justify-center items-center'>
+                    <div className="matching-table"> 
+                        <div className="flex flex-col">
+                            <p className='flex justify-center items-center'>List of things</p>
+                            {section.options.map((option: string, index: number) => (
+                            <p> {integerToRoman(index+1)}. {option}</p>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+    };
+
+    const renderMatchingType = (sectionIndex: number, questionIndex: number, section: any) => {
+        const newmap = ['', ...section.options];
+        console.log(newmap); 
+    
+        return (
+            <select
+                value={userAnswers[activeParagraph]?.[sectionIndex]?.[questionIndex] || ''}
+                onChange={(e) => handleAnswerChange(sectionIndex, questionIndex, e.target.value)}
+            >
+                {newmap.map((option: string, oIndex: number) => (
+                    <option key={oIndex} value={option}>
+                        {integerToRoman(oIndex)}
+                    </option>
+                ))}
+            </select>
+        );
+    };
+    
     
     const renderMultipleChoiceOneAnswer = (sectionIndex: number, questionIndex: number, section: any) => (
         section.questions[questionIndex].options.split(',').map((option: string) => (
@@ -294,15 +340,12 @@ const ReadingContest = ({ contest }: { contest: any }) => {
         <div className="reading-contest-page">
             {initialState && <div className="overlay">
                 <div className="contest-alert" > 
-                    <div>
                     <p> Thời gian làm: 60p</p>
-                    <p> Bắt đầu tình thời gian sau khi bấm </p>
-                        <button
-                            onClick={handleInitialState}
-                        >
-                            Bắt Đầu 
-                        </button>
-                    </div>
+                    <button
+                        onClick={handleInitialState}
+                    >
+                        Bắt Đầu 
+                    </button>
                 </div>
             </div>
             }
@@ -322,15 +365,22 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                 <div className="sections-content">
                     {contest.paragraphs[activeParagraph].sections.map((section: any, secIndex: number) => (
                         <div key={secIndex}>
-                            <h3>Section Type: {section.type}</h3> 
+                            <p className="mb-4 font-bold"> Section {secIndex + 1}: {section.type}</p> 
+                            {section.type === 'Matching Heading' && renderMatchingTable(section)}
+                            {section.type === 'Matching Paragraph Information' && renderMatchingTable(section)}
+                            {section.type === 'Matching Features' && renderMatchingTable(section)}
+                            {section.type === 'Matching Sentence Endings' && renderMatchingTable(section)}
                             {section.questions.map((question: any, qIndex: number) => (
-                                <div key={qIndex}>
-                                    <p><b>Question {++cnt}:</b> {question.question}</p>
-
-                                    {section.type === 'True/False/Not Given' && renderTrueFalseNotGiven(secIndex, qIndex)}
-                                    {section.type === 'Yes/No/Not Given' && renderYesNoNotGiven(secIndex, qIndex)}
-                                    {section.type === 'Fill in the blank with one word only' && renderFillInTheBlank(secIndex, qIndex)}
-                                    {section.type === 'Fill in the blank with no more than two words' && renderFillInTheBlank(secIndex, qIndex)}
+                                <div
+                                 key={qIndex}
+                                 className="mb-2">
+                                    <b className="mr-2">{++cnt}</b>
+                                    <span>
+                                        {section.type === 'True/False/Not Given' && renderTrueFalseNotGiven(secIndex, qIndex)}
+                                        {section.type === 'Yes/No/Not Given' && renderYesNoNotGiven(secIndex, qIndex)}
+                                        <span className="ml-2"> {section.type.includes('Fill in the blank') && replaceDotsWithTextarea(secIndex, qIndex, question.question)} </span> 
+                                        <span className="ml-2"> {!section.type.includes('Fill in the blank') && (question.question)} </span> 
+                                    </span>
                                     {section.type === 'Matching Heading' && renderMatchingType(secIndex, qIndex, section)}
                                     {section.type === 'Matching Paragraph Information' && renderMatchingType(secIndex, qIndex, section)}
                                     {section.type === 'Matching Features' && renderMatchingType(secIndex, qIndex, section)}
