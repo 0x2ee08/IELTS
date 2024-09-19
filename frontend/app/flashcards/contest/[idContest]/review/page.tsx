@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Head from 'next/head';
-import Header from '../../../components/Header';
-import Footer from '../../../components/Footer';
+import Header from '../../../../components/Header';
+import Footer from '../../../../components/Footer';
 import { useParams, useSearchParams } from 'next/navigation';
-import config from '../../../config';
+import config from '../../../../config';
 import '../style.css'; // Import CSS for review page styling
 
 interface VocabEntry {

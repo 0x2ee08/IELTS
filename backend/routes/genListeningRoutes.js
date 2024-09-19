@@ -12,177 +12,70 @@ const model = MODEL_NAME;
 const openRouterApiKey = OPENROUTER_API_KEY
 const router = express.Router();
 
-router.post('/generateReadingParagraph', authenticateToken, async (req, res) => {
-    const { title, content } = req.body;
+router.post('/generate_listening_script', authenticateToken, async (req, res) => {
+    const message = `Generate a random script for the IELTS Listening Multiple Choice section without any bold text, special characters, questions or additional text. Provide the script only.`;
 
-    const db = await connectToDatabase();
+    try {
+        const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+            model: model,
+            messages: [{
+                role: 'system',
+                content: message,
+            }],
+        }, {
+            headers: {
+                'Authorization': `Bearer ${openRouterApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-    console.log(title, content);
+        const evaluation = response.data.choices[0].message.content.trim();
+        const lines = evaluation.split('\n');
+        const title_ = lines[0].trim();
+        const content_ = lines.slice(1).join('\n').trim();
 
-    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-        model: model,
-        messages: [{ role: 'system', content: `Give me a paragraph of IELTS Reading around 800 words, 6 sections with this topic "${title}"(if empty then random) and some of first line content: "${content}"(if empty then random) [ONLY GIVE THE TITLE AND THE PARAGRAPH, DO NOT SAY ANYTHING ELSE, HAVE EXACTLY 6 SMALLER SECTION, 800 WORD MINIMUM, DO NOT HAVE TITLE FOR EACH SECTION]`}],
-    }, {
-        headers: {
-            'Authorization': `Bearer ${openRouterApiKey}`,
-            'Content-Type': 'application/json'
-        }
-    });
+        res.json({ title: title_, content: content_ });
 
-    var evaluation = response.data.choices[0].message.content.trim();
-
-    var lines = evaluation.split('\n');
-
-    var title_ = lines[0].trim();
-
-    var content_ = lines.slice(1).join('\n').trim();
-
-    res.json({title: title_, content: content_});
+    } catch (error) {
+        console.error('Error generating listening script:', error);
+        res.status(500).json({ message: 'Error generating listening script', error });
+    }
 });
 
-function parseEvaluationType1(evaluation) {
-    const evaluationObject = {};
-    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
+router.post('/generate_listening_multiple_choice', authenticateToken, async (req, res) => {
+    const { script } = req.body; // Destructure script from the request body
+    const message = `Create 4 multiple choice questions for IELTS Listening based on the following script, with out special character or additional text. Provide questions with four options labeled A, B, C, and D:\n\n${script.content}`; // Pass only the content of the script
 
-    questionBlocks.forEach((block, index) => {
-        const questionMatch = block.match(/\[QUESTION (\d+)\]\s*(.*)/);
-        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
-        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
+    try {
+        const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+            model: model,
+            messages: [{
+                role: 'system',
+                content: message,
+            }],
+        }, {
+            headers: {
+                'Authorization': `Bearer ${openRouterApiKey}`,
+                'Content-Type': 'application/json',
+            }
+        });
 
-        if (questionMatch && answerMatch && explanationMatch) {
-            const questionIndex = index + 1;
-            evaluationObject[questionIndex] = {
-                question: questionMatch[2].trim(),
-                answer: answerMatch[2].trim(),
-                explanation: explanationMatch[2].trim(),
-            };
-        }
-    });
+        const evaluation = response.data.choices[0].message.content.trim();
 
-    return evaluationObject;
-}
+        // Format the response into MCQs
+        const mcqs = evaluation.split('\n\n').map(mcq => {
+            const lines = mcq.split('\n');
+            const question = lines[0]; // First line is the question
+            const answers = lines.slice(1); // Rest are answer options
+            return { question, answers };
+        });
 
-function parseEvaluationType3(evaluation) {
-    const evaluationObject = {
-        options: [],
-    };
-    
-    // Extract options
-    const optionMatches = [...evaluation.matchAll(/\[OPTION \d+\]\s*(.*)/g)];
-    optionMatches.forEach(option => {
-        evaluationObject.options.push(option[1].trim());
-    });
+        res.json(mcqs); // Send back the formatted MCQs
 
-    // Extract questions, answers, and explanations
-    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
-    questionBlocks.forEach((block, index) => {
-        const questionMatch = block.match(/\[QUESTION (\d+)\]\s*(.*)/);
-        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
-        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
-
-        if (questionMatch && answerMatch && explanationMatch) {
-            const questionIndex = index + 1;
-            evaluationObject[questionIndex] = {
-                question: questionMatch[2].trim(),
-                answer: answerMatch[2].trim(),
-                explanation: explanationMatch[2].trim(),
-            };
-        }
-    });
-
-    return evaluationObject;
-}
-
-function parseEvaluationType4(evaluation) {
-    const evaluationObject = {
-        options: [],
-    };
-    
-    // Extract options
-    const optionMatches = [...evaluation.matchAll(/\[OPTION \d+\]\s*(.*)/g)];
-    optionMatches.forEach(option => {
-        evaluationObject.options.push(option[1].trim());
-    });
-
-    // Extract questions, answers, and explanations
-    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
-    questionBlocks.forEach((block, index) => {
-        const questionMatch = block.match(/\[FEATURE (\d+)\]\s*(.*)/);
-        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
-        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
-
-        if (questionMatch && answerMatch && explanationMatch) {
-            const questionIndex = index + 1;
-            evaluationObject[questionIndex] = {
-                question: questionMatch[2].trim(),
-                answer: answerMatch[2].trim(),
-                explanation: explanationMatch[2].trim(),
-            };
-        }
-    });
-
-    return evaluationObject;
-}
-
-function parseEvaluationType5(evaluation) {
-    const evaluationObject = {
-        options: [],
-    };
-    
-    // Extract options
-    const optionMatches = [...evaluation.matchAll(/\[OPTION \d+\]\s*(.*)/g)];
-    optionMatches.forEach(option => {
-        evaluationObject.options.push(option[1].trim());
-    });
-
-    // Extract questions, answers, and explanations
-    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
-    questionBlocks.forEach((block, index) => {
-        const questionMatch = block.match(/\[SENTENCE (\d+)\]\s*(.*)/);
-        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
-        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
-
-        if (questionMatch && answerMatch && explanationMatch) {
-            const questionIndex = index + 1;
-            evaluationObject[questionIndex] = {
-                question: questionMatch[2].trim(),
-                answer: answerMatch[2].trim(),
-                explanation: explanationMatch[2].trim(),
-            };
-        }
-    });
-
-    return evaluationObject;
-}
-
-function parseEvaluationType2(evaluation) {
-    const evaluationObject = {};
-    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
-
-    questionBlocks.forEach(block => {
-        const questionMatch = block.match(/\[QUESTION (\d+)\]\s*(.*)/);
-        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
-        const explanationMatch = block.match(/\[EXPLAINATION (\d+)\]\s*(.*)/);
-
-        if (questionMatch && answerMatch && explanationMatch) {
-            const questionIndex = questionMatch[1].trim();
-            const options = [];
-            const optionMatches = [...block.matchAll(/\[OPTION \d+\]\s*(.*)/g)];
-
-            optionMatches.forEach(option => {
-                options.push(option[1].trim());
-            });
-
-            evaluationObject[questionIndex] = {
-                question: questionMatch[2].trim(),  // Include the question text
-                options: options,
-                answer: answerMatch[2].trim(),
-                explanation: explanationMatch[2].trim(),
-            };
-        }
-    });
-
-    return evaluationObject;
-}
+    } catch (error) {
+        console.error('Error generating listening questions:', error);
+        res.status(500).json({ message: 'Error generating listening questions', error });
+    }
+});
 
 module.exports = router;

@@ -333,5 +333,213 @@ router.post('/getContest', async (req, res) => {
     }
 });
 
+function transformData(input) {
+    let result = {};
+    
+    // Loop through paragraphs
+    input.paragraphs.forEach((paragraph, pIndex) => {
+      result[pIndex] = {}; // Create a new paragraph entry
+  
+      // Loop through sections within each paragraph
+      paragraph.sections.forEach((section, sIndex) => {
+        result[pIndex][sIndex] = {}; // Create a new section entry
+  
+        // Loop through questions within each section
+        section.questions.forEach((question, qIndex) => {
+          result[pIndex][sIndex][qIndex] = question.answer; // Map question index to answer
+        });
+      });
+    });
+  
+    return result;
+}
+
+function Reading_gradder(correctAnswer, userAnswer) {
+    let result = {
+      correct: 0,
+      wrong: 0,
+      empty: 0,
+      total: 0 // Add total count of questions
+    };
+  
+    // Iterate through paragraphs
+    for (let pIndex in correctAnswer) {
+      if (correctAnswer.hasOwnProperty(pIndex)) {
+  
+        // Iterate through sections within paragraphs
+        for (let sIndex in correctAnswer[pIndex]) {
+          if (correctAnswer[pIndex].hasOwnProperty(sIndex)) {
+  
+            // Iterate through questions within sections
+            for (let qIndex in correctAnswer[pIndex][sIndex]) {
+              if (correctAnswer[pIndex][sIndex].hasOwnProperty(qIndex)) {
+                const correct = correctAnswer[pIndex][sIndex][qIndex];
+                const user = userAnswer[pIndex]?.[sIndex]?.[qIndex] || ""; // Get user answer, or empty if undefined
+  
+                result.total++; // Increment total for every question
+  
+                if (user === "") {
+                  result.empty++;
+                } else if (user === correct) {
+                  result.correct++;
+                } else {
+                  result.wrong++;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  
+    return result;
+}
+  
+
+router.post('/submit_contest_reading', authenticateToken, async (req, res) => {
+    try {
+        const { contestID , answer } = req.body;
+        const { username } = req.user;
+
+        if (!contestID) {
+            return res.status(400).json({ error: "Missing contestID." });
+        }
+
+        if (!answer) {
+            return res.status(400).json({ error: "Missing answer." });
+        }
+        const db = await connectToDatabase();
+
+        const contestCollection = db.collection('contest');
+        const contest = await contestCollection.findOne({ id: contestID });
+
+        if (contest.accessUser !== "" && !contest.accessUser.split(',').includes(username)) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+        let correctAnswer = transformData(contest);
+        let sresult = Reading_gradder(correctAnswer, answer);
+
+        const submissionCollection = db.collection('user_answer_reading');
+        let sid = generateRandomString(20);
+        const newSubmission = {
+            id: sid,
+            contestID: contestID,
+            answer: answer,
+            submit_by: username,
+            result: sresult,
+            submit_time: new Date().toISOString()
+        };
+        await submissionCollection.insertOne(newSubmission);
+
+        res.json({ submitID: sid});
+
+        
+    } catch (error) {
+        console.error("Error submitting reading contest:", error);
+        res.status(500).json({ message: "Error while submit. Try again!" });
+    }
+});
+
+router.get('/getAllSubmission', authenticateToken, async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const Collection = db.collection('user_answer_reading');
+        const { username } = req.user;
+
+        let query = {
+            submit_by: username
+        };
+
+        const availableSubmission = await Collection.find(query).toArray();
+
+        let response = {};
+        availableSubmission.forEach((submission, index) => {
+            response[index + 1] = {
+                type: 'Reading',
+                sid: submission.id,
+                cid: submission.contestID,
+                correct: submission.result.correct,
+                wrong: submission.result.wrong,
+                empty: submission.result.empty,
+                total: submission.result.total,
+                submit_time: submission.submit_time
+            };
+        });
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(200).json(response);
+        }
+    } catch (error) {
+        console.error("Error retrieving submissions:", error);
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Error retrieving submissions" });
+        }
+    }
+});
+
+router.post('/getSubmission', authenticateToken, async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const Collection = db.collection('user_answer_reading');
+        const { username } = req.user;
+        const { submissionID } = req.body;
+        let query = {
+            id: submissionID,
+            submit_by: username
+        };
+
+        // console.log(query);
+
+        let submission = await Collection.find(query).toArray();
+
+        submission = submission[0];
+        if(!submission){
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+        // interface Submission {
+        //     contest_title: string;
+        //     correct_answer: Record<string, any>;
+        //   }
+
+        const contestCollection = db.collection('contest');
+        const contest = await contestCollection.findOne({ id: submission.contestID });
+        // console.log(submission.contestID);
+
+        if (!contest || (contest.accessUser !== "" && !contest.accessUser.split(',').includes(username))) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        
+        let response = {
+                type: 'Reading',
+                sid: submission.id,
+                cid: submission.contestID,
+                correct: submission.result.correct,
+                wrong: submission.result.wrong,
+                empty: submission.result.empty,
+                total: submission.result.total,
+                submit_time: submission.submit_time,
+                user_answer: submission.answer,
+                contest_title: contest.problemName,
+                correct_answer: transformData(contest)
+        };
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(200).json(response);
+        }
+    } catch (error) {
+        console.error("Error retrieving submissions:", error);
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Error retrieving submissions" });
+        }
+    }
+});
 
 module.exports = router;

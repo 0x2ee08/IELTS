@@ -105,16 +105,16 @@ const MainContent: React.FC = () => {
     const endTime = new Date(endTimeISO);
     const diffInMs = endTime.getTime() - startTime.getTime();
 
-    if (diffInMs < 0) return `00 giây`;
+    if (diffInMs <= 0) return `0 giây`;
     
     const seconds = Math.floor((diffInMs / 1000) % 60);
-    const minutes = Math.floor((diffInMs / (1000 * 60)) % 60);
-    const hours = Math.floor((diffInMs / (1000 * 60 * 60)) % 24);
-    const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    const minutes = Math.floor((diffInMs / 60000) % 60);
+    const hours = Math.floor((diffInMs / 360000) % 24);
+    const days = Math.floor(diffInMs / 8640000);
 
-    if (days !== 0) return `${String(days)} ngày ${String(hours).padStart(2, '0')} tiếng ${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
-    if (hours !== 0) return `${String(hours).padStart(2, '0')} tiếng ${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
-    if (minutes !== 0) return `${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
+    if (days > 0) return `${String(days)} ngày ${String(hours).padStart(2, '0')} tiếng ${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
+    if (hours > 0) return `${String(hours).padStart(2, '0')} tiếng ${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
+    if (minutes > 0) return `${String(minutes).padStart(2, '0')} phút ${String(seconds).padStart(2, '0')} giây`;
 
     return `${String(seconds).padStart(2, '0')} giây`;
   };
@@ -128,8 +128,9 @@ const MainContent: React.FC = () => {
     const startTime = new Date(startTimeISO);
     const endTime = new Date(endTimeISO);
     
-    const days = Math.floor((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24));
-    return (days < 2 ? `${String(days)} ngày` : timediff(startTimeISO, endTimeISO));
+    const days = Math.floor((endTime.getTime() - startTime.getTime()) / 8640000);
+    if (days > 1) return `${String(days)} ngày`;
+    return timediff(startTimeISO, endTimeISO);
   };
 
   return (
@@ -184,7 +185,7 @@ const MainContent: React.FC = () => {
                         <p className="text-gray-500">{tformatVirtual(contest.startTime, contest.endTime)}</p>
                         <p className="text-gray-500">32 bài nộp</p>
                         <p className="text-gray-500">4301 bình luận</p>
-                        <p className="text-blue-500 mt-2">40 câu hỏi</p>
+                        <p className="text-blue-500 mt-2">40 Câu hỏi</p>
                     </Link>
                 )) : (
                   <p>Loading...</p>
