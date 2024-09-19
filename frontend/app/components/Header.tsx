@@ -40,6 +40,7 @@ const Header: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [role, setRole] = useState<string | null>(null);
     const [isHovered, setIsHovered] = useState(false);
+    const [isHoveredSubmission, setIsHoveredSubmission] = useState(false);
 
     useEffect(() => {
         // Check for logged-in user
@@ -118,6 +119,46 @@ const Header: React.FC = () => {
 
                         <NavLink href="/flashcards" text="Flash Cards" />
                         <NavLink href="/tedtalk" text="Ted Talk" />
+
+                        {username ? (
+                            <>
+                            <div
+                                onMouseEnter={() => setIsHoveredSubmission(true)}
+                                onMouseLeave={() => setIsHoveredSubmission(false)}
+                                className="relative"
+                            >
+                                <NavLink 
+                                    href="/results"
+                                    text="Submissions" 
+                                />
+                                {isHoveredSubmission && (
+                                    <div 
+                                        className="absolute bg-white p-4 border-t-10 border-[#00B4D8]" // Blue line on top
+                                        style={{ minWidth: '200px' }} // Ensure dropdown has minimum width
+                                    >
+                                        <div className="space-y-2">
+                                            <hr className="border-[#00B4D8] border-t-2" /> 
+                                            <NavLink 
+                                                href="/results" 
+                                                text="My submission" 
+                                                customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
+                                            />
+                                            <hr className="border-[#00B4D8] border-t-2" /> 
+                                            {/* Thin line separator */}
+                                            <NavLink 
+                                                href="/submissions" 
+                                                text="All submission" 
+                                                customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
+                                            />
+                                            
+                                            {/* Thin line separator */}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            </>
+                            
+                        ) : null}
 
                         {username && (role === 'admin' || role === 'teacher') ? (
                             <NavLink href="/management" text="Dashboard" />

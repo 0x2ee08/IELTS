@@ -481,6 +481,47 @@ router.get('/getAllSubmission', authenticateToken, async (req, res) => {
     }
 });
 
+router.get('/getGlobalSubmission', authenticateToken, async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const Collection = db.collection('user_answer_reading');
+        const { username } = req.user;
+
+        let query = {
+            // submit_by: username
+        };
+
+        const availableSubmission = await Collection.find(query).limit(50).toArray();
+
+        let response = {};
+        availableSubmission.forEach((submission, index) => {
+            response[index + 1] = {
+                type: 'Reading',
+                sid: submission.id,
+                cid: submission.contestID,
+                correct: submission.result.correct,
+                wrong: submission.result.wrong,
+                empty: submission.result.empty,
+                total: submission.result.total,
+                submit_time: submission.submit_time,
+                submit_by: submission.submit_by
+            };
+        });
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(200).json(response);
+        }
+    } catch (error) {
+        console.error("Error retrieving submissions:", error);
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Error retrieving submissions" });
+        }
+    }
+});
+
 router.post('/getSubmission', authenticateToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
@@ -489,7 +530,7 @@ router.post('/getSubmission', authenticateToken, async (req, res) => {
         const { submissionID } = req.body;
         let query = {
             id: submissionID,
-            submit_by: username
+            // submit_by: username //should it be private or not, hmmm...
         };
 
         // console.log(query);
