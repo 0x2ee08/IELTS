@@ -94,7 +94,7 @@ const ResultPage: React.FC = () => {
         <div>
             <Header />
             <div className="submission-list p-6">
-                <h2 className="text-xl font-semibold mb-6">List of All Submissions</h2>
+                <h2 className="text-xl font-semibold mb-6">List of Global Submissions</h2>
                 {error && <p className="error text-red-500">{error}</p>}
                 {!error && submissions.length === 0 && <p>No submissions found.</p>}
                 {submissions.length > 0 && (
