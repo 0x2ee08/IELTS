@@ -11,54 +11,55 @@ const RSS_FEED_URL = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCsooa
 const MODEL_CHATBOT_NAME = process.env.MODEL_CHATBOT_NAME;
 const openRouterApiKey = process.env.OPENROUTER_API_KEY;
 
-router.post('/fetch_and_save_ted_videos', async (req, res) => {
-    try {
-        const response = await axios.get(RSS_FEED_URL);
-        const xml = response.data;
+const fetchAllVideoDetails = async (videoIds) => {
+    let allVideos = [];
+    let nextPageToken = null;
 
-        const result = await xml2js.parseStringPromise(xml);
-        const entries = result.feed.entry || [];
-        const videoIds = entries.map(entry => entry['yt:videoId'][0]);
+    do {
+        const params = {
+            key: GOOGLE_CLOUD_API_KEY,
+            id: videoIds.join(','),
+            part: 'snippet,contentDetails,statistics',
+            maxResults: 50,
+        };
 
-        const detailsResponse = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
-            params: {
-                key: GOOGLE_CLOUD_API_KEY,
-                id: videoIds.join(','),
-                part: 'snippet,contentDetails,statistics'
-            }
-        });
+        if (nextPageToken) {
+            params.pageToken = nextPageToken;
+        }
 
-        const videos = detailsResponse.data.items.map(video => ({
+        const detailsResponse = await axios.get('https://www.googleapis.com/youtube/v3/videos', { params });
+
+        const { items, nextPageToken: newToken } = detailsResponse.data;
+
+        allVideos = allVideos.concat(items.map(video => ({
+            videoId: video.id,
             title: video.snippet.title,
             thumbnail: video.snippet.thumbnails.default.url,
             publishDate: video.snippet.publishedAt,
-            videoId: video.id,
             channelId: video.snippet.channelId,
             duration: video.contentDetails.duration,
             views: video.statistics.viewCount,
             likes: video.statistics.likeCount
-        }));
+        })));
+        nextPageToken = newToken;
+    } while (nextPageToken); 
 
-        const db = await connectToDatabase();
-        const collection = db.collection('ted_videos');
-        await collection.insertMany(videos);
-
-        res.json({ message: 'Videos fetched and saved successfully' });
-    } catch (error) {
-        console.error('Error fetching or saving videos:', error.message);
-        res.status(500).json({ message: 'Error fetching or saving videos' });
-    }
-});
+    return allVideos;
+};
 
 router.get('/get_ted_videos', authenticateToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
-        const collection = db.collection('ted_videos');
-
-        const videos = await collection.aggregate([
-            {
-                $sort: { publishDate: -1 }
-            },
+        const videoCollection = db.collection('ted_videos');
+        const timeCollection = db.collection('history_trace');
+        const currentDate = new Date();
+        const lastAccessRecord = await timeCollection.findOne({ isTedTime: true });
+        await timeCollection.updateOne(
+            { isTedTime: true },
+            { $set: { lastAccess: currentDate } }
+        );
+        const storedVideos = await videoCollection.aggregate([
+            { $sort: { publishDate: -1 } },
             {
                 $group: {
                     _id: "$videoId",
@@ -71,17 +72,39 @@ router.get('/get_ted_videos', authenticateToken, async (req, res) => {
                     likes: { $first: "$likes" }
                 }
             },
-            {
-                $sort: { publishDate: -1 }
-            }
+            { $sort: { publishDate: -1 } }
         ]).toArray();
+        const timeDifference = currentDate - lastAccessRecord.lastAccess;
+        let fetchedVideos = [];
+        if (timeDifference >= 60 * 60 * 1000) {
+            console.log("Fetching new data from RSS feed...");
+            const rssResponse = await axios.get(RSS_FEED_URL);
+            const rssData = rssResponse.data;
+            const parsedRss = await xml2js.parseStringPromise(rssData);
+            const rssEntries = parsedRss.feed.entry || [];
+            const videoIds = rssEntries.map(entry => entry['yt:videoId'][0]);
+            fetchedVideos = await fetchAllVideoDetails(videoIds);
+        }
+        const existingVideoIds = new Set(storedVideos.map(video => video._id));
+        const newVideos = fetchedVideos.filter(video => !existingVideoIds.has(video.videoId));
 
-        res.json({ videos });
+        if (newVideos.length > 0) {
+            await videoCollection.insertMany(newVideos);
+        }
+
+        const mergedVideosMap = new Map();
+        storedVideos.forEach(video => mergedVideosMap.set(video._id, video));
+        fetchedVideos.forEach(video => mergedVideosMap.set(video.videoId, video));
+
+        const mergedVideos = Array.from(mergedVideosMap.values());
+        res.json({ videos: mergedVideos });
+
     } catch (error) {
-        console.error('Error fetching videos from MongoDB:', error.message);
+        console.error('Error fetching videos:', error.message);
         res.status(500).json({ message: 'Error fetching videos' });
     }
 });
+
 
 router.post('/get_ted_video_by_id', authenticateToken, async (req, res) => {
     const { videoId } = req.body; 
