@@ -338,6 +338,29 @@ const TedVideoDetail: React.FC = () => {
         correctAnswer: string;
     };
 
+    function convertToQuestionType(quizArray: any[]): Question[] {
+        return quizArray.map((quizItem) => {
+            const { question, answers, correctAnswer } = quizItem;
+
+            // Ensure the quizItem has the necessary fields
+            if (!question || !answers || !correctAnswer) {
+                throw new Error("Invalid quiz item structure");
+            }
+
+            // Construct and return the Question object
+            return {
+                question: question,
+                answers: {
+                    A: answers.A,
+                    B: answers.B,
+                    C: answers.C,
+                    D: answers.D,
+                },
+                correctAnswer: correctAnswer
+            };
+        });
+    }
+
     const validateQuestions = (questions: Question[]): boolean => {
         if (questions.length < 5 || questions.length > 10) {
             return false;
@@ -416,60 +439,62 @@ const TedVideoDetail: React.FC = () => {
         setLoading(true);
         setError(null);
         const token = localStorage.getItem('token');
-        var fulltranscript = "";
-        for (var i = 0; i < transcript.length; i++) {
-            fulltranscript += transcript[i].text;
-            fulltranscript += " ";
-        }
-        var reworked = decodeHtmlEntities(fulltranscript);
-        var getNum = Math.floor(Math.random() * 6) + 5;
-        reworked = prompt1 + reworked + prompt2 + getNum.toString() + prompt3;
-        const newMessage = {
-            role: 'user',
-            content: reworked
-        };
-        const formattedMessages = [
-            newMessage
-        ];
-        axios.post(`${config.API_BASE_URL}api/create_quiz`,
-            { message: formattedMessages },
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        )
-            .then(async response => {
-                // console.warn(response.data.message);
-                const arr = parseQuestionsAndAnswers(response.data.message);
-                // for (var i = 0; i < arr.length; i++) {
-                //     console.log("fuck");
-                //     console.warn(arr[i].question);
-                //     console.warn(arr[i].answers);
-                //     console.warn(arr[i].correctAnswer);
-                // }
-                setQuestions(arr);
+
+        try {
+            // axios.post(`${config.API_BASE_URL}api/create_quiz`,
+            //             { message: formattedMessages },
+            //             { headers: { 'Authorization': `Bearer ${token}` } }
+            //         )
+            axios.post(`${config.API_BASE_URL}api/check_quiz`, { videoId }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            }).then(async response => {
+                if (response.data.message === 0) {
+                    var fulltranscript = "";
+                    for (var i = 0; i < transcript.length; i++) {
+                        fulltranscript += transcript[i].text;
+                        fulltranscript += " ";
+                    }
+                    const response2 = await axios.post(`${config.API_BASE_URL}api/generate_quiz`, { fulltranscript }, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+
+                    var QUESTIONarr = response2.data.message;
+                    console.warn(QUESTIONarr);
+                    const quest = parseQuestionsAndAnswers(response2.data.message);
+                    console.warn(quest);
+                    const response3 = await axios.post(`${config.API_BASE_URL}api/save_quiz`, { videoId, quest }, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+
+                    console.warn(response3.data.message);
+                }
+
+                const response2 = await axios.post(`${config.API_BASE_URL}api/get_real_quiz`, { videoId }, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                //const arr2 = response2.data.quiz;
+
+                var arr2 = convertToQuestionType(response2.data.quiz);
+                setQuestions(arr2);
                 setSelectedAnswers({});
                 setRevealAnswers(false);
-
-                if (validateQuestions(arr) == true) {
-                    try {
-                        const response = await axios.post(`${config.API_BASE_URL}api/save_quiz`, { videoId, arr}, {
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                            },
-                        });
-            
-                        if (response.status === 200 && response.data.success) {
-                            // alert('Quiz saved!');
-                        } else {
-                            // alert('Failed to save quiz');
-                        }
-                    } catch (error) {
-                        // setMessage('Failed to save quiz due to a network error.');
-                    }
-                }
             })
-            .catch(errorq => alert('Create Quiz Error'))
-            .finally(() => {
-                setLoading(false);
-            });
+                .catch(errorq => alert('Create Quiz Error'))
+                .finally(() => {
+                    setLoading(false);
+                });
+
+        } catch (error) {
+            // setMessage('Failed to save note due to a network error.');
+        }
     };
 
     const handleAnswerChange = (questionIndex: number, answerKey: string) => {
