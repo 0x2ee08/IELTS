@@ -48,13 +48,21 @@ const ResultPage: React.FC = () => {
         const fetchSubmissions = async () => {
             const token = localStorage.getItem('token');
             try {
-                const response = await axios.get(`${config.API_BASE_URL}api/getGlobalSubmission`, { 
-                    headers: { 'Authorization': `Bearer ${token}` } 
+                const response = await axios.get(`${config.API_BASE_URL}api/getGlobalSubmission`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = response.data;
-                const submissionArray: Submission[] = Object.values(data); // Convert object to array
+                let submissionArray: Submission[] = Object.values(data); // Convert object to array
+                
+                // Sort the submissions by submit_time (descending order)
+                submissionArray = submissionArray.sort((a, b) => {
+                    const dateA = new Date(a.submit_time).getTime();
+                    const dateB = new Date(b.submit_time).getTime();
+                    return dateB - dateA; // Descending order
+                });
+    
                 setSubmissions(submissionArray);
-
+    
                 // Fetch contest titles for each submission
                 await Promise.all(
                     submissionArray.map(async (submission) => {
@@ -78,35 +86,65 @@ const ResultPage: React.FC = () => {
                 setError('Failed to fetch submissions.');
             }
         };
-
+    
         fetchSubmissions();
     }, []);
 
     return (
         <div>
             <Header />
-            <div className="submission-list">
-                <h2>List of Global Submissions</h2>
-                {error && <p className="error">{error}</p>}
+            <div className="submission-list p-6">
+                <h2 className="text-xl font-semibold mb-6">List of All Submissions</h2>
+                {error && <p className="error text-red-500">{error}</p>}
                 {!error && submissions.length === 0 && <p>No submissions found.</p>}
                 {submissions.length > 0 && (
-                    <ul>
-                        {submissions.map((submission, index) => (
-                            <li key={index}>
-                                <Link href={`/results/${submission.sid}`}>
-                                    <strong>Type: </strong> {submission.type}, 
-                                    <strong>Contest title:</strong> {titles[submission.cid] || 'Loading...'}, 
-                                    <strong>User:</strong> {submission.submit_by}, 
-                                    <strong>Submit time:</strong> {submission.submit_time}, 
-                                    <strong>Correct:</strong> {submission.correct}, 
-                                    <strong>Wrong:</strong> {submission.wrong}, 
-                                    <strong>Empty:</strong> {submission.empty}, 
-                                    <strong>Total:</strong> {submission.total}, 
-                                    <strong>Band:</strong> {calculateBand(submission.correct, submission.total)}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>                  
+                    <ul className="space-y-6">
+                        {submissions.map((submission, index) => {
+                            const bandScore = calculateBand(submission.correct, submission.total);
+                            let bandColor = "text-red-600"; // Default color for band < 5.0
+                            if (bandScore >= 7.0) {
+                                bandColor = "text-green-600";
+                            } else if (bandScore >= 5.0) {
+                                bandColor = "text-yellow-600";
+                            }
+    
+                            return (
+                                <li key={index} className="border p-6 rounded-lg shadow-md">
+                                    <Link href={`/results/${submission.sid}`}>
+                                        <div className="flex items-center">
+                                            {/* Band Score */}
+                                            <span className={`text-4xl font-bold ${bandColor} mr-6`}>
+                                                {bandScore.toFixed(1)}
+                                            </span>
+    
+                                            {/* Contest Info */}
+                                            <div className="text-lg space-y-1">
+                                                <p className="font-semibold">
+                                                    {titles[submission.cid] || 'Loading...'}
+                                                </p>
+                                                <p className="text-sm text-gray-500">
+                                                    Contest type: {submission.type}
+                                                </p>
+                                                <p className="text-sm text-gray-500">
+                                                    Submit by: {submission.submit_by || 'Unknown'}
+                                                </p>
+                                                <p className="text-sm text-gray-500">
+                                                    Submit time: {new Date(submission.submit_time).toLocaleString()}
+                                                </p>
+                                            </div>
+                                        </div>
+    
+                                        {/* Answer Stats */}
+                                        <div className="mt-4 text-base">
+                                            <span className="text-green-500 mr-4">Correct: {submission.correct}</span>
+                                            <span className="text-red-500 mr-4">Wrong: {submission.wrong}</span>
+                                            <span className="text-gray-500">Empty: {submission.empty}</span>
+                                        </div>
+                                    </Link>
+                                </li>
+                            );
+                        })}
+                    </ul>
                 )}
             </div>
             <Footer />

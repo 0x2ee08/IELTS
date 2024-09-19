@@ -463,7 +463,8 @@ router.get('/getAllSubmission', authenticateToken, async (req, res) => {
                 wrong: submission.result.wrong,
                 empty: submission.result.empty,
                 total: submission.result.total,
-                submit_time: submission.submit_time
+                submit_time: submission.submit_time,
+                submit_by: submission.submit_by
             };
         });
 
