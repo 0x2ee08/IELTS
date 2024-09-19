@@ -311,7 +311,7 @@ const TedVideoDetail: React.FC = () => {
 
         const transcriptMessage = { role: 'user', content: 'You are a chat bot that help user summarize, explain content, translate words to vietnamese from a video. You should keep answer shortly unless the user want detail explain. Here is the transcript of the video: ' + allTranscript.trim() };
 
-        const newMessage = { role: 'user', content: input.value.trim()};
+        const newMessage = { role: 'user', content: input.value.trim() };
         const formattedMessages = [
             transcriptMessage,
             ...messages.map(msg => ({
@@ -320,9 +320,9 @@ const TedVideoDetail: React.FC = () => {
             })),
             newMessage
         ];
-        
-        axios.post(`${config.API_BASE_URL}api/send_chat`, 
-            { message: formattedMessages},
+
+        axios.post(`${config.API_BASE_URL}api/send_chat`,
+            { message: formattedMessages },
             { headers: { 'Authorization': `Bearer ${token}` } }
         )
             .then(response => {
@@ -352,9 +352,11 @@ const TedVideoDetail: React.FC = () => {
 
             // Ensure the quizItem has the necessary fields
             if (!question || !answers || !correctAnswer) {
+                // console.warn("oi vai det");
                 throw new Error("Invalid quiz item structure");
             }
 
+            // console.warn("Yay");
             // Construct and return the Question object
             return {
                 question: question,
@@ -447,55 +449,25 @@ const TedVideoDetail: React.FC = () => {
         setLoading(true);
         setError(null);
         const token = localStorage.getItem('token');
-
+        var fulltranscript = "";
+        for (var i = 0; i < transcript.length; i++) {
+            fulltranscript += transcript[i].text;
+            fulltranscript += " ";
+        }
         try {
-            // axios.post(`${config.API_BASE_URL}api/create_quiz`,
-            //             { message: formattedMessages },
-            //             { headers: { 'Authorization': `Bearer ${token}` } }
-            //         )
-            axios.post(`${config.API_BASE_URL}api/check_quiz`, { videoId }, {
+            axios.post(`${config.API_BASE_URL}api/get_quiz`, { videoId, fulltranscript }, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
             }).then(async response => {
-                if (response.data.message === 0) {
-                    var fulltranscript = "";
-                    for (var i = 0; i < transcript.length; i++) {
-                        fulltranscript += transcript[i].text;
-                        fulltranscript += " ";
-                    }
-                    const response2 = await axios.post(`${config.API_BASE_URL}api/generate_quiz`, { fulltranscript }, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                        },
-                    });
-
-                    var QUESTIONarr = response2.data.message;
-                    console.warn(QUESTIONarr);
-                    const quest = parseQuestionsAndAnswers(response2.data.message);
-                    console.warn(quest);
-                    const response3 = await axios.post(`${config.API_BASE_URL}api/save_quiz`, { videoId, quest }, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                        },
-                    });
-
-                    console.warn(response3.data.message);
-                }
-
-                const response2 = await axios.post(`${config.API_BASE_URL}api/get_real_quiz`, { videoId }, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-                //const arr2 = response2.data.quiz;
-
-                var arr2 = convertToQuestionType(response2.data.quiz);
+                // console.warn('fk');
+                // console.warn(response.data.quiz);
+                var arr2 = convertToQuestionType(response.data.quiz);
                 setQuestions(arr2);
                 setSelectedAnswers({});
                 setRevealAnswers(false);
             })
-                .catch(errorq => alert('Create Quiz Error'))
+                .catch(error => alert('Create Quiz Error'))
                 .finally(() => {
                     setLoading(false);
                 });
@@ -556,31 +528,31 @@ const TedVideoDetail: React.FC = () => {
                             overflow: 'hidden',
                             borderRadius: '10px',
                             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                            }}>
+                        }}>
                             <YouTube
-                            videoId={videoId}
-                            opts={{
-                                width: '100%',
-                                height: '100%'
-                            }}
-                            onReady={onReady}
-                            onStateChange={onStateChange}
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: '100%',
-                            }}
+                                videoId={videoId}
+                                opts={{
+                                    width: '100%',
+                                    height: '100%'
+                                }}
+                                onReady={onReady}
+                                onStateChange={onStateChange}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                }}
                             />
                         </div>
 
                         {/* Video Description */}
                         <div style={{ padding: '10px', backgroundColor: '#ffff', borderRadius: '10px', boxShadow: '4px 2px 4px rgba(0, 0, 0, 0.1)' }}>
 
-                            <strong style={{fontSize: '20px'}}> {video.title}</strong>
+                            <strong style={{ fontSize: '20px' }}> {video.title}</strong>
 
-                        
+
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
                                 <span style={{ color: '#888' }}>Thời lượng: {convertDuration(video.duration)} | {dateString}</span>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
@@ -634,7 +606,7 @@ const TedVideoDetail: React.FC = () => {
                             {questions.length > 0 && (
                                 <div style={{ marginTop: '20px' }}>
                                     {/* Check if the questions are valid */}
-                                    {validateQuestions(questions) ? (
+                                    {1 == 1 ? (
                                         <>
                                             {questions.map((q, questionIndex) => (
                                                 <div key={questionIndex} style={{ marginBottom: '20px' }}>
@@ -771,7 +743,7 @@ const TedVideoDetail: React.FC = () => {
                 {/* Right Column: 1/3 Width */}
                 <div className="lg:w-1/3 space-y-8">
                     {/* Right Column */}
-                    <div style={{ display: 'grid', gridTemplateRows: '1fr 0.675fr'}}>
+                    <div style={{ display: 'grid', gridTemplateRows: '1fr 0.675fr' }}>
                         {/* Transcript */}
                         <div style={{
                             height: '426px',
@@ -845,9 +817,9 @@ const TedVideoDetail: React.FC = () => {
                         </div>
 
                         {/* Chat Bot */}
-                        <div style={{ backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height:'auto'}}>
+                        <div style={{ backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width: '100%', height: 'auto' }}>
                             <h3 style={{ padding: '10px', fontSize: '20px', fontWeight: 'bold', color: '#FFFFFF' }}>AI chat bot</h3>
-                            <div style={{ padding: '10px', backgroundColor: '#FFFFFF', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height: '400px', overflow: 'hidden' }}>
+                            <div style={{ padding: '10px', backgroundColor: '#FFFFFF', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width: '100%', height: '400px', overflow: 'hidden' }}>
                                 <div style={{ flex: 1, overflowY: 'auto' as const, marginBottom: '10px', paddingRight: '10px', wordWrap: 'break-word' }}>
                                     {messages.map((message, index) => (
                                         <div key={index} style={{ textAlign: message.user ? 'right' : 'left', marginBottom: '10px' }}>
