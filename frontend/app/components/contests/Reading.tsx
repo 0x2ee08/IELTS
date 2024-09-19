@@ -87,12 +87,11 @@ const ReadingContest = ({ contest }: { contest: any }) => {
 
         const token = localStorage.getItem('token');
         axios.post(`${config.API_BASE_URL}api/submit_contest_reading`, 
-            { contest: contest.id, answer: userAnswers},
+            { contestID: contest.id, answer: userAnswers},
             { headers: { 'Authorization': `Bearer ${token}` } }
         )
         .then(response => {
-            // router.push('/' + response.submitID);
-
+            router.push('/results/' + response.data.submitID);
             saveAnswersToCookie({});
         })
         .catch(error => alert('Error!'))
