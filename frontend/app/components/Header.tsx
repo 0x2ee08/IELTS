@@ -17,9 +17,9 @@ const NavLink: React.FC<NavLinkProps> = ({ href, text, isButton, customStyles })
     const pathname = usePathname();
     const isActive = pathname === href;
 
-    const baseClasses = "px-4 py-2 rounded-lg transition-transform duration-300 ease-in-out text-sm flex items-center justify-center";
-    const activeClasses = "bg-gray-200 text-black";
-    const linkClasses = "text-[#03045E] hover:bg-gray-100 hover:scale-105 hover:shadow-md hover:shadow-[#00B4D8]/50 hover:translate-y-[-2px]";
+    const baseClasses = "px-4 py-2 rounded-lg transition-colors duration-300 ease-in-out text-sm flex items-center justify-center";
+    const activeClasses = "text-blue-500"; // Change color when active
+    const linkClasses = "text-black hover:text-blue-500"; // Black by default, blue on hover
     const buttonClasses = "bg-white text-[#00B4D8] border border-[#00B4D8] hover:bg-[#00B4D8] hover:text-white hover:scale-105";
     const customButtonClasses = customStyles ? customStyles : buttonClasses;
 
@@ -31,6 +31,7 @@ const NavLink: React.FC<NavLinkProps> = ({ href, text, isButton, customStyles })
         </Link>
     );
 };
+
 
 // Header Component
 const Header: React.FC = () => {
@@ -59,7 +60,7 @@ const Header: React.FC = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
         setUsername(null);
-        if (typeof window !== 'undefined'){
+        if (typeof window !== 'undefined') {
             window.location.href = '/login';
         }
     };
@@ -82,17 +83,39 @@ const Header: React.FC = () => {
                     <nav className={`md:flex md:space-x-4 ${isMenuOpen ? 'block' : 'hidden md:block'}`}>
                         <NavLink href="/contests" text="Contests" />
                         <NavLink href="/blogs" text="Blogs" />
+                        
                         <div
                             onMouseEnter={() => setIsHovered(true)}
                             onMouseLeave={() => setIsHovered(false)}
+                            className="relative"
                         >
-                            <NavLink href="" text="Writing" />
-                            {isHovered &&(
-                                <div style={{position: 'absolute',backgroundColor: 'white', padding:'5px', borderRadius:'10px'}}>
-                                    <NavLink href="/writing/task1" text="Task 1" />
-                                    <NavLink href="/writing/task2" text="Task 2" />
-                                </div>)}
+                            <NavLink 
+                                href=""
+                                text="Writing" 
+                            />
+                            {isHovered && (
+                                <div 
+                                    className="absolute bg-white p-4 border-t-10 border-[#00B4D8]" // Blue line on top
+                                    style={{ minWidth: '200px' }} // Ensure dropdown has minimum width
+                                >
+                                    <div className="space-y-2">
+                                        <hr className="border-[#00B4D8] border-t-2" /> {/* Thin line separator */}
+                                        <NavLink 
+                                            href="/writing/task1" 
+                                            text="Task 1" 
+                                            customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
+                                        />
+                                        <hr className="border-[#00B4D8] border-t-2" /> {/* Thin line separator */}
+                                        <NavLink 
+                                            href="/writing/task2" 
+                                            text="Task 2" 
+                                            customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
+
                         <NavLink href="/flashcards" text="Flash Cards" />
                         <NavLink href="/tedtalk" text="Ted Talk" />
 
@@ -114,7 +137,6 @@ const Header: React.FC = () => {
                                 >
                                     Log Out
                                 </button>
-
                             </>
                         ) : (
                             <div className="flex space-x-2 ml-auto">

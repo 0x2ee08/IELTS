@@ -82,13 +82,9 @@ const BlogsPage: React.FC = () => {
             style={{
                 maxWidth: '100%', // Adjust this as needed to fit your layout
                 paddingLeft: '100px', // Padding on all sides
-                paddingRight: '300px'
             }}
 
             > {/* Centering content */}
-
-
-
 
 
                 <a href={`/blog_creator`} className="text-sm text-blue-500 hover:underline">
@@ -99,29 +95,25 @@ const BlogsPage: React.FC = () => {
 
 
                 {blogs.map((blog, idx) => {
-                    const link = `/loader/blog?id=${blog.blog_id}`;
+                    const link = `/blog_loader?id=${blog.blog_id}`;
                     return (
-                        <div>
-                            <div className="h-px bg-[#d0d0d0] my-1"></div> 
-                            <a href={link}>
-                            <div key={idx} 
-                                className="bg-white hover:bg-gray-100 p-4 rounded-lg"
-                            > {/* Center-align each blog post */}
-                                <p className="text-2xl text-[#0077B6] font-bold">{blog.title} </p>
-                                <div className="text-sm text-gray-600 mb-2">
-                                    By {blog.author} on {new Date(blog.time_created).toLocaleDateString()}
-                                </div>
-                                {/* Render full content */}
-                                <div className="border-l-4 border-gray-500 pl-4 mb-4"> 
-                                    <ReactMarkdown
-                                    rehypePlugins={[rehypeRaw]}
-                                    className={style.reactMarkDown}
-                                    >
-                                        {mdParser.render(blog.content)}
-                                    </ReactMarkdown>
-                                </div>
-                            </div>  
+                        <div key={idx} 
+                        > {/* Center-align each blog post */}
+                            <a href={link} className="text-3xl text-blue-500 hover:underline font-bold">
+                                 {blog.title}
                             </a>
+                            <div className="text-sm text-gray-600 mb-2">
+                                By {blog.author} on {new Date(blog.time_created).toLocaleDateString()}
+                            </div>
+                            {/* Render full content */}
+                            <div className="markdown-content mb-4">
+                                <ReactMarkdown
+                                 rehypePlugins={[rehypeRaw]}
+                                 className={style.reactMarkDown}
+                                 >
+                                    {mdParser.render(blog.content)}
+                                </ReactMarkdown>
+                            </div>
                         </div>
                     );
                 })}
