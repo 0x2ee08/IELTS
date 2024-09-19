@@ -84,6 +84,47 @@ const Header: React.FC = () => {
                     {/* Right-side links */}
                     <nav className={`md:flex md:space-x-4 ${isMenuOpen ? 'block' : 'hidden md:block'}`}>
                         <NavLink href="/contests" text="Contests" />
+
+                        {username ? (
+                            <>
+                            <div
+                                onMouseEnter={() => setIsHoveredSubmission(true)}
+                                onMouseLeave={() => setIsHoveredSubmission(false)}
+                                className="relative"
+                            >
+                                <NavLink 
+                                    href="/results"
+                                    text="Submissions" 
+                                />
+                                {isHoveredSubmission && (
+                                    <div 
+                                        className="absolute bg-white p-4 border-t-10 border-[#00B4D8]" // Blue line on top
+                                        style={{ minWidth: '200px' }} // Ensure dropdown has minimum width
+                                    >
+                                        <div className="space-y-2">
+                                            <hr className="border-[#00B4D8] border-t-2" /> 
+                                            <NavLink 
+                                                href="/results" 
+                                                text="My submission" 
+                                                customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
+                                            />
+                                            <hr className="border-[#00B4D8] border-t-2" /> 
+                                            {/* Thin line separator */}
+                                            <NavLink 
+                                                href="/submissions" 
+                                                text="All submission" 
+                                                customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
+                                            />
+                                            
+                                            {/* Thin line separator */}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            </>
+                            
+                        ) : null}
+                        
                         <NavLink href="/blogs" text="Blogs" />
                         
                         <div
@@ -154,46 +195,6 @@ const Header: React.FC = () => {
                                     </div>
                                 )}
                         </div>
-
-                        {username ? (
-                            <>
-                            <div
-                                onMouseEnter={() => setIsHoveredSubmission(true)}
-                                onMouseLeave={() => setIsHoveredSubmission(false)}
-                                className="relative"
-                            >
-                                <NavLink 
-                                    href="/results"
-                                    text="Submissions" 
-                                />
-                                {isHoveredSubmission && (
-                                    <div 
-                                        className="absolute bg-white p-4 border-t-10 border-[#00B4D8]" // Blue line on top
-                                        style={{ minWidth: '200px' }} // Ensure dropdown has minimum width
-                                    >
-                                        <div className="space-y-2">
-                                            <hr className="border-[#00B4D8] border-t-2" /> 
-                                            <NavLink 
-                                                href="/results" 
-                                                text="My submission" 
-                                                customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
-                                            />
-                                            <hr className="border-[#00B4D8] border-t-2" /> 
-                                            {/* Thin line separator */}
-                                            <NavLink 
-                                                href="/submissions" 
-                                                text="All submission" 
-                                                customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
-                                            />
-                                            
-                                            {/* Thin line separator */}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                            </>
-                            
-                        ) : null}
 
                         {username && (role === 'admin' || role === 'teacher') ? (
                             <NavLink href="/management" text="Dashboard" />
