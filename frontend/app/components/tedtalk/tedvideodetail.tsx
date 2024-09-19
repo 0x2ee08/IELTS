@@ -295,17 +295,25 @@ const TedVideoDetail: React.FC = () => {
         const input = e.currentTarget.elements.namedItem('chatInput') as HTMLInputElement;
         const token = localStorage.getItem('token');
 
-        const newMessage = { role: 'user', content: input.value.trim() + " (Limit your response to 50 words.)"};
+        let allTranscript = "";
+        transcript.forEach(entry => {
+            allTranscript += entry.text + " ";
+        });
+
+        const transcriptMessage = { role: 'user', content: 'You are a chat bot that help user summarize, explain content, translate words to vietnamese from a video. You should keep answer shortly unless the user want detail explain. Here is the transcript of the video: ' + allTranscript.trim() };
+
+        const newMessage = { role: 'user', content: input.value.trim()};
         const formattedMessages = [
+            transcriptMessage,
             ...messages.map(msg => ({
                 role: msg.user ? 'user' : 'assistant',
                 content: msg.text
             })),
             newMessage
         ];
-
+        
         axios.post(`${config.API_BASE_URL}api/send_chat`, 
-            { message: formattedMessages },
+            { message: formattedMessages},
             { headers: { 'Authorization': `Bearer ${token}` } }
         )
         .then(response => {
@@ -352,10 +360,13 @@ const TedVideoDetail: React.FC = () => {
 
                             }}
                         />
-                        <strong style={{fontSize: '20px'}}> {video.title}</strong>
 
                         {/* Video Description */}
                         <div style={{ padding: '10px', backgroundColor: '#ffff', borderRadius: '10px', boxShadow: '4px 2px 4px rgba(0, 0, 0, 0.1)' }}>
+
+                            <strong style={{fontSize: '20px'}}> {video.title}</strong>
+
+                        
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
                                 <span style={{ color: '#888' }}>Thời lượng: {convertDuration(video.duration)} | {dateString}</span>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
@@ -426,7 +437,7 @@ const TedVideoDetail: React.FC = () => {
                 {/* Right Column: 1/3 Width */}
                 <div className="lg:w-1/3 space-y-8">
                     {/* Right Column */}
-                    <div style={{ display: 'grid', gridTemplateRows: '1fr 0.675fr', gridGap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateRows: '1fr 0.675fr'}}>
                         {/* Transcript */}
                         <div style={{
                             height: '426px',
@@ -500,9 +511,9 @@ const TedVideoDetail: React.FC = () => {
                         </div>
 
                         {/* Chat Bot */}
-                        <div style={{ backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height:'320px'}}>
+                        <div style={{ backgroundColor: '#0077B6', borderRadius: '10px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height:'auto'}}>
                             <h3 style={{ padding: '10px', fontSize: '20px', fontWeight: 'bold', color: '#FFFFFF' }}>AI chat bot</h3>
-                            <div style={{ padding: '10px', backgroundColor: '#FFFFFF', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height: '300px', overflow: 'hidden' }}>
+                            <div style={{ padding: '10px', backgroundColor: '#FFFFFF', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', display: 'flex', flexDirection: 'column', width:'100%', height: '400px', overflow: 'hidden' }}>
                                 <div style={{ flex: 1, overflowY: 'auto' as const, marginBottom: '10px', paddingRight: '10px', wordWrap: 'break-word' }}>
                                     {messages.map((message, index) => (
                                         <div key={index} style={{ textAlign: message.user ? 'right' : 'left', marginBottom: '10px' }}>

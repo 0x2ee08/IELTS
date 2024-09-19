@@ -32,6 +32,7 @@ interface TranscriptData {
     start_time: number[];
     end_time: number[];
     is_letter_correct_all_words: string;
+    audioData: string;
 }
 
 interface ResultItem {
@@ -87,6 +88,7 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
 
     const hasInitialize = useRef(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [messageTranscript, setMessageTranscript] = useState<TranscriptData>();
 
     useEffect(() => {
         if (!hasInitialize.current) {
@@ -186,14 +188,25 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
         }
     };
 
+    const handleClickOnWord = (idx: number, key: number, start_time: any, end_time: any, shouldGetAudio: boolean) => {
+        if(shouldGetAudio) {
+            replayAudio(key, start_time, end_time);
+        }
+        else {
+            handleChooseMessage(idx, key);
+        }
+    }
+
     const getColoredMatchedTranscript = (
+                    idx: number,
                     key: number,
                     matchedTranscript: string,
                     is_letter_correct_all_words: string,
                     real_transcripts_ipa: string,
                     real_start_time: number[],
                     real_end_time: number[],
-                    audioData: any,) => {
+                    audioData: string,
+                    shouldGetAudio: boolean,) => {
         const currentTextWords = matchedTranscript.split(' ');
         const lettersOfWordAreCorrect = is_letter_correct_all_words.split(' ');
         const realTranscript = real_transcripts_ipa.split(' ');
@@ -201,7 +214,11 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
         let end_time = real_end_time;
         let coloredWords = [];
 
-        getAudio(key, audioData);
+        console.log(key, audioData);
+        if(shouldGetAudio) {
+            console.log(key, audioData);
+            getAudio(key, audioData);
+        }
 
         for (let word_idx = 0; word_idx < currentTextWords.length; word_idx++) {
             const currentWord = currentTextWords[word_idx];
@@ -227,7 +244,7 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
                     }}
                 >
                     <span
-                        onClick={() => replayAudio(key, start_time[word_idx], end_time[word_idx])}
+                        onClick={() => handleClickOnWord(idx, key, start_time[word_idx], end_time[word_idx], shouldGetAudio)}
                         style={{ cursor: 'pointer', display: 'block' }}
                     >
                         {wordTemp}
@@ -252,6 +269,10 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
     const handleChooseMessage = async (idx: number, key: any) => {
         setRecord(idx);
         setChoosenMessage(Number(key));
+        setMessageTranscript({
+            ...answerArray[idx][key].data,
+            audioData: answerArray[idx][key].audioData
+        });        
         const token = localStorage.getItem('token');
         const response = await fetch(`${config.API_BASE_URL}api/getSpeakingGrading`, {
             method: 'POST',
@@ -420,6 +441,7 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
                                             <div className='text-right' style={{ maxWidth: '90%' }}>
                                                 <div style={{display: 'inline-block'}}>
                                                     {getColoredMatchedTranscript(
+                                                        idx,
                                                         parseInt(key),
                                                         value?.data?.matched_transcripts,
                                                         value?.data?.is_letter_correct_all_words,
@@ -427,6 +449,7 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
                                                         value?.data?.start_time,
                                                         value?.data?.end_time,
                                                         value?.audioData,
+                                                        false,
                                                     )}
                                                 </div>
                                             </div>
@@ -444,7 +467,22 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
                 {choosenMessage !== -1 ? (
                     <div className='border-2 border-[#dcdcdc] px-4 py-4 rounded-xl mb-2'>
                         {isGrading === 0 ? (
-                            <FeedbackTable feedback={feedback} band={band}/>
+                            <div>
+                                <div className='mb-6'>
+                                    {messageTranscript && getColoredMatchedTranscript(
+                                        choosenRecord,
+                                        choosenMessage,
+                                        messageTranscript.matched_transcripts,
+                                        messageTranscript.is_letter_correct_all_words,
+                                        messageTranscript.real_transcripts_ipa,
+                                        messageTranscript.start_time,
+                                        messageTranscript.end_time,
+                                        messageTranscript.audioData,
+                                        true,
+                                    )}
+                                </div>
+                                <FeedbackTable feedback={feedback} band={band}/>
+                            </div>
                         ) : (
                             <Progress size="sm" isIndeterminate aria-label="Loading..." className="max-w mb-4"/>
                         )}

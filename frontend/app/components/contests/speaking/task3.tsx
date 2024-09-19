@@ -27,6 +27,7 @@ export interface task3QuestionGeneral {
     number_of_task: string;
     length: number;
     questions: string[];
+    audioData: string[];
 }
 
 export interface Description {
@@ -80,7 +81,6 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
 
     useEffect(() => {
         if (!hasInitialize.current) {
-            preprocess();
             hasInitialize.current = true;
         }
     }, []);
@@ -88,7 +88,6 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
     useEffect(() => {
         getSpeakingGrading();
     });
-
 
     useEffect(() => {
         if (isLoading) {
@@ -138,9 +137,9 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
     const preprocess = async () => {
         for(let i=0; i<Number(task.number_of_task); i++) {
             console.log(i, task.questions[i]);
-            await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromText`, {
+            await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromDrive`, {
                 method: "post",
-                body: JSON.stringify({ "text": task.questions[i] }),
+                body: JSON.stringify({ "url": task.audioData[i] }),
                 headers: { "X-Api-Key": STScoreAPIKey }
             }).then(res => res.json())
                 .then(data => {
@@ -249,6 +248,7 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
         setIsLoading(true);
         setProgress(0);
         setCurrentQuestionIndex(0);
+        preprocess();
 
         setTimeout(() => {
             setIsLoading(false);
@@ -384,8 +384,8 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
             <div className='ml-20 mr-20 mb-10'>
                 <Divider />
             </div>
-            <div className='flex m-4 ml-20 mr-20 mb-5'>
-                <div className='w-1/3'>
+            <div className='flex max-w-full justify-between items-center m-4 ml-20 mr-20 mb-5'>
+                <div>
                     <div className="text-3xl font-bold mb-6">
                         {description && description.problemName ? description.problemName : null}
                     </div>
@@ -439,46 +439,9 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
                     )}
                 </div>
 
-                <div className='flex flex-col w-1/3 items-center'>
-                    <div className='flex mb-6'>
-                        <ClockIcon/>
-                        <div className='flex flex-col ml-4'>
-                            <div className="text-lg">
-                                Speaking Time
-                            </div>
-                            <div className="text-3xl font-bold">
-                                {task.length} sec
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className='flex mb-6'>
-                        <MicroIcon/>
-                        <div className='flex flex-col ml-4'>
-                            <div className="text-lg">
-                                Number
-                            </div>
-                            <div className="text-3xl font-bold">
-                                {task.number_of_task} records
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className='flex mb-6'>
-                        <DollarIcon/>
-                        <div className='flex flex-col ml-4'>
-                            <div className="text-lg">
-                                Cost of the task
-                            </div>
-                            <div className="text-3xl font-bold">
-                                Free
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 {preProcess ? (
-                    <div className='flex flex-col w-1/3 items-center justify-center'>
+                    <div className='flex justify-between items-center'>
                         <PentagonChart data={pentagonArray} />
                         {/* <PentagonChart /> */}
                     </div>
@@ -486,6 +449,49 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
                     null
                 )}
             </div>
+
+            <div className='ml-20 mr-20 mb-10'>
+                <Divider />
+            </div>
+
+            <div className='flex flex-row max-w-full justify-between items-center ml-20 mr-20'>
+                <div className='flex items-center mb-6'>
+                    <ClockIcon />
+                    <div className='flex flex-col ml-4'>
+                        <div className="text-lg">
+                            Speaking Time
+                        </div>
+                        <div className="text-3xl font-bold">
+                            {task.length} sec
+                        </div>
+                    </div>
+                </div>
+
+                <div className='flex items-center mb-6'>
+                    <MicroIcon />
+                    <div className='flex flex-col ml-4'>
+                        <div className="text-lg">
+                            Number
+                        </div>
+                        <div className="text-3xl font-bold">
+                            {task.number_of_task} records
+                        </div>
+                    </div>
+                </div>
+
+                <div className='flex items-center mb-6'>
+                    <DollarIcon />
+                    <div className='flex flex-col ml-4'>
+                        <div className="text-lg">
+                            Cost of the task
+                        </div>
+                        <div className="text-3xl font-bold">
+                            Free
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             {/* Body */}
             <div className='m-5 ml-20 mr-20'>

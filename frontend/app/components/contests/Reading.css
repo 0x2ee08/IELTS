@@ -5,6 +5,9 @@
     margin: 0;
     padding: 10px;
     color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .reading-contest-page h1 {
@@ -33,25 +36,6 @@
     margin-bottom: 15px;
 }
 
-.reading-contest-page button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 1rem;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-right: 10px;
-    transition: background-color 0.3s ease;
-}
-
-.reading-contest-page button:hover {
-    background-color: #0056b3;
-}
-
-.reading-contest-page button:focus {
-    outline: none;
-}
 
 .reading-contest-page .contest-layout {
     display: flex;
@@ -105,19 +89,41 @@
     width: 100%;
 }
 
-.reading-contest-page button.submit-button {
-    margin-top: 20px;
-    width: 100%;
-    background-color: #28a745;
+
+
+.reading-contest-page .contest-alert {
+    position: relative;
+    height: 300px;
+    width: 450px;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #d9d9d9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+} 
+
+.reading-contest-page button {
+    margin-left: 84px;
+    margin-right: auto;
+    padding: 8px;
+    background: #0077B6;
+    border-radius: 8px;
+    color: white;
 }
 
-.reading-contest-page button.submit-button:hover {
-    background-color: #218838;
-}
-
-.reading-contest-page button.submit-button:focus {
-    outline: none;
-}
+.reading-contest-page .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+  }
 
 @media (max-width: 768px) {
     .reading-contest-page .contest-layout {
