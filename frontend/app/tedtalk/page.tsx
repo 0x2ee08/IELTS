@@ -6,6 +6,7 @@ import config from '../config';
 import axios from 'axios';
 import { convertDuration } from '../components/tedtalk/convertDuration';
 import { useRouter } from 'next/navigation';
+import {Card, Skeleton, Button} from "@nextui-org/react";
 
 const TedTalkPage: React.FC = () => {
     const [videos, setVideos] = useState<any[]>([]);
@@ -13,9 +14,8 @@ const TedTalkPage: React.FC = () => {
     const observerRef = useRef<HTMLDivElement | null>(null);
     const router = useRouter();
 
-    // Function to fetch videos from the backend
     const fetchVideos = async () => {
-        const token = localStorage.getItem('token'); // Assume user is authenticated and token is available
+        const token = localStorage.getItem('token');
         try {
             setLoading(true);
             const response = await axios.get(`${config.API_BASE_URL}api/get_ted_videos`, {
@@ -24,8 +24,8 @@ const TedTalkPage: React.FC = () => {
                 },
             });
 
-            console.log('Fetched videos:', response.data); // Log fetched video data
-            setVideos(response.data.videos || []); // Set the fetched videos
+            console.log('Fetched videos:', response.data);
+            setVideos(response.data.videos || []);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching videos:', error);
@@ -33,7 +33,6 @@ const TedTalkPage: React.FC = () => {
         }
     };
 
-    // Function to fetch and save videos from YouTube using the backend
     const takeVideos = async () => {
         try {
             await axios.post(`${config.API_BASE_URL}api/fetch_and_save_ted_videos`, {}, {
@@ -48,18 +47,14 @@ const TedTalkPage: React.FC = () => {
         }
     };
 
-    // Effect to fetch videos on component mount
     useEffect(() => {
-        // takeVideos();
         fetchVideos();
     }, []);
 
-    // Observer to detect when the user scrolls to the bottom to load more videos (if implemented)
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting && !loading) {
-                    // Implement lazy loading or pagination if needed in the future
                     console.log('Reached end of the list');
                 }
             },
@@ -89,7 +84,7 @@ const TedTalkPage: React.FC = () => {
                         {videos.map((video, index) => (
                             <a
                                 key={index}
-                                href={`/ted_video_loader?id=${video._id}`} // Update this URL to match your routing structure
+                                href={`/loader/tedtalk?id=${video._id}`}
                                 className="flex items-start space-x-4 border-b pb-4 cursor-pointer text-decoration-none"
                             >
                                 <img

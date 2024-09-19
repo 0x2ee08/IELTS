@@ -9,56 +9,58 @@ const router = express.Router();
 const GOOGLE_CLOUD_API_KEY = process.env.GOOGLE_CLOUD_API_KEY;
 const RSS_FEED_URL = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCsooa4yRKGN_zEE8iknghZA';
 const MODEL_CHATBOT_NAME = process.env.MODEL_CHATBOT_NAME;
+const MODEL_QUIZZ_NAME = process.env.MODEL_QUIZZ_NAME;
 const openRouterApiKey = process.env.OPENROUTER_API_KEY;
 
-router.post('/fetch_and_save_ted_videos', async (req, res) => {
-    try {
-        const response = await axios.get(RSS_FEED_URL);
-        const xml = response.data;
+const fetchAllVideoDetails = async (videoIds) => {
+    let allVideos = [];
+    let nextPageToken = null;
 
-        const result = await xml2js.parseStringPromise(xml);
-        const entries = result.feed.entry || [];
-        const videoIds = entries.map(entry => entry['yt:videoId'][0]);
+    do {
+        const params = {
+            key: GOOGLE_CLOUD_API_KEY,
+            id: videoIds.join(','),
+            part: 'snippet,contentDetails,statistics',
+            maxResults: 50,
+        };
 
-        const detailsResponse = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
-            params: {
-                key: GOOGLE_CLOUD_API_KEY,
-                id: videoIds.join(','),
-                part: 'snippet,contentDetails,statistics'
-            }
-        });
+        if (nextPageToken) {
+            params.pageToken = nextPageToken;
+        }
 
-        const videos = detailsResponse.data.items.map(video => ({
+        const detailsResponse = await axios.get('https://www.googleapis.com/youtube/v3/videos', { params });
+
+        const { items, nextPageToken: newToken } = detailsResponse.data;
+
+        allVideos = allVideos.concat(items.map(video => ({
+            videoId: video.id,
             title: video.snippet.title,
             thumbnail: video.snippet.thumbnails.default.url,
             publishDate: video.snippet.publishedAt,
-            videoId: video.id,
             channelId: video.snippet.channelId,
             duration: video.contentDetails.duration,
             views: video.statistics.viewCount,
             likes: video.statistics.likeCount
-        }));
+        })));
+        nextPageToken = newToken;
+    } while (nextPageToken); 
 
-        const db = await connectToDatabase();
-        const collection = db.collection('ted_videos');
-        await collection.insertMany(videos);
-
-        res.json({ message: 'Videos fetched and saved successfully' });
-    } catch (error) {
-        console.error('Error fetching or saving videos:', error.message);
-        res.status(500).json({ message: 'Error fetching or saving videos' });
-    }
-});
+    return allVideos;
+};
 
 router.get('/get_ted_videos', authenticateToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
-        const collection = db.collection('ted_videos');
-
-        const videos = await collection.aggregate([
-            {
-                $sort: { publishDate: -1 }
-            },
+        const videoCollection = db.collection('ted_videos');
+        const timeCollection = db.collection('history_trace');
+        const currentDate = new Date();
+        const lastAccessRecord = await timeCollection.findOne({ isTedTime: true });
+        await timeCollection.updateOne(
+            { isTedTime: true },
+            { $set: { lastAccess: currentDate } }
+        );
+        const storedVideos = await videoCollection.aggregate([
+            { $sort: { publishDate: -1 } },
             {
                 $group: {
                     _id: "$videoId",
@@ -71,17 +73,39 @@ router.get('/get_ted_videos', authenticateToken, async (req, res) => {
                     likes: { $first: "$likes" }
                 }
             },
-            {
-                $sort: { publishDate: -1 }
-            }
+            { $sort: { publishDate: -1 } }
         ]).toArray();
+        const timeDifference = currentDate - lastAccessRecord.lastAccess;
+        let fetchedVideos = [];
+        if (timeDifference >= 60 * 60 * 1000) {
+            console.log("Fetching new data from RSS feed...");
+            const rssResponse = await axios.get(RSS_FEED_URL);
+            const rssData = rssResponse.data;
+            const parsedRss = await xml2js.parseStringPromise(rssData);
+            const rssEntries = parsedRss.feed.entry || [];
+            const videoIds = rssEntries.map(entry => entry['yt:videoId'][0]);
+            fetchedVideos = await fetchAllVideoDetails(videoIds);
+        }
+        const existingVideoIds = new Set(storedVideos.map(video => video._id));
+        const newVideos = fetchedVideos.filter(video => !existingVideoIds.has(video.videoId));
 
-        res.json({ videos });
+        if (newVideos.length > 0) {
+            await videoCollection.insertMany(newVideos);
+        }
+
+        const mergedVideosMap = new Map();
+        storedVideos.forEach(video => mergedVideosMap.set(video._id, video));
+        fetchedVideos.forEach(video => mergedVideosMap.set(video.videoId, video));
+
+        const mergedVideos = Array.from(mergedVideosMap.values());
+        res.json({ videos: mergedVideos });
+
     } catch (error) {
-        console.error('Error fetching videos from MongoDB:', error.message);
+        console.error('Error fetching videos:', error.message);
         res.status(500).json({ message: 'Error fetching videos' });
     }
 });
+
 
 router.post('/get_ted_video_by_id', authenticateToken, async (req, res) => {
     const { videoId } = req.body; 
@@ -138,6 +162,162 @@ router.post('/send_chat', authenticateToken, async (req, res) => {
 
     res.json({ message: response.data.choices[0].message.content.trim() });
 });
+
+
+router.post('/check_quiz', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { videoId } = req.body;
+    try {
+        const db = await connectToDatabase();
+        const tedCollection = db.collection('ted_videos');
+
+        const video = await tedCollection.findOne({ videoId: videoId });
+        if (!video) {
+            return res.status(404).json({ message: 'Video not found' });
+        }
+
+        if (video.hasOwnProperty('quiz')) res.json({ message: 1 });
+        else res.json({ message: 0 });
+
+    } catch (error) {
+        console.error('An error occurred:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+router.post('/generate_quiz', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { fulltranscript } = req.body;
+    const time_save = new Date();
+
+    const prompt1 = `Based on the text: "
+`, prompt2 = `
+    ", generate exactly FIFTEEN (15) multiple-choice questions. Each question should have four answer options:
+
+    - Exactly one correct answer, randomly placed.
+    - Exactly three incorrect answers.
+    
+    Please format each question as follows:
+
+    Question text?
+    A. First answer option
+    B. Second answer option
+    C. Third answer option
+    D. Fourth answer option
+    Correct answer: [A/B/C/D]
+
+    Additional requirements:
+
+    - Ensure that the questions are distinct and not similar to one another.
+    - The answer options for each question should be almost similar to one another, but it should be difficult to distinguish the correct one from the incorrect ones.
+    - Feel free to rephrase both the questions and the answers without changing their meaning to increase difficulty.
+    - Avoid obvious answers by making sure that the correct answer does not stand out compared to the incorrect ones.
+    - Ensure that all answer options are short and concise.
+    - Randomly place the correct answer in one of the options.
+
+        **IMPORTANT:** The number of questions MUST be FIFTEEN (15)!
+        **IMPORTANT:** Each question and each answer must have at most 20 words
+        `,
+        prompt3 = `
+
+    Here's an example format:
+
+    **Example:**
+
+    Question 1: What is the main concern for the mad scientist without a spacesuit in space?
+
+    A. He'll freeze due to low temperature
+    B. He'll suffocate due to lack of oxygen
+    C. He'll explode due to air pressure
+    D. He'll vaporize due to extreme heat
+
+    Correct answer: B. He'll suffocate due to lack of oxygen
+
+    (Continue this example format, but make sure your output has the predetermined number of questions above.)
+`;
+
+    let reworked = prompt1 + fulltranscript + prompt2 + prompt3;
+    const newMessage = {
+        role: 'user',
+        content: reworked
+    };
+    const formattedMessages = [
+        newMessage
+    ];
+    try {
+
+
+        const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+            model: MODEL_QUIZZ_NAME,
+            "messages": formattedMessages,
+        }, {
+            headers: {
+                'Authorization': `Bearer ${openRouterApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        const result = response.data.choices[0].message.content.trim();
+
+        res.json({ message: result });
+    } catch (error) {
+        console.error('An error occurred:', error);
+        res.status(500).json({ error: 'Internal server error' + reworked });
+    }
+});
+
+router.post('/save_quiz', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { videoId, quest } = req.body;
+
+    try {
+        const db = await connectToDatabase();
+        const noteCollection = db.collection('ted_videos');
+
+        await noteCollection.updateOne(
+            { videoId: videoId },
+            { $set: { "quiz": quest } }
+        );
+        res.json({ success: true });
+
+    } catch (error) {
+        console.error('An error occurred:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+router.post('/get_real_quiz', authenticateToken, async (req, res) => {
+    const { username } = req.user;
+    const { videoId } = req.body;
+    try {
+        const db = await connectToDatabase();
+        const tedCollection = db.collection('ted_videos');
+
+        const video = await tedCollection.findOne({ videoId: videoId });
+        if (!video) {
+            return res.status(404).json({ message: 'Video not found' });
+        }
+
+        const quizArray = video.quiz;
+        if (!quizArray || quizArray.length === 0) {
+            return res.status(404).json({ message: 'No quiz found for this video' });
+        }
+
+        // Get 5 random elements from the "quiz" array
+        const shuffledQuiz = quizArray.sort(() => 0.5 - Math.random());
+        const selectedQuiz = shuffledQuiz.slice(0, 5);
+
+        res.status(200).json({
+            quiz: selectedQuiz
+        });
+
+    } catch (error) {
+        console.error('An error occurred:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
 
 router.post('/save_note', authenticateToken, async (req, res) => {
     const { username } = req.user;
