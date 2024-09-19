@@ -7,6 +7,7 @@ export interface task1QuestionGeneral {
     number_of_task: string,
     length: number;
     questions: string[],
+    audioData: string[],
 }
 
 interface Task1PageProps {
@@ -19,6 +20,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
         number_of_task: '',
         length: 300,
         questions: [],
+        audioData: [],
     });
 
     const [minutes, setMinutes] = useState<number>(0);
@@ -46,6 +48,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
                 number_of_task: '',
                 length: 300,
                 questions: [],
+                audioData: [],
             }));
             return;
         }
@@ -56,6 +59,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
                 ...prevTask,
                 number_of_task: parsedNumber.toString(),
                 questions: Array(parsedNumber).fill(''),
+                audioData: Array(parsedNumber).fill(''),
             }));
         } else {
             alert('Please enter a valid number between 1 and 12.');
@@ -64,6 +68,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
                 number_of_task: '',
                 length: 300,
                 questions: [],
+                audioData: [],
             }));
         }
     };

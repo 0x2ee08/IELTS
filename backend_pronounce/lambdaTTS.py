@@ -17,9 +17,14 @@ def lambda_handler(event, context):
     tts.tts_to_file(text=text, speaker=speaker, file_path=file_path)
 
     with open(file_path, "rb") as audio_file:
-        audio_base64 = base64.b64encode(audio_file.read()).decode('utf-8')
+        audio_data = audio_file.read()
+        audio_base64 = base64.b64encode(audio_data).decode('utf-8')
 
-    res = {'audioBase64': audio_base64}
+    # Add the data URI prefix for audio/wav
+    audio_base64_with_prefix = f"data:audio/wav;base64,{audio_base64}"
+
+    # Prepare the response
+    res = {'audioBase64': audio_base64_with_prefix}
 
     os.remove(file_path)
 

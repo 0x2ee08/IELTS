@@ -14,4 +14,5 @@ module.exports = {
     MODEL_CHATBOT_NAME: process.env.MODEL_CHATBOT_NAME,
     VOCAB_MODEL_NAME: process.env.VOCAB_MODEL_NAME,
     STScoreAPIKey: process.env.STS_CORE_API_KEY,
+    SPEAKING_MODEL_NAME: process.env.SPEAKING_MODEL_NAME,
 };

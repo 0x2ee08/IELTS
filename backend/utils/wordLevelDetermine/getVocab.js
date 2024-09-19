@@ -21,8 +21,8 @@ const getVocab = async (content) => {
         model: model,
         messages: [{ role: 'system', content: `
             Giving this content """${content}""". List all vocabulary that appear in this document.
-            (Skip common word, linking word, prep, ...)
-            then for ALL WORDS give the CEFR level (A1/A2/B1/B2/C1/C2) of each word, phonetics and translation of each word to vietnamse.
+            (Skip common word, linking word, prep, ...)f each word,
+            then for ALL WORDS give the CEFR level (A1/A2/B1/B2/C1/C2) o phonetics and translation of each word to vietnamse.
             Output this format (print nothing else):
             [WORD 1], [CEFR level], [PHONETICS], [TRANSLATIONS (VIETNAMESE)]
             [WORD 2], [CEFR level], [PHONETICS], [TRANSLATIONS (VIETNAMESE)]
