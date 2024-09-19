@@ -549,16 +549,31 @@ const TedVideoDetail: React.FC = () => {
                     {/* Left Column */}
                     <div style={{ display: 'grid', gridGap: '10px', height: 'auto' }}>
                         {/* Video Player */}
-                        <YouTube
+                        <div style={{
+                            position: 'relative',
+                            paddingBottom: '56.25%', // 16:9 aspect ratio (9/16 * 100)
+                            height: 0,
+                            overflow: 'hidden',
+                            borderRadius: '10px',
+                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                            }}>
+                            <YouTube
                             videoId={videoId}
-                            opts={opts}
+                            opts={{
+                                width: '100%',
+                                height: '100%'
+                            }}
                             onReady={onReady}
                             onStateChange={onStateChange}
                             style={{
-                                borderRadius: '10px', overflow: 'hidden', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
-
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
                             }}
-                        />
+                            />
+                        </div>
 
                         {/* Video Description */}
                         <div style={{ padding: '10px', backgroundColor: '#ffff', borderRadius: '10px', boxShadow: '4px 2px 4px rgba(0, 0, 0, 0.1)' }}>
