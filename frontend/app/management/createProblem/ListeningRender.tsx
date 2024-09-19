@@ -17,15 +17,21 @@ interface TableFilling {
     information: string;
 }
 
+interface ShortAnswerQuestion {
+    question: string;
+    answers: string[]; // If applicable, else this can be removed or left empty
+}
+
 const ListeningPage = () => {
     const [script, setScript] = useState<Script | null>(null);
     const [mcqs, setMcqs] = useState<MCQ[]>([]);
     const [tableFilling, setTableFilling] = useState<TableFilling[]>([]);
     const [error, setError] = useState('');
     const [userAnswers, setUserAnswers] = useState<{ [index: number]: string }>({});
-    const [hiddenWords, setHiddenWords] = useState<{ [index: number]: boolean }>({});
+    const [hiddenWords, setHiddenWords] = useState<{ [index: number]: { [wordIndex: number]: boolean } }>({});
+    const [shortAnswerQuestions, setShortAnswerQuestions] = useState<ShortAnswerQuestion[]>([]);
+    const [userShortAnswers, setUserShortAnswers] = useState<{ [index: number]: string }>({});
 
-    // Function to generate the random script (without questions, just the script)
     const generateRandomScript = async () => {
         const token = localStorage.getItem('token');
         try {
@@ -44,7 +50,6 @@ const ListeningPage = () => {
         }
     };
 
-    // Function to generate MCQs based on the generated script
     const generateMCQs = async () => {
         if (!script) return;
 
@@ -65,7 +70,6 @@ const ListeningPage = () => {
         }
     };
 
-    // Function to generate Table Filling based on the generated script
     const generateTableFillingArray = async () => {
         if (!script) return;
 
@@ -85,47 +89,70 @@ const ListeningPage = () => {
             setTableFilling([]);
         }
     };
+    
+    // Function to generate short answer questions
+    const generateShortAnswerQuestions = async () => {
+        if (!script) return;
 
-    // Function to hide words and generate hidden words map
-    const computeHiddenWords = (text: string, hideRatio: number = 0.3): { [index: number]: boolean } => {
-        const words = text.split(' ');
-        const numberOfWordsToHide = Math.min(Math.floor(words.length * hideRatio), 5); // Limit to max 5 hidden inputs
-        const hiddenIndices: Set<number> = new Set();
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/generate_listening_short_answer_question`, { script }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            setShortAnswerQuestions(response.data);
+            setError('');
+        } catch (error) {
+            console.error('Error generating short answer questions:', error);
+            setError('An error occurred while generating short answer questions.');
+            setShortAnswerQuestions([]);
+        }
+    };
 
-        // Randomly pick indices to hide words
-        while (hiddenIndices.size < numberOfWordsToHide) {
-            const randomIndex = Math.floor(Math.random() * words.length);
-            hiddenIndices.add(randomIndex); // Set ensures each index is unique
+    const computeHiddenWordsForCategories = (tableData: TableFilling[]): { [index: number]: { [wordIndex: number]: boolean } } => {
+        const hiddenWordsMap: { [index: number]: { [wordIndex: number]: boolean } } = {};
+        const maxCategoriesToHide = 5;
+        const hiddenCategoryIndices: Set<number> = new Set();
+
+        while (hiddenCategoryIndices.size < Math.min(tableData.length, maxCategoriesToHide)) {
+            const randomCategoryIndex = Math.floor(Math.random() * tableData.length);
+            hiddenCategoryIndices.add(randomCategoryIndex);
         }
 
-        // Create a map of hidden words
-        const hiddenWordsMap: { [index: number]: boolean } = {};
-        hiddenIndices.forEach(index => hiddenWordsMap[index] = true);
+        hiddenCategoryIndices.forEach(categoryIndex => {
+            const wordsArray = sanitizeText(tableData[categoryIndex].information).split(' ');
+
+            const validWordIndices = wordsArray
+                .map((word, wordIndex) => word.length <= 2 ? wordIndex : null)
+                .filter(index => index !== null) as number[];
+
+            if (validWordIndices.length > 0) {
+                const randomWordIndex = validWordIndices[Math.floor(Math.random() * validWordIndices.length)];
+                hiddenWordsMap[categoryIndex] = { [randomWordIndex]: true };
+            }
+        });
 
         return hiddenWordsMap;
     };
 
-    // Function to sanitize text
     const sanitizeText = (text?: string): string => {
         return text ? text.replace(/[,\[\]"]/g, '') : '';
     };
 
-    // Function to merge consecutive blank inputs and limit to max 5
     const mergeTextboxes = (wordsArray: string[]): (string | JSX.Element)[] => {
         const result: (string | JSX.Element)[] = [];
-        let inputSequence = false; // Track if we are in the middle of an input sequence
-        let inputIndexStart = 0;   // Track the start of a sequence of inputs
-        let textBoxCount = 0;      // Count the number of textboxes created
+        let inputSequence = false;
+        let inputIndexStart = 0;
+        let textBoxCount = 0;
 
         for (let i = 0; i < wordsArray.length; i++) {
             if (wordsArray[i] === '') {
-                // If starting a new sequence of inputs and still under limit of 5 textboxes
                 if (!inputSequence && textBoxCount < 5) {
                     inputSequence = true;
                     inputIndexStart = i;
                 }
             } else {
-                // If an input sequence ends, add a textbox for the entire sequence
                 if (inputSequence && textBoxCount < 5) {
                     result.push(
                         <input
@@ -136,14 +163,12 @@ const ListeningPage = () => {
                         />
                     );
                     inputSequence = false;
-                    textBoxCount++; // Increment textbox count
+                    textBoxCount++;
                 }
-                // Add the visible word
                 result.push(<span key={i} style={{ margin: '0 5px' }}>{wordsArray[i]}</span>);
             }
         }
 
-        // If there was an input sequence at the end and still under limit of 5 textboxes
         if (inputSequence && textBoxCount < 5) {
             result.push(
                 <input
@@ -159,18 +184,31 @@ const ListeningPage = () => {
         return result;
     };
 
-    // Effect to compute hidden words whenever tableFilling or script changes
+    const handleInputChange = (index: number, value: string) => {
+        setUserShortAnswers({ ...userShortAnswers, [index]: value });
+    };
+
     useEffect(() => {
         if (tableFilling.length > 0) {
-            const newHiddenWords: { [index: number]: boolean } = {};
-            tableFilling.forEach(entry => {
-                const wordsArray = sanitizeText(entry.information).split(' ');
-                const hiddenWordsMap = computeHiddenWords(sanitizeText(entry.information), 0.3);
-                Object.assign(newHiddenWords, hiddenWordsMap);
-            });
+            const newHiddenWords = computeHiddenWordsForCategories(tableFilling);
             setHiddenWords(newHiddenWords);
+    
+            // Extract and log hidden words as strings
+            const hiddenWordStrings = tableFilling.flatMap((entry, categoryIndex) => {
+                const wordsArray = sanitizeText(entry.information).split(' ');
+                return wordsArray
+                    .map((word, wordIndex) => 
+                        newHiddenWords[categoryIndex] && newHiddenWords[categoryIndex][wordIndex] ? word : null
+                    )
+                    .filter(word => word !== null) as string[];
+            });
+    
+            console.log('Hidden Words (as strings):', hiddenWordStrings.join(', ')); // Log hidden words as a string
         }
-    }, [tableFilling, script]); // Recompute hidden words when tableFilling or script changes
+    }, [tableFilling, script]);
+    
+    
+    
 
     return (
         <div>
@@ -232,20 +270,52 @@ const ListeningPage = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {tableFilling.map((entry, index) => {
+                        {tableFilling.map((entry, categoryIndex) => {
                             const wordsArray = sanitizeText(entry.information).split(' ');
 
                             return (
-                                <tr key={index} style={{ textAlign: 'left', backgroundColor: index % 2 === 0 ? '#fafafa' : '#fff' }}>
+                                <tr key={categoryIndex} style={{ textAlign: 'left', backgroundColor: categoryIndex % 2 === 0 ? '#fafafa' : '#fff' }}>
                                     <td style={{ padding: '10px', border: '1px solid #ddd' }}>{sanitizeText(entry.category)}</td>
                                     <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                                        {mergeTextboxes(wordsArray.map((word, i) => hiddenWords[i] ? '' : word))} {/* Merge consecutive textboxes, max 5 */}
+                                        {mergeTextboxes(
+                                            wordsArray.map((word, wordIndex) =>
+                                                hiddenWords[categoryIndex] && hiddenWords[categoryIndex][wordIndex] ? '' : word
+                                            )
+                                        )}
                                     </td>
                                 </tr>
                             );
                         })}
                     </tbody>
                 </table>
+            )}
+
+            {script && (
+                <div>
+                    <button onClick={generateShortAnswerQuestions}>
+                        Generate Short Answer Questions
+                    </button>
+                </div>
+            )}
+
+            {shortAnswerQuestions.length > 0 && (
+                <div>
+                    {shortAnswerQuestions.map((question, index) => (
+                        <div key={index} style={{ marginBottom: '10px' }}>
+                            <p><strong>{question.question}</strong></p>
+                            <input
+                                type="text"
+                                onChange={(e) => handleInputChange(index, e.target.value)}
+                                value={userShortAnswers[index] || ''}
+                                style={{ 
+                                    border: '1px solid black', 
+                                    padding: '5px', 
+                                    width: '300px' // Adjust width as needed
+                                }}
+                            />
+                        </div>
+                    ))}
+                </div>
             )}
 
             {error && <p style={{ color: 'red' }}>{error}</p>}
