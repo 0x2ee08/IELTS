@@ -51,7 +51,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
 
     const [userAnswers, setUserAnswers] = useState<any>(() => {
         // Try to get stored answers from the cookie when the component mounts
-        const savedAnswers = Cookies.get('readingContestAnswers');
+        const savedAnswers = Cookies.get('readingContestAnswers' + contest.id);
         return savedAnswers ? JSON.parse(savedAnswers) : {};
     });
     const [windowHeight, setWindowHeight] = useState(window.innerHeight);
@@ -66,7 +66,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
 
     // Save updated answers to cookie every time user updates the answer
     const saveAnswersToCookie = (updatedAnswers: any) => {
-        Cookies.set('readingContestAnswers', JSON.stringify(updatedAnswers), { expires: 7 });
+        Cookies.set('readingContestAnswers' + contest.id, JSON.stringify(updatedAnswers), { expires: 7 });
     };
 
     const handleParagraphSwitch = (index: number) => {
