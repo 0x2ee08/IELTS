@@ -15,4 +15,5 @@ module.exports = {
     VOCAB_MODEL_NAME: process.env.VOCAB_MODEL_NAME,
     STScoreAPIKey: process.env.STS_CORE_API_KEY,
     SPEAKING_MODEL_NAME: process.env.SPEAKING_MODEL_NAME,
+    MODEL_QUIZZ_NAME: process.env.MODEL_QUIZZ_NAME
 };

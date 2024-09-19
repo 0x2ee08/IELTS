@@ -9,6 +9,7 @@ const router = express.Router();
 const GOOGLE_CLOUD_API_KEY = process.env.GOOGLE_CLOUD_API_KEY;
 const RSS_FEED_URL = 'https://www.youtube.com/feeds/videos.xml?channel_id=UCsooa4yRKGN_zEE8iknghZA';
 const MODEL_CHATBOT_NAME = process.env.MODEL_CHATBOT_NAME;
+const MODEL_QUIZZ_NAME = process.env.MODEL_QUIZZ_NAME;
 const openRouterApiKey = process.env.OPENROUTER_API_KEY;
 
 const fetchAllVideoDetails = async (videoIds) => {
@@ -192,7 +193,7 @@ router.post('/generate_quiz', authenticateToken, async (req, res) => {
 
     const prompt1 = `Based on the text: "
 `, prompt2 = `
-    ", generate exactly 15 multiple-choice questions. Each question should have four answer options:
+    ", generate exactly FIFTEEN (15) multiple-choice questions. Each question should have four answer options:
 
     - Exactly one correct answer, randomly placed.
     - Exactly three incorrect answers.
@@ -215,7 +216,7 @@ router.post('/generate_quiz', authenticateToken, async (req, res) => {
     - Ensure that all answer options are short and concise.
     - Randomly place the correct answer in one of the options.
 
-        **IMPORTANT:** The number of questions MUST be 15!
+        **IMPORTANT:** The number of questions MUST be FIFTEEN (15)!
         **IMPORTANT:** Each question and each answer must have at most 20 words
         `,
         prompt3 = `
@@ -248,7 +249,7 @@ router.post('/generate_quiz', authenticateToken, async (req, res) => {
 
 
         const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-            model: 'meta-llama/llama-3-8b-instruct:free',
+            model: MODEL_QUIZZ_NAME,
             "messages": formattedMessages,
         }, {
             headers: {
