@@ -5,6 +5,13 @@ const { connectToDatabase } = require('../utils/mongodb');
 const { authenticateToken, authorizeTeacher } = require('../middleware/authMiddleware');
 const { secret } = require('../config/config');
 
+const axios = require('axios');
+
+const { MODEL_NAME, OPENROUTER_API_KEY } = require('../config/config');
+
+const model = MODEL_NAME;
+const openRouterApiKey = OPENROUTER_API_KEY;
+
 const router = express.Router();
 
 router.post('/get_writing_prob_data', async (req, res) => {
@@ -19,6 +26,24 @@ router.post('/get_writing_prob_data', async (req, res) => {
     res.json({ result });
 });
 
+router.post('/generateWritingPrompt', authenticateToken, async(req, res)  => {
+    var {type, content} = req.body;
+
+    if(content === '') content = 'random'
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{ role: 'system', content: `Give me a IELTS ${type} problem. Base on ${content} topic. Only output the prompt, print nothing else`}],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    var evaluation = response.data.choices[0].message.content.trim();
+    res.json({content: evaluation});
+});
 // router.post('/get_class_list', async (req, res) => {
 //     const { school } = req.body;
 
