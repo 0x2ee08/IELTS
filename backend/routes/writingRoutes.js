@@ -27,13 +27,15 @@ router.post('/get_writing_prob_data', async (req, res) => {
 });
 
 router.post('/generateWritingPrompt', authenticateToken, async(req, res)  => {
-    var {type, content} = req.body;
-
-    if(content === '') content = 'random'
+    var {type, content, subtype} = req.body;
+    if(content === '') content = 'random';
+    var prp = '';
+    if(subtype !== '' && type === "Writing Task 2")  prp = ('The question should require user to discuss ' + subtype)
+    else if(subtype !== '') prp = ('The chart is a ' + subtype); 
 
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: model,
-        messages: [{ role: 'system', content: `Give me a IELTS ${type} problem. Base on ${content} topic. Only output the prompt, print nothing else`}],
+        messages: [{ role: 'system', content: `Give me a IELTS ${type} problem. ${prp}. Base on ${content} topic. Only output the prompt, print nothing else`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
