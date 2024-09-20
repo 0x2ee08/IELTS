@@ -220,6 +220,7 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
         setCurrentQuestionIndex((prevIndex) => {
             if (prevIndex < task.questions.length - 1) {
                 if(!played) {
+                    playSpeechFromWord(currentQuestionIndex + 1);
                     played = true;
                 }
                 return prevIndex + 1;
@@ -243,6 +244,24 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
         });
     };
     
+    const playSpeechFromWord = async (idx: number) => {
+        try {
+            const audioBase64 = questionAudio[idx];
+            const audioData = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
+            const arrayBuffer = audioData.buffer;
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+            source.start(0);
+            source.onended = () => {
+                console.log('Playback finished');
+            };
+        } catch (error) {
+            console.error('Error playing audio:', error);
+        }
+    };
 
     const handleStartClick = () => {
         setBlobArray([]);
@@ -261,6 +280,7 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
             setTimeout(() => {
                 setTimeLeft(task.length);
                 setIsTakeNote(false);
+                playSpeechFromWord(0);
                 setTimeout(() => {
                     handleStopClick();
                 }, task.length * 1000)
