@@ -55,6 +55,9 @@ app.use('/api', graderWritingTask1Academic);
 const flashcardsRoutes = require('./routes/flashcards');
 app.use('/api/flashcards', flashcardsRoutes);
 
+const getallfcRoutes = require('./routes/getallflashcards');
+app.use('/api/getAllFlashcards', getallfcRoutes);
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

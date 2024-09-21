@@ -37,15 +37,19 @@ export default function CreateFlashcard() {
     }
 
     try {
-        const response = await axios.post(`${config.API_BASE_URL}api/flashcards`, {
-            title,
-            userName,
-            flashcards
-        });
-      const newFlashcardId = response.data.id;
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${config.API_BASE_URL}api/flashcards/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title, userName, flashcards }),
+    });
+    const result = await response.json();
 
       // Redirect to the new flashcard page using `[fc]`
-      router.push(`/flashcards/${newFlashcardId}`);
+      router.push(`/flashcards/${result.id}`);
     } catch (error) {
       console.error('Error creating flashcard set:', error);
       alert("There was an error creating your flashcard.");
