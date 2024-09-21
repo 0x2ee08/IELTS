@@ -145,4 +145,63 @@ router.post('/generate_listening_short_answer_question', authenticateToken, asyn
     }
 });
 
+router.post('/generate_listening_matchings', authenticateToken, async (req, res) => {
+    const { script } = req.body;
+
+    if (!script || !script.content) {
+        return res.status(400).json({ message: 'Invalid script data' });
+    }
+
+    const message = `Generate a matching exercise based on the following script. Provide exactly 5 features and 5 questions. Each question should match with one of the features. Format the response without bold, additional words, or special characters. Provide features and questions in a clear list format, with features and questions separated by headings:\n\nFeatures:\n1. Feature 1\n2. Feature 2\n3. Feature 3\n4. Feature 4\n5. Feature 5\n\nQuestions:\n1. Question 1\n2. Question 2\n3. Question 3\n4. Question 4\n5. Question 5\n\n${script.content}`;
+
+    try {
+        const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+            model: model,
+            messages: [{ role: 'system', content: message }],
+        }, {
+            headers: {
+                'Authorization': `Bearer ${openRouterApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const matchings = response.data.choices[0].message.content.trim();
+
+        // Ensure `matchings` is properly formatted
+        if (!matchings) {
+            throw new Error('No matchings data received');
+        }
+
+        // Split the response into features and questions based on the headings
+        const [featuresPart, questionsPart] = matchings.split('\n\n').map(part => part.trim());
+
+        // Ensure we have exactly 2 parts
+        if (!featuresPart || !questionsPart) {
+            throw new Error('Invalid format received');
+        }
+
+        // Extract features and questions
+        const featuresLines = featuresPart.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('Features:'));
+        const questionsLines = questionsPart.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('Questions:'));
+
+        // Ensure we have exactly 5 features and 5 questions
+        if (featuresLines.length !== 5 || questionsLines.length !== 5) {
+            throw new Error('Incorrect number of features or questions received');
+        }
+
+        // Format the response
+        const formattedMatchings = questionsLines.map((question, index) => ({
+            question: question,
+            feature: featuresLines[index] || '', // Map questions to features
+        }));
+
+        res.json({ matchings: formattedMatchings });
+
+    } catch (error) {
+        console.error('Error generating listening matchings:', error);
+        res.status(500).json({ message: 'Error generating listening matchings', error });
+    }
+});
+
+
 module.exports = router;

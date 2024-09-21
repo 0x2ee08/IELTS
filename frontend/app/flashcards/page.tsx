@@ -28,9 +28,10 @@ export default function FlashcardsAndParagraphs() {
     const fetchFlashcards = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${config.API_BASE_URL}api/getAllFlashcards`, {
+        const response = await axios.get(`${config.API_BASE_URL}api/flashcards/getAllFlashcards`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log('Flashcards data:', response.data);
         setFlashcards(response.data);
       } catch (error) {
         console.error('Error fetching flashcards:', error);
@@ -43,7 +44,6 @@ export default function FlashcardsAndParagraphs() {
         const response = await axios.get(`${config.API_BASE_URL}api/getAllParagraph`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log('Paragraphs data:', response.data); // Debugging
         setParagraphs(response.data);
       } catch (error) {
         console.error('Error fetching paragraphs:', error);

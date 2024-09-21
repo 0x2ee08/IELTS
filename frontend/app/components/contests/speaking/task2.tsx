@@ -74,10 +74,13 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
     const [pentagonArray, setPentagonArray] = useState([0, 0, 0, 0, 0])
     const [preProcess, setPreProcess] = useState(false);
     const [isProcess, setIsProcess] = useState(false);
+    const [isTakeNote, setIsTakeNote] = useState(false);
+    const [takeNoteTimeLeft, setTakeNoteTimeLeft] = useState(0);
 
     const hasInitialize = useRef(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const noteRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         if (!hasInitialize.current) {
@@ -110,12 +113,10 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
     }, [isLoading]);
 
     useEffect(() => {
-        if (isTesting) {
+        if (isTesting && !isTakeNote) {
             timerRef.current = setInterval(() => {
                 setTimeLeft((prevTime) => {
                     if (prevTime <= 1) {
-                        handleStopClick();
-                        stopRecording(false);
                         return 0;
                     }
                     return prevTime - 1;
@@ -134,19 +135,28 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
         };
     }, [isTesting]);    
 
-    const preprocess = async () => {
-        for(let i=0; i<Number(task.number_of_task); i++) {
-            console.log(i, task.questions[i]);
-            await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromDrive`, {
-                method: "post",
-                body: JSON.stringify({ "url": task.audioData[i] }),
-                headers: { "X-Api-Key": STScoreAPIKey }
-            }).then(res => res.json())
-                .then(data => {
-                    questionAudio[i] = data['audioBase64']
+    useEffect(() => {
+        if (isTakeNote) {
+            noteRef.current = setInterval(() => {
+                setTakeNoteTimeLeft((prevTime) => {
+                    if (prevTime <= 1) {
+                        return 0;
+                    }
+                    return prevTime - 1;
                 });
+            }, 1000);
+        } else {
+            if (noteRef.current) {
+                clearInterval(noteRef.current);
+            }
         }
-    }
+
+        return () => {
+            if (noteRef.current) {
+                clearInterval(noteRef.current);
+            }
+        };
+    }, [isTakeNote]);    
 
     const startRecording = async () => {
         setAudioBlob(null);
@@ -196,7 +206,6 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
         setCurrentQuestionIndex((prevIndex) => {
             if (prevIndex < task.questions.length - 1) {
                 if(!played) {
-                    playSpeechFromWord(prevIndex + 1);
                     played = true;
                 }
                 return prevIndex + 1;
@@ -207,27 +216,7 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
                 return prevIndex;
             }
         });
-    };
-
-    const playSpeechFromWord = async (idx: number) => {
-        try {
-            const audioBase64 = questionAudio[idx];
-            const audioData = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
-            const arrayBuffer = audioData.buffer;
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-            const source = audioContext.createBufferSource();
-            source.buffer = audioBuffer;
-            source.connect(audioContext.destination);
-            source.start(0);
-            source.onended = () => {
-                console.log('Playback finished');
-            };
-        } catch (error) {
-            console.error('Error playing audio:', error);
-        }
-    };
-    
+    };    
 
     const convertBlobToBase64 = (blob: Blob): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -248,12 +237,19 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
         setIsLoading(true);
         setProgress(0);
         setCurrentQuestionIndex(0);
-        preprocess();
+        setTakeNoteTimeLeft(60);
 
         setTimeout(() => {
+            setIsTakeNote(true);
             setIsLoading(false);
-            setTimeLeft(task.length);
-            playSpeechFromWord(0);
+            
+            setTimeout(() => {
+                setTimeLeft(task.length);
+                setIsTakeNote(false);
+                setTimeout(() => {
+                    handleStopClick();
+                }, task.length * 1000)
+            }, 60000)
         }, 10000);
     };
 
@@ -409,7 +405,7 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
                         isDisabled={isLoading}
                         className="mr-4"
                         color="primary"
-                        style={{ fontSize: '1rem' }}
+                        style={{ fontSize: '1rem' }}    
                     >
                         {isTesting ? 'Stop the task' : 'Start the task'}
                     </Button>
@@ -515,7 +511,7 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
                                         <div className='mr-4 w-auto'>
                                             <Button 
                                                 onClick={startRecording}
-                                                isDisabled={isRecording || timeLeft <= 0}
+                                                isDisabled={isTakeNote || isRecording || timeLeft <= 0}
                                                 color="success"
                                                 style={{ fontSize: '1rem' }}
                                             >
@@ -523,7 +519,13 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
                                             </Button>
                                         </div>
                                         <div className='flex-grow text-center mx-4' style={{ fontSize: '1rem' }}>
-                                            Time left: {timeLeft}s
+                                            {!isTakeNote ? (
+                                                <div>
+                                                    Time left: {timeLeft}s
+                                                </div>
+                                            ) : (
+                                                null
+                                            )}
                                         </div>
                                         <div className='ml-auto'>
                                             <Button 
@@ -536,10 +538,39 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
                                             </Button>
                                         </div>
                                     </div>
+
+                                    <Divider className='mb-4'/>
+
+                                    <div className="mb-4">
+                                        <strong>
+                                            {task.questions[0].split('\n').map((line, index) => (
+                                                <React.Fragment key={index}>
+                                                    {line}
+                                                    <br />
+                                                </React.Fragment>
+                                            ))}
+                                        </strong>
+                                    </div>
+
+                                    <Divider className='mb-4'/>
+                                    
+                                    <div className='mb-4 text-red-500'>
+                                        {isTakeNote ? (
+                                            <div>
+                                                You have {takeNoteTimeLeft} seconds to prepare for you speaking.
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                You should start you speaking now!
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <Textarea
                                         style={{ fontSize: '1rem' }}
                                         placeholder="Enter your note"
                                         className="max-w-full h-40"
+                                        isDisabled={!isTakeNote}
                                     />
                                 </div>
                             </div>

@@ -428,6 +428,7 @@ router.post('/submit_contest_reading', authenticateToken, async (req, res) => {
             answer: answer,
             submit_by: username,
             result: sresult,
+            visibility: (contest.accessUser === '' ? 'public':'private'),
             submit_time: new Date().toISOString()
         };
         await submissionCollection.insertOne(newSubmission);
@@ -490,6 +491,7 @@ router.get('/getGlobalSubmission', authenticateToken, async (req, res) => {
 
         let query = {
             // submit_by: username
+            visibility: 'public'
         };
 
         const availableSubmission = await Collection.find(query).limit(50).toArray();
@@ -505,6 +507,7 @@ router.get('/getGlobalSubmission', authenticateToken, async (req, res) => {
                 empty: submission.result.empty,
                 total: submission.result.total,
                 submit_time: submission.submit_time,
+                visibility: submission.visibility,
                 submit_by: submission.submit_by
             };
         });
@@ -530,7 +533,7 @@ router.post('/getSubmission', authenticateToken, async (req, res) => {
         const { username } = req.user;
         const { submissionID } = req.body;
         let query = {
-            id: submissionID,
+            id: submissionID
             // submit_by: username //should it be private or not, hmmm...
         };
 
@@ -567,6 +570,7 @@ router.post('/getSubmission', authenticateToken, async (req, res) => {
                 submit_time: submission.submit_time,
                 user_answer: submission.answer,
                 contest_title: contest.problemName,
+                visibility: submission.visibility,
                 correct_answer: transformData(contest)
         };
 

@@ -19,18 +19,25 @@ interface TableFilling {
 
 interface ShortAnswerQuestion {
     question: string;
-    answers: string[]; // If applicable, else this can be removed or left empty
+    answers: string[];
+}
+
+interface MatchingExercise {
+    statements: string[]; // Array of statements
+    features: string[];   // Array of features
 }
 
 const ListeningPage = () => {
     const [script, setScript] = useState<Script | null>(null);
     const [mcqs, setMcqs] = useState<MCQ[]>([]);
     const [tableFilling, setTableFilling] = useState<TableFilling[]>([]);
+    const [shortAnswerQuestions, setShortAnswerQuestions] = useState<ShortAnswerQuestion[]>([]);
+    const [matchingExercise, setMatchingExercise] = useState<MatchingExercise | null>(null);
     const [error, setError] = useState('');
     const [userAnswers, setUserAnswers] = useState<{ [index: number]: string }>({});
     const [hiddenWords, setHiddenWords] = useState<{ [index: number]: { [wordIndex: number]: boolean } }>({});
-    const [shortAnswerQuestions, setShortAnswerQuestions] = useState<ShortAnswerQuestion[]>([]);
     const [userShortAnswers, setUserShortAnswers] = useState<{ [index: number]: string }>({});
+    const [selectedMatches, setSelectedMatches] = useState<{ [category: string]: string }>({});
 
     const generateRandomScript = async () => {
         const token = localStorage.getItem('token');
@@ -89,8 +96,7 @@ const ListeningPage = () => {
             setTableFilling([]);
         }
     };
-    
-    // Function to generate short answer questions
+
     const generateShortAnswerQuestions = async () => {
         if (!script) return;
 
@@ -107,6 +113,29 @@ const ListeningPage = () => {
             console.error('Error generating short answer questions:', error);
             setError('An error occurred while generating short answer questions.');
             setShortAnswerQuestions([]);
+        }
+    };
+
+    const generateMatchingExercise = async () => {
+        if (!script) return;
+    
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/generate_listening_matchings`, { script }, {
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+            const data = response.data;
+    
+            // Adjust this part based on the actual response format
+            const statements = data.matchings.map((item: any) => item.question);
+            const features = data.matchings.map((item: any) => item.feature);
+    
+            setMatchingExercise({ statements, features });
+            setError('');
+        } catch (error) {
+            console.error('Error generating matching exercise:', error);
+            setError('An error occurred while generating the matching exercise.');
+            setMatchingExercise(null);
         }
     };
 
@@ -188,27 +217,31 @@ const ListeningPage = () => {
         setUserShortAnswers({ ...userShortAnswers, [index]: value });
     };
 
+    const handleChooseBoxChange = (index: number, value: string) => {
+        setSelectedMatches(prevState => ({
+            ...prevState,
+            [index]: value
+        }));
+    };
+
     useEffect(() => {
         if (tableFilling.length > 0) {
             const newHiddenWords = computeHiddenWordsForCategories(tableFilling);
             setHiddenWords(newHiddenWords);
-    
+
             // Extract and log hidden words as strings
             const hiddenWordStrings = tableFilling.flatMap((entry, categoryIndex) => {
                 const wordsArray = sanitizeText(entry.information).split(' ');
                 return wordsArray
-                    .map((word, wordIndex) => 
+                    .map((word, wordIndex) =>
                         newHiddenWords[categoryIndex] && newHiddenWords[categoryIndex][wordIndex] ? word : null
                     )
                     .filter(word => word !== null) as string[];
             });
-    
+
             console.log('Hidden Words (as strings):', hiddenWordStrings.join(', ')); // Log hidden words as a string
         }
     }, [tableFilling, script]);
-    
-    
-    
 
     return (
         <div>
@@ -318,9 +351,60 @@ const ListeningPage = () => {
                 </div>
             )}
 
+            {script && (
+                <div>
+                    <button onClick={generateMatchingExercise}>Generate Matching Exercise</button>
+                </div>
+            )}
+
+            {matchingExercise && (
+                <div>
+                    {/* Display features at the top */}
+                    <div>
+                        <p><strong>Features:</strong></p>
+                        <ul>
+                            {matchingExercise.features.map((feature, featureIndex) => (
+                                <li key={featureIndex}>{feature}</li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div>
+                        {matchingExercise.statements.map((statement, index) => {
+                            // Get the selected feature's index
+                            const selectedFeature = selectedMatches[index];
+                            const selectedFeatureIndex = matchingExercise.features.indexOf(selectedFeature);
+
+                            return (
+                                <div key={index} style={{ marginBottom: '10px' }}>
+                                    <p>{statement}</p>
+                                    <div>
+                                        <label htmlFor={`choosebox-${index}`}>Your answer: </label>
+                                        <select
+                                            id={`choosebox-${index}`}
+                                            onChange={(e) => handleChooseBoxChange(index, e.target.value)}
+                                            value={selectedMatches[index] || ''}
+                                        >
+                                            <option value=""></option>
+                                            {matchingExercise.features.map((feature, featureIndex) => (
+                                                <option key={featureIndex} value={feature}>
+                                                    {feature[0]}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
             {error && <p style={{ color: 'red' }}>{error}</p>}
+
         </div>
     );
 };
 
 export default ListeningPage;
+

@@ -74,10 +74,13 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
     const [pentagonArray, setPentagonArray] = useState([0, 0, 0, 0, 0])
     const [preProcess, setPreProcess] = useState(false);
     const [isProcess, setIsProcess] = useState(false);
+    const [isTakeNote, setIsTakeNote] = useState(false);
+    const [takeNoteTimeLeft, setTakeNoteTimeLeft] = useState(0);
 
     const hasInitialize = useRef(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const noteRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         if (!hasInitialize.current) {
@@ -110,12 +113,10 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
     }, [isLoading]);
 
     useEffect(() => {
-        if (isTesting) {
+        if (isTesting && !isTakeNote) {
             timerRef.current = setInterval(() => {
                 setTimeLeft((prevTime) => {
                     if (prevTime <= 1) {
-                        handleStopClick();
-                        stopRecording(false);
                         return 0;
                     }
                     return prevTime - 1;
@@ -133,6 +134,29 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
             }
         };
     }, [isTesting]);    
+
+    useEffect(() => {
+        if (isTakeNote) {
+            noteRef.current = setInterval(() => {
+                setTakeNoteTimeLeft((prevTime) => {
+                    if (prevTime <= 1) {
+                        return 0;
+                    }
+                    return prevTime - 1;
+                });
+            }, 1000);
+        } else {
+            if (noteRef.current) {
+                clearInterval(noteRef.current);
+            }
+        }
+
+        return () => {
+            if (noteRef.current) {
+                clearInterval(noteRef.current);
+            }
+        };
+    }, [isTakeNote]);    
 
     const preprocess = async () => {
         for(let i=0; i<Number(task.number_of_task); i++) {
@@ -196,7 +220,7 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
         setCurrentQuestionIndex((prevIndex) => {
             if (prevIndex < task.questions.length - 1) {
                 if(!played) {
-                    playSpeechFromWord(prevIndex + 1);
+                    playSpeechFromWord(currentQuestionIndex + 1);
                     played = true;
                 }
                 return prevIndex + 1;
@@ -207,8 +231,19 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
                 return prevIndex;
             }
         });
-    };
+    };    
 
+    const convertBlobToBase64 = (blob: Blob): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                resolve(reader.result as string);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    };
+    
     const playSpeechFromWord = async (idx: number) => {
         try {
             const audioBase64 = questionAudio[idx];
@@ -227,19 +262,6 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
             console.error('Error playing audio:', error);
         }
     };
-    
-
-    const convertBlobToBase64 = (blob: Blob): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                resolve(reader.result as string);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-    };
-    
 
     const handleStartClick = () => {
         setBlobArray([]);
@@ -248,12 +270,21 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
         setIsLoading(true);
         setProgress(0);
         setCurrentQuestionIndex(0);
+        setTakeNoteTimeLeft(60);
         preprocess();
 
         setTimeout(() => {
+            setIsTakeNote(true);
             setIsLoading(false);
-            setTimeLeft(task.length);
-            playSpeechFromWord(0);
+            
+            setTimeout(() => {
+                setTimeLeft(task.length);
+                setIsTakeNote(false);
+                playSpeechFromWord(0);
+                setTimeout(() => {
+                    handleStopClick();
+                }, task.length * 1000)
+            }, 60000)
         }, 10000);
     };
 
@@ -409,7 +440,7 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
                         isDisabled={isLoading}
                         className="mr-4"
                         color="primary"
-                        style={{ fontSize: '1rem' }}
+                        style={{ fontSize: '1rem' }}    
                     >
                         {isTesting ? 'Stop the task' : 'Start the task'}
                     </Button>
@@ -515,7 +546,7 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
                                         <div className='mr-4 w-auto'>
                                             <Button 
                                                 onClick={startRecording}
-                                                isDisabled={isRecording || timeLeft <= 0}
+                                                isDisabled={isTakeNote || isRecording || timeLeft <= 0}
                                                 color="success"
                                                 style={{ fontSize: '1rem' }}
                                             >
@@ -523,7 +554,13 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
                                             </Button>
                                         </div>
                                         <div className='flex-grow text-center mx-4' style={{ fontSize: '1rem' }}>
-                                            Time left: {timeLeft}s
+                                            {!isTakeNote ? (
+                                                <div>
+                                                    Time left: {timeLeft}s
+                                                </div>
+                                            ) : (
+                                                null
+                                            )}
                                         </div>
                                         <div className='ml-auto'>
                                             <Button 
@@ -536,10 +573,26 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
                                             </Button>
                                         </div>
                                     </div>
+
+                                    <Divider className='mb-4'/>
+                                    
+                                    <div className='mb-4 text-red-500'>
+                                        {isTakeNote ? (
+                                            <div>
+                                                You have {takeNoteTimeLeft} seconds to prepare for you speaking.
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                You should start you speaking now!
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <Textarea
                                         style={{ fontSize: '1rem' }}
                                         placeholder="Enter your note"
                                         className="max-w-full h-40"
+                                        isDisabled={!isTakeNote}
                                     />
                                 </div>
                             </div>

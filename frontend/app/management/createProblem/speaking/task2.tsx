@@ -51,14 +51,14 @@ const Task2Page: React.FC<Task2PageProps> = ({ onTaskUpdate }) => {
         }
 
         const parsedNumber = parseInt(inputValue, 10);
-        if (!isNaN(parsedNumber) && parsedNumber >= 1 && parsedNumber <= 12) {
+        if (!isNaN(parsedNumber) && parsedNumber >= 1 && parsedNumber <= 1) {
             setTask((prevTask) => ({
                 ...prevTask,
                 number_of_task: parsedNumber.toString(),
                 questions: Array(parsedNumber).fill(''),
             }));
         } else {
-            alert('Please enter a valid number between 1 and 12.');
+            alert('Please enter a valid number: 1.');
             setTask((prevTask) => ({
                 ...prevTask,
                 number_of_task: '',
@@ -96,26 +96,6 @@ const Task2Page: React.FC<Task2PageProps> = ({ onTaskUpdate }) => {
         setTask((prevTask) => ({
             ...prevTask,
             length: totalSeconds,
-        }));
-    };
-
-    const generateSpeakingTask2 = async (number_of_task: number) => {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${config.API_BASE_URL}api/generateSpeakingTask2`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ number_of_task }),
-        });
-        const result = await response.json();
-
-        const questions = result.content.match(/\[Q\d+\]:\s*(.*?)(?=\n|$)/g)?.map((q: string) => q.replace(/\[Q\d+\]:\s*/, '').trim()) || [];
-
-        setTask((prevTask) => ({
-            ...prevTask,
-            questions: questions,
         }));
     };
 
@@ -170,13 +150,6 @@ const Task2Page: React.FC<Task2PageProps> = ({ onTaskUpdate }) => {
                             <option key={i} value={i}>{i} sec</option>
                         ))}
                     </select>
-                    <button
-                        onClick={() => generateSpeakingTask2(Number(task.number_of_task))}
-                        className="px-2 rounded-md ml-2"
-                        disabled={isNaN(Number(task.number_of_task)) || Number(task.number_of_task) < 2 || Number(task.number_of_task) > 12}
-                    >
-                        Generate
-                    </button>
                 </div>
                 <div className='font-semibold'>
                     Enter question contents or click the generate button of the right side
@@ -198,7 +171,7 @@ const Task2Page: React.FC<Task2PageProps> = ({ onTaskUpdate }) => {
                             onClick={() => generateSpeakingTask2_onlyOne(index)}
                             className="px-4 rounded-md ml-2 whitespace-nowrap"
                         >
-                            Generate only this question
+                            Generate this question
                         </button>
                     </div>
                 ))}

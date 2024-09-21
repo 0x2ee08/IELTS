@@ -6,7 +6,7 @@ let currentId = 1; // To track the current flashcard ID
 
 // @route   POST /api/flashcards
 // @desc    Create a new flashcard set
-router.post('/', (req, res) => {
+router.post('/create_new_', (req, res) => {
   const { title, userName, flashcards: newFlashcards } = req.body;
 
   if (!title || !userName || !newFlashcards || !newFlashcards.length) {
@@ -36,6 +36,12 @@ router.get('/:id', (req, res) => {
   }
 
   res.json(flashcardSet);
+});
+
+// @route   GET /api/flashcards/getAllFlashcards
+// @desc    Get all flashcard sets
+router.get('/getAllFlashcards', (req, res) => {
+  res.json(flashcards);
 });
 
 module.exports = router;

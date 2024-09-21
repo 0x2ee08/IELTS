@@ -7,6 +7,7 @@ export interface task3QuestionGeneral {
     number_of_task: string,
     length: number;
     questions: string[],
+    audioData: string[],
 }
 
 interface Task3PageProps {
@@ -19,6 +20,7 @@ const Task3Page: React.FC<Task3PageProps> = ({ onTaskUpdate }) => {
         number_of_task: '',
         length: 300,
         questions: [],
+        audioData: [],
     });
 
     const [minutes, setMinutes] = useState<number>(0);
@@ -46,6 +48,7 @@ const Task3Page: React.FC<Task3PageProps> = ({ onTaskUpdate }) => {
                 number_of_task: '',
                 length: 300,
                 questions: [],
+                audioData: [],
             }));
             return;
         }
@@ -64,6 +67,7 @@ const Task3Page: React.FC<Task3PageProps> = ({ onTaskUpdate }) => {
                 number_of_task: '',
                 length: 300,
                 questions: [],
+                audioData: [],
             }));
         }
     };

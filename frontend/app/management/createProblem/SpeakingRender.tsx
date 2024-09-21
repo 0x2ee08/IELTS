@@ -106,23 +106,26 @@ const SpeakingPage: React.FC = () => {
     const create_speaking_problem = async () => {
         for(let i=0; i<taskArray.length; i++) {
             console.log(taskArray[i]);
-            for(let j=0; j<taskArray[i].number_of_task; j++) {
-                await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromText`, {
-                    method: "post",
-                    body: JSON.stringify({ "text": taskArray[i].questions[j] }),
-                    headers: { "X-Api-Key": STScoreAPIKey }
-                }).then(res => res.json())
-                    .then(data => {
-                        taskArray[i].audioData[j] = data['audioBase64'];
-                    });
-                await fetch(`${config.API_PRONOUNCE_BASE_URL}/saveToGGDrive`, {
-                    method: "post",
-                    body: JSON.stringify({ "audioBase64": taskArray[i].audioData[j] }),
-                    headers: { "X-Api-Key": STScoreAPIKey }
-                }).then(res => res.json())
-                    .then(data => {
-                        taskArray[i].audioData[j] = data['audioData'];
-                    });
+            if(taskArray[i].type !== "Task 2") {
+                for(let j=0; j<taskArray[i].number_of_task; j++) {
+                    await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromText`, {
+                        method: "post",
+                        body: JSON.stringify({ "text": taskArray[i].questions[j] }),
+                        headers: { "X-Api-Key": STScoreAPIKey }
+                    }).then(res => res.json())
+                        .then(data => {
+                            taskArray[i].audioData[j] = data['audioBase64'];
+                        });
+                    await fetch(`${config.API_PRONOUNCE_BASE_URL}/saveToGGDrive`, {
+                        method: "post",
+                        body: JSON.stringify({ "audioBase64": taskArray[i].audioData[j] }),
+                        headers: { "X-Api-Key": STScoreAPIKey }
+                    }).then(res => res.json())
+                        .then(data => {
+                            console.log(data['audioData']);
+                            taskArray[i].audioData[j] = data['audioData'];
+                        });
+                }
             }
         }
         const token = localStorage.getItem('token');
