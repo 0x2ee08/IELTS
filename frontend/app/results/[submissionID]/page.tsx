@@ -254,7 +254,7 @@ export default function DetailResultPage() {
               <strong>Contest Title:</strong> {submission.contest_title}
             </p>
             <p className="text-lg font-semibold mb-8">
-              <strong>Submitted Time:</strong> {submission.submit_time}
+              <p><strong>Submitted Time:</strong> {new Date(submission.submit_time).toLocaleString()}</p>
             </p>
 
             <div className="flex justify-center lg:justify-start">
