@@ -161,16 +161,18 @@ const ReadingContest = ({ contest }: { contest: any }) => {
     );
 
     const renderMatchingTable = (section: any) => {
-        return <div className='flex justify-center items-center'>
+        return (
+            <div className='flex justify-center items-center'>
                     <div className="matching-table"> 
                         <div className="flex flex-col">
-                            <p className='flex justify-center items-center'>List of things</p>
+                            <p className='text-center'>List of things</p>
                             {section.options.map((option: string, index: number) => (
                             <p> {integerToRoman(index+1)}. {option}</p>
                             ))}
                         </div>
                     </div>
-                </div>
+            </div>
+        );
     };
 
     const renderMatchingType = (sectionIndex: number, questionIndex: number, section: any) => {
