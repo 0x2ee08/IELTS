@@ -32,10 +32,11 @@ router.post('/generateWritingPrompt', authenticateToken, async(req, res)  => {
     var prp = '';
     if(subtype !== '' && type === "Writing Task 2")  prp = ('The question should require user to discuss "' + subtype + '"')
     else if(subtype !== '') prp = ('The chart is a ' + subtype); 
-
+    var ntble = '';
+    if(subtype.includes('Table')) ntble = "Output no table data."
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
         model: model,
-        messages: [{ role: 'system', content: `Give me a IELTS ${type} problem. ${prp}. Base on ${content} topic. Only output the prompt, print nothing else`}],
+        messages: [{ role: 'system', content: `Give me a IELTS ${type} problem. ${prp}. Base on ${content} topic. ${ntble}.Only output the prompt, print nothing else`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -43,8 +44,31 @@ router.post('/generateWritingPrompt', authenticateToken, async(req, res)  => {
         }
     });
 
-    var evaluation = response.data.choices[0].message.content.trim();
-    res.json({content: evaluation});
+    var task = response.data.choices[0].message.content.trim();
+
+    console.log(task);
+    //2 graph: Two pie chart & Multiple graphs
+
+    if(subtype.includes('Two') || subtype.includes('Multiple')){
+
+    }
+    else{
+        const response_2 = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+            model: model,
+            messages: [{ role: 'system', content: `Give me an data as a json to create a chart (graph/table) for IELTS ${type} problem. ${prp}. Prompt: ${task}. ${ntble}. Data must contain randomness, have significant fluctuations (increase, decrease,...) for participant to describe. Only output the data, print nothing else`}],
+        }, {
+            headers: {
+                'Authorization': `Bearer ${openRouterApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        var data = response_2.data.choices[0].message.content.trim();
+        res.json({content: data});
+    }
+
+
+    // res.json({content: task});
 });
 // router.post('/get_class_list', async (req, res) => {
 //     const { school } = req.body;

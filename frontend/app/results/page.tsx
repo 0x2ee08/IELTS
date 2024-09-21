@@ -10,10 +10,11 @@ interface Submission {
     type: string;
     sid: string;
     cid: string;
-    correct: string,
-    wrong: string,
-    empty: string, 
-    total: string,
+    // correct: string,
+    // wrong: string,
+    // empty: string, 
+    // total: string,
+    result: Record<string,any>;
     submit_time: string,
     submit_by: string
 }
@@ -100,7 +101,7 @@ const ResultPage: React.FC = () => {
                 {submissions.length > 0 && (
                     <ul className="space-y-6">
                         {submissions.map((submission, index) => {
-                            const bandScore = calculateBand(submission.correct, submission.total);
+                            const bandScore = calculateBand(submission.result.correct, submission.result.total);
                             let bandColor = "text-red-600"; // Default color for band < 5.0
                             if (bandScore >= 7.0) {
                                 bandColor = "text-green-600";
@@ -136,9 +137,9 @@ const ResultPage: React.FC = () => {
     
                                         {/* Answer Stats */}
                                         <div className="mt-4 text-base">
-                                            <span className="text-green-500 mr-4">Correct: {submission.correct}</span>
-                                            <span className="text-red-500 mr-4">Wrong: {submission.wrong}</span>
-                                            <span className="text-gray-500">Empty: {submission.empty}</span>
+                                            <span className="text-green-500 mr-4">Correct: {submission.result.correct}</span>
+                                            <span className="text-red-500 mr-4">Wrong: {submission.result.wrong}</span>
+                                            <span className="text-gray-500">Empty: {submission.result.empty}</span>
                                         </div>
                                     </Link>
                                 </li>

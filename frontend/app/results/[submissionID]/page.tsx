@@ -107,6 +107,7 @@ interface Submission {
   wrong: string;
   empty: string;
   total: string;
+  result: Record<string,any>;
   submit_time: string;
   user_answer: Record<string, any>;
   correct_answer: Record<string, any>;
