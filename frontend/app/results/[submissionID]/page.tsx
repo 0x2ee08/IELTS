@@ -66,10 +66,10 @@ const Ring: React.FC<RingProps> = ({ correct, incorrect, skipped }) => {
           y="150" 
           textAnchor="middle" 
           dominantBaseline="middle" 
-          fontSize="24" 
+          fontSize="40" 
           fill="#000" 
         >
-          {band}
+          {band.toFixed(1)}
         </text>
       </svg>
 
@@ -247,32 +247,46 @@ export default function DetailResultPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex flex-col justify-center p-4 ml-16 mr-16">
+      <div className="flex flex-col   p-4 ml-16 mr-16">
         <div className="flex flex-col lg:flex-row justify-between bg-white border border-gray-300 rounded-lg shadow-md p-8">
-          <div className="flex flex-col">
-            <p><strong>Contest Title:</strong> {submission.contest_title}</p>
-            <p><strong>Submitted Time:</strong> {new Date(submission.submit_time).toLocaleString()}</p>
-            <div className="flex flex-wrap mt-8"> 
-              <div className="bg-white rounded-lg shadow-md border border-gray-300 mr-4 mb-4 p-4 w-36 h-36"> 
-                <p className='text-center'><strong className='text-2xl text-[#4CAF50]'>Correct</strong></p> 
-                <p className='text-center text-4xl mt-2'>{correct}</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-md border border-gray-300 mr-4 mb-4 p-4 w-36 h-36">
-                <p className='text-center'><strong className="text-2xl text-[#f44336]">Incorrect</strong></p>
-                <p className='text-center text-4xl mt-2'>{wrong}</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-md border border-gray-300 mr-4 mb-4 p-4 w-36 h-36">
-                <p className='text-center'><strong className='text-2xl text-[#6B7280]'>Skipped</strong></p>
-                <p className='text-center text-4xl mt-2'>{skipped}</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-md border border-gray-300 mr-4 mb-4 p-4 w-36 h-36">
-                <p className='text-center'><strong className='text-2xl text-black'>Total</strong></p>
-                <p className='text-center text-4xl mt-2'>{total}</p>
+          <div className="flex flex-col mb-8 lg:mb-0 w-full lg:w-2/3">
+            <p className="text-4xl font-semibold mb-2">
+              <strong>Contest Title:</strong> {submission.contest_title}
+            </p>
+            <p className="text-lg font-semibold mb-8">
+              <strong>Submitted Time:</strong> {submission.submit_time}
+            </p>
+
+            <div className="flex justify-center lg:justify-start">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="bg-[#F0F0F0] rounded-lg shadow-lg p-6 w-40 h-40 flex flex-col justify-center items-center">
+                  <p className="text-2xl text-[#4CAF50] font-bold">Correct</p>
+                  <p className="text-4xl mt-2 font-semibold">{correct}</p>
+                </div>
+
+                <div className="bg-[#F0F0F0] rounded-lg shadow-lg p-6 w-40 h-40 flex flex-col justify-center items-center">
+                  <p className="text-2xl text-[#f44336] font-bold">Incorrect</p>
+                  <p className="text-4xl mt-2 font-semibold">{wrong}</p>
+                </div>
+
+                <div className="bg-[#F0F0F0] rounded-lg shadow-lg p-6 w-40 h-40 flex flex-col justify-center items-center">
+                  <p className="text-2xl text-[#6B7280] font-bold">Skipped</p>
+                  <p className="text-4xl mt-2 font-semibold">{skipped}</p>
+                </div>
+
+                <div className="bg-[#F0F0F0] rounded-lg shadow-lg p-6 w-40 h-40 flex flex-col justify-center items-center">
+                  <p className="text-2xl text-black font-bold">Total</p>
+                  <p className="text-4xl mt-2 font-semibold">{total}</p>
+                </div>
               </div>
             </div>
           </div>
-          <Ring correct={correct} incorrect={wrong} skipped={skipped} />
+
+          <div className="flex justify-center items-center w-full lg:w-1/3 lg:justify-end mt-8 lg:mt-0">
+            <Ring correct={correct} incorrect={wrong} skipped={skipped} />
+          </div>
         </div>
+
         <div className='border border-gray-300 shadow-md p-4 rounded-lg mt-4'>
           <h1 className='text-2xl'>Answer Review:</h1>
           {Array.from(result.entries()).map(([paragraphIndex, items], paragraphKey) => (
