@@ -226,112 +226,6 @@ const ReadingContest = ({ contest }: { contest: any }) => {
         ))
     );    
 
-    const textRef = useRef<HTMLDivElement>(null);
-  const [highlightPosition, setHighlightPosition] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
-  const [isHighlighting, setIsHighlighting] = useState(false);
-  
-  const buttonStyles: { [key: string]: React.CSSProperties } = {
-    'yellow': { background: 'yellow' },
-    'lightgreen': { background: 'lightgreen'},
-    'lightblue': { background: 'lightblue' },
-    'white': { background: 'white' },
-  };
-
-  const checkSelection = () => {
-    const selection = window.getSelection();
-    const textContent = textRef.current?.innerText.trim() || '';
-
-    // If text is empty, hide highlight
-    if (textContent === '') {
-      setIsHighlighting(false);
-      setHighlightPosition(null);
-      return;
-    }
-
-    // If no selection or range is empty, hide highlight
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const rect = range.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0 && !selection.isCollapsed) {
-        setHighlightPosition({
-          top: rect.top + window.scrollY,
-          left: rect.left + window.scrollX,
-          width: rect.width,
-          height: rect.height,
-        });
-        setIsHighlighting(true);
-      } else {
-        setIsHighlighting(false);
-        setHighlightPosition(null);
-      }
-    } else {
-      setIsHighlighting(false);
-      setHighlightPosition(null);
-    }
-  };
-
-  const applyHighlight = async (color: string) => {
-    if (textRef.current) {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const selectedText = range.extractContents();
-  
-        const span = document.createElement('span');
-        span.style.backgroundColor = color;
-        
-        selectedText.childNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE && (node as HTMLElement).tagName === 'SPAN') {
-            const innerText = (node as HTMLElement).innerText;
-            span.appendChild(document.createTextNode(innerText));
-          } else {
-            span.appendChild(node.cloneNode(true));
-          }
-        });
-        range.deleteContents();
-        range.insertNode(span);
-        mergeAdjacentSpans(span);
-        selection.removeAllRanges();
-        checkSelection();
-      }
-    }
-  };
-
-  const mergeAdjacentSpans = (span: HTMLElement) => {
-    const prevSibling = span.previousSibling;
-    const nextSibling = span.nextSibling;
-  
-    if (prevSibling && prevSibling.nodeType === Node.ELEMENT_NODE) {
-      const prevElement = prevSibling as HTMLElement;
-      if (prevElement.tagName === 'SPAN' && prevElement.style.backgroundColor === span.style.backgroundColor) {
-        prevElement.innerHTML += span.innerHTML;
-        span.remove();
-        span = prevElement;
-      }
-    }
-  
-    if (nextSibling && nextSibling.nodeType === Node.ELEMENT_NODE) {
-      const nextElement = nextSibling as HTMLElement;
-      if (nextElement.tagName === 'SPAN' && nextElement.style.backgroundColor === span.style.backgroundColor) {
-        span.innerHTML += nextElement.innerHTML;
-        nextElement.remove();
-      }
-    }
-  };
-  
-  // Event handlers for mouse and keyboard events
-  const handleMouseUp = () => checkSelection();
-  const handleKeyUp = () => checkSelection();
-
-  // Add and clean up event listeners
-  useEffect(() => {
-    document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('keyup', handleKeyUp);
-    return () => {
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
 
     let cnt=0;
     console.log(contest);
@@ -349,7 +243,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                 </div>
             </div>
             }
-            <div ref={textRef} className="contest-layout" style={{ height: `${windowHeight - 150}px` }}>
+            <div className="contest-layout" style={{ height: `${windowHeight - 150}px` }}>
                 <div className="paragraph-content">
                     <h2>{contest.paragraphs[activeParagraph].title}</h2>
                     <p>
@@ -393,39 +287,6 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                     ))}
                 </div>
             </div>
-            {isHighlighting && highlightPosition && (
-                <div className=''
-                style={{
-                    position: 'absolute',
-                    top: highlightPosition.top + highlightPosition.height + 10,
-                    left: highlightPosition.left,
-                    backgroundColor: 'black',
-                    padding: '5px',
-                    borderRadius: '4px',
-                }}
-                >
-                <button
-                    onClick={() => applyHighlight('yellow')}
-                    style={{ border: `2px solid ${buttonStyles['yellow'].borderColor}`, marginRight: '5px', marginLeft:'0px', backgroundColor:'yellow', width:'50px',height:'50px'}}
-                >
-                </button>
-                <button
-                    onClick={() => applyHighlight('lightgreen')}
-                    style={{ border: `2px solid ${buttonStyles['lightgreen'].borderColor}`, marginRight: '5px', marginLeft:'0px', backgroundColor:'lightgreen', width:'50px',height:'50px' }}
-                >
-                </button>
-                <button
-                    onClick={() => applyHighlight('lightblue')}
-                    style={{ border: `2px solid ${buttonStyles['lightblue'].borderColor}`, marginRight: '5px', marginLeft:'0px', backgroundColor:'lightblue', width:'50px',height:'50px'  }}
-                >
-                </button>
-                <button
-                    onClick={() => applyHighlight('white')}
-                    style={{ border: `2px solid ${buttonStyles['white'].borderColor}`, marginLeft:'0px', backgroundColor:'white', width:'50px',height:'50px'  }}
-                >
-                </button>
-                </div>
-            )}
         </div>
         {!initialState && <header className="sticky bottom-0 bg-gray-200 dark:bg-gray-400 bg-opacity-90 text-white backdrop-blur-sm shadow-sm z-50">
             <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
