@@ -346,7 +346,7 @@ function transformData(input) {
   
         // Loop through questions within each section
         section.questions.forEach((question, qIndex) => {
-          result[pIndex][sIndex][qIndex] = question.answer; // Map question index to answer
+          result[pIndex][sIndex][qIndex] = {"answer":question.answer, "explanation": question.explanation}; // Map question index to answer
         });
       });
     });
