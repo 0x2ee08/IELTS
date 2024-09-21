@@ -19,10 +19,13 @@ const taskTypes = [
 ];
 
 const Task1AcademicType = [
-    "Bar Chart",
     "Line Graph",
-    "Table Chart",
-    "Pie Chart",
+    "Bar Chart No Timeline",
+    "Bar Chart With Timeline",
+    "Table No Timeline",
+    "Table With Timeline",
+    "One Pie Chart",
+    "Two Pie Chart",
     "Multiple Graphs",
     "Process Diagram [User input manually]",
     "Map [User input manually]"

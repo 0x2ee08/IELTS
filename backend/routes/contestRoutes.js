@@ -373,7 +373,7 @@ function Reading_gradder(correctAnswer, userAnswer) {
             // Iterate through questions within sections
             for (let qIndex in correctAnswer[pIndex][sIndex]) {
               if (correctAnswer[pIndex][sIndex].hasOwnProperty(qIndex)) {
-                const correct = correctAnswer[pIndex][sIndex][qIndex];
+                const correct = correctAnswer[pIndex][sIndex][qIndex].answer;
                 const user = userAnswer[pIndex]?.[sIndex]?.[qIndex] || ""; // Get user answer, or empty if undefined
   
                 result.total++; // Increment total for every question
@@ -420,7 +420,7 @@ router.post('/submit_contest_reading', authenticateToken, async (req, res) => {
         let correctAnswer = transformData(contest);
         let sresult = Reading_gradder(correctAnswer, answer);
 
-        const submissionCollection = db.collection('user_answer_reading');
+        const submissionCollection = db.collection('user_answer');
         let sid = generateRandomString(20);
         const newSubmission = {
             type: 'Reading',
@@ -458,7 +458,7 @@ router.get('/getAllSubmission', authenticateToken, async (req, res) => {
         let response = {};
         availableSubmission.forEach((submission, index) => {
             response[index + 1] = {
-                type: 'Reading',
+                type: submission.type,
                 sid: submission.id,
                 cid: submission.contestID,
                 result: submission.result,
