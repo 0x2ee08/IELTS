@@ -8,7 +8,8 @@ export interface Task {
     type: string;
     content: string;
     isOpen: boolean;
-    subtype: string; // Add subtype to store the selected academic or task 2 type
+    subtype: string;
+    image?: File | null; // Add image to store the uploaded file for specific subtypes
 }
 
 const taskTypes = [
@@ -22,26 +23,21 @@ const Task1AcademicType = [
     "Line Graph",
     "Table Chart",
     "Pie Chart",
-    "Process Diagram",
-    "Map",
-    "Multiple Graphs"
+    "Multiple Graphs",
+    "Process Diagram [User input manually]",
+    "Map [User input manually]"
 ];
 
 const Task2Type = [
     "Advantage, disadvantage",
     "Discuss both views",
     "To what extent",
-    "Do you agree or disagree / Which prefer / What / Why / How"
+    "Do you agree or disagree / Which do you prefer"
 ];
 
 const WritingPage: React.FC = () => {
     const [tasks, setTasks] = useState<Task[]>([
-        { 
-            type: '',
-            content: '',
-            subtype: '',
-            isOpen: true
-        }
+        {type: 'Writing Task 1 General', content: '', isOpen: true, subtype: ''}
     ]);
     const [problemName, setProblemName] = useState('');
     const [accessUser, setAccessUser] = useState('');
@@ -54,7 +50,7 @@ const WritingPage: React.FC = () => {
     };
 
     const addTask = () => {
-        setTasks([...tasks, {type: '', content: '', isOpen: true, subtype: ''}]);
+        setTasks([...tasks, {type: 'Writing Task 1 General', content: '', isOpen: true, subtype: ''}]);
     };
 
     const deleteTask = (pIndex: number) => {
@@ -72,10 +68,12 @@ const WritingPage: React.FC = () => {
         
         // Reset subtype when the main type changes
         if (field === 'type') {
-            if(value == 'Writing Task 2')
-                newTasks[pIndex] = { ...newTasks[pIndex], type: value, subtype: Task2Type[0] };
+            if(value === 'Writing Task 2')
+                newTasks[pIndex] = { ...newTasks[pIndex], type: value, subtype: Task2Type[0], image: null };
+            else if(value === 'Writing Task 1 Academic')
+                newTasks[pIndex] = { ...newTasks[pIndex], type: value, subtype: Task1AcademicType[0], image: null };
             else
-                newTasks[pIndex] = { ...newTasks[pIndex], type: value, subtype: Task1AcademicType[0] };
+                newTasks[pIndex] = { ...newTasks[pIndex], type: value, subtype: '', image: null }; 
         } else {
             newTasks[pIndex][field] = value;
         }
@@ -91,14 +89,25 @@ const WritingPage: React.FC = () => {
             { headers: { 'Authorization': `Bearer ${token}` } }
         )
         .then(response => {
-            const updatedParagraphs = tasks.map((para, index) => 
+            const updatedTasks = tasks.map((para, index) => 
                 index === pIndex ? { ...para, content: response.data.content } : para
             );
-            setTasks(updatedParagraphs);
+            setTasks(updatedTasks);
         })
         .catch(error => alert(error.response.data.error))
         .finally(() => setIsLoading(false));
     };
+
+    const handleFileUpload = (pIndex: number, file: File | null) => {
+        // Only update the task if a valid file is selected
+        if (file) {
+            const updatedTasks = tasks.map((task, index) =>
+                index === pIndex ? { ...task, image: file } : task
+            );
+            setTasks(updatedTasks);
+        }
+    };
+    
     
     return (
         <>
@@ -161,7 +170,7 @@ const WritingPage: React.FC = () => {
                                 <button 
                                     onClick={() => handleGenerateTask(pIndex, task.type, task.content, task.subtype)}
                                     className="px-2 rounded-md ml-2"
-                                    disabled={isLoading}
+                                    disabled={isLoading || task.subtype === "Process Diagram [User input manually]" || task.subtype === "Map [User input manually]"}
                                 >
                                     Generate
                                 </button>
@@ -182,6 +191,43 @@ const WritingPage: React.FC = () => {
                                     ))}
                                 </select>
                             )}
+
+                            {/* File upload for "Writing Task 1 Academic" */}
+                            {(task.type === "Writing Task 1 Academic") && (
+                                <div className="border border-gray-200 rounded-md p-4 flex items-center space-x-4">
+                                    <div className="flex-1">
+                                        {/* Fancy File Upload Button */}
+                                        <label className="bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer inline-block">
+                                            Upload Image
+                                            <input 
+                                                type="file" 
+                                                accept="image/*"
+                                                className="hidden" 
+                                                onChange={(e) => handleFileUpload(pIndex, e.target.files?.[0] || null)}
+                                            />
+                                        </label>
+
+                                        {/* Display the file name */}
+                                        {task.image && (
+                                            <p className="mt-2 text-sm text-gray-500">
+                                                {task.image.name}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Image Preview */}
+                                    {task.image && (
+                                        <div className="flex-shrink-0 w-40 h-40 border rounded-md overflow-hidden">
+                                            <img 
+                                                src={URL.createObjectURL(task.image)} 
+                                                alt="Uploaded Preview" 
+                                                className="w-full h-full object-contain" // Maintains aspect ratio
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
 
                             <textarea 
                                 placeholder='Prompt' 

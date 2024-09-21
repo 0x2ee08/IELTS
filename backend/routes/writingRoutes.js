@@ -30,7 +30,7 @@ router.post('/generateWritingPrompt', authenticateToken, async(req, res)  => {
     var {type, content, subtype} = req.body;
     if(content === '') content = 'random';
     var prp = '';
-    if(subtype !== '' && type === "Writing Task 2")  prp = ('The question should require user to discuss ' + subtype)
+    if(subtype !== '' && type === "Writing Task 2")  prp = ('The question should require user to discuss "' + subtype + '"')
     else if(subtype !== '') prp = ('The chart is a ' + subtype); 
 
     const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {

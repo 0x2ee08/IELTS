@@ -423,6 +423,7 @@ router.post('/submit_contest_reading', authenticateToken, async (req, res) => {
         const submissionCollection = db.collection('user_answer_reading');
         let sid = generateRandomString(20);
         const newSubmission = {
+            type: 'Reading',
             id: sid,
             contestID: contestID,
             answer: answer,
@@ -445,7 +446,7 @@ router.post('/submit_contest_reading', authenticateToken, async (req, res) => {
 router.get('/getAllSubmission', authenticateToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
-        const Collection = db.collection('user_answer_reading');
+        const Collection = db.collection('user_answer');
         const { username } = req.user;
 
         let query = {
@@ -460,10 +461,7 @@ router.get('/getAllSubmission', authenticateToken, async (req, res) => {
                 type: 'Reading',
                 sid: submission.id,
                 cid: submission.contestID,
-                correct: submission.result.correct,
-                wrong: submission.result.wrong,
-                empty: submission.result.empty,
-                total: submission.result.total,
+                result: submission.result,
                 submit_time: submission.submit_time,
                 submit_by: submission.submit_by
             };
@@ -486,7 +484,7 @@ router.get('/getAllSubmission', authenticateToken, async (req, res) => {
 router.get('/getGlobalSubmission', authenticateToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
-        const Collection = db.collection('user_answer_reading');
+        const Collection = db.collection('user_answer');
         const { username } = req.user;
 
         let query = {
@@ -499,13 +497,10 @@ router.get('/getGlobalSubmission', authenticateToken, async (req, res) => {
         let response = {};
         availableSubmission.forEach((submission, index) => {
             response[index + 1] = {
-                type: 'Reading',
+                type: submission.type,
                 sid: submission.id,
                 cid: submission.contestID,
-                correct: submission.result.correct,
-                wrong: submission.result.wrong,
-                empty: submission.result.empty,
-                total: submission.result.total,
+                result: submission.result,
                 submit_time: submission.submit_time,
                 visibility: submission.visibility,
                 submit_by: submission.submit_by
@@ -529,7 +524,7 @@ router.get('/getGlobalSubmission', authenticateToken, async (req, res) => {
 router.post('/getSubmission', authenticateToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
-        const Collection = db.collection('user_answer_reading');
+        const Collection = db.collection('user_answer');
         const { username } = req.user;
         const { submissionID } = req.body;
         let query = {
@@ -560,13 +555,10 @@ router.post('/getSubmission', authenticateToken, async (req, res) => {
         }
         
         let response = {
-                type: 'Reading',
+                type: submission.type,
                 sid: submission.id,
                 cid: submission.contestID,
-                correct: submission.result.correct,
-                wrong: submission.result.wrong,
-                empty: submission.result.empty,
-                total: submission.result.total,
+                result: submission.result,
                 submit_time: submission.submit_time,
                 user_answer: submission.answer,
                 contest_title: contest.problemName,
@@ -591,7 +583,7 @@ router.post('/getSubmission', authenticateToken, async (req, res) => {
 router.post('/getContestTitle', authenticateToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
-        const Collection = db.collection('user_answer_reading');
+        const Collection = db.collection('user_answer');
         const { username } = req.user;
         const { contestID } = req.body;
         
