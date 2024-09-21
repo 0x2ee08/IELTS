@@ -251,7 +251,7 @@ export default function DetailResultPage() {
         <div className="flex flex-col lg:flex-row justify-between bg-white border border-gray-300 rounded-lg shadow-md p-8">
           <div className="flex flex-col mb-8 lg:mb-0 w-full lg:w-2/3">
             <p className="text-4xl font-semibold mb-2">
-              <strong>Contest Title:</strong> {submission.contest_title}
+               {submission.contest_title}
             </p>
             <p className="text-lg font-semibold mb-8">
               <p><strong>Submitted Time:</strong> {new Date(submission.submit_time).toLocaleString()}</p>
