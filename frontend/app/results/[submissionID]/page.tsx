@@ -251,7 +251,7 @@ export default function DetailResultPage() {
         <div className="flex flex-col lg:flex-row justify-between bg-white border border-gray-300 rounded-lg shadow-md p-8">
           <div className="flex flex-col">
             <p><strong>Contest Title:</strong> {submission.contest_title}</p>
-            <p><strong>Submitted Time:</strong> {submission.submit_time}</p>
+            <p><strong>Submitted Time:</strong> {new Date(submission.submit_time).toLocaleString()}</p>
             <div className="flex flex-wrap mt-8"> 
               <div className="bg-white rounded-lg shadow-md border border-gray-300 mr-4 mb-4 p-4 w-36 h-36"> 
                 <p className='text-center'><strong className='text-2xl text-[#4CAF50]'>Correct</strong></p> 
