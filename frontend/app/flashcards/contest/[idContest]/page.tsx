@@ -23,6 +23,7 @@ interface Vocab {
 const VocabPage: React.FC = () => {
   const [vocab, setVocab] = useState<Vocab>({});
   const { idContest } = useParams();
+  const [selectedLevel, setSelectedLevel] = useState<string>('');
   const searchParams = useSearchParams();
   const title = searchParams.get('title') || '';
 
@@ -57,6 +58,11 @@ const VocabPage: React.FC = () => {
           }
 
           setVocab(distinctVocab);
+
+          // Set the default selected level to the first level
+          if (Object.keys(distinctVocab).length > 0) {
+            setSelectedLevel(Object.keys(distinctVocab)[0]);
+          }
         } catch (error) {
           console.error('Error fetching vocab:', error);
         }
@@ -91,40 +97,55 @@ const VocabPage: React.FC = () => {
           </Link>
         </h2>
         <div className="flashcard-container">
-          {Object.entries(vocab).map(([level, words]) => (
-            <div key={level}>
-              <h2>{level}</h2>
-              <div className="flashcard-row">
-                {words.map((entry, index) => {
-                  const cardKey = `${level}-${index}`;
-                  return (
-                    <div
-                      key={cardKey}
-                      className={`flashcard ${flipped[cardKey] ? 'flipped' : ''}`}
-                      onClick={() => toggleFlip(cardKey)}
-                    >
-                      <div className="flashcard-front">
-                        <div className="flashcard-word">
-                          <strong>{entry.word}</strong>
-                        </div>
-                        <div className="flashcard-phonetics">
-                          <em>({entry.phonetics})</em>
-                        </div>
+          {/* Navbar for level titles */}
+          <div className="navbar bg-gray-100 p-4">
+            <div className="flex space-x-4">
+              {Object.keys(vocab).map((level) => (
+                <button
+                  key={level}
+                  className={`px-4 py-2 text-sm font-bold transition-colors ${
+                    selectedLevel === level
+                      ? 'text-white bg-blue-500'
+                      : 'text-blue-500 hover:bg-blue-100'
+                  }`}
+                  onClick={() => setSelectedLevel(level)}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Check if the selected level exists and map over the words */}
+          {selectedLevel && vocab[selectedLevel] && (
+            <div className="flashcard-grid mt-4">
+              {vocab[selectedLevel].map((entry, index) => {
+                const cardKey = `${selectedLevel}-${index}`;
+                return (
+                  <div
+                    key={cardKey}
+                    className={`flashcard ${flipped[cardKey] ? 'flipped' : ''}`}
+                    onClick={() => toggleFlip(cardKey)}
+                  >
+                    <div className="flashcard-front">
+                      <div className="flashcard-word">
+                        <strong>{entry.word}</strong>
                       </div>
-                      <div className="flashcard-back">
-                        {entry.meaning}
+                      <div className="flashcard-phonetics">
+                        <em>({entry.phonetics})</em>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="flashcard-back">{entry.meaning}</div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
+          )}
         </div>
       </main>
       <Footer />
     </>
-  );
+  );  
 };
 
 export default VocabPage;
