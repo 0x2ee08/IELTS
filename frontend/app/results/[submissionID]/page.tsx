@@ -7,6 +7,7 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import config from '../../config'; 
 import './submission.css';
+import Link from 'next/link';
 
 interface RingProps {
   correct: number;
@@ -250,9 +251,11 @@ export default function DetailResultPage() {
       <div className="flex flex-col   p-4 ml-16 mr-16">
         <div className="flex flex-col lg:flex-row justify-between bg-white border border-gray-300 rounded-lg shadow-md p-8">
           <div className="flex flex-col mb-8 lg:mb-0 w-full lg:w-2/3">
-            <p className="text-4xl font-semibold mb-2">
-               {submission.contest_title}
-            </p>
+            <Link href={`/contests/${submission.cid}`}>
+              <p className="text-4xl font-semibold mb-2">
+                {submission.contest_title}
+              </p>
+            </Link>
             <p className="text-lg font-semibold mb-8">
               <p><strong>Submitted Time:</strong> {new Date(submission.submit_time).toLocaleString()}</p>
             </p>
