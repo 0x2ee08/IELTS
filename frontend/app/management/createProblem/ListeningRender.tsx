@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import config from '../../config';
 import axios from 'axios';
 
@@ -23,23 +23,23 @@ interface ShortAnswerQuestion {
 }
 
 interface MatchingExercise {
-    statements: string[]; // Array of statements
-    features: string[];   // Array of features
+    statements: string[];
+    features: string[];
 }
 
-const ListeningPage = () => {
-    const [script, setScript] = useState<Script | null>(null);
-    const [mcqs, setMcqs] = useState<MCQ[]>([]);
-    const [tableFilling, setTableFilling] = useState<TableFilling[]>([]);
-    const [shortAnswerQuestions, setShortAnswerQuestions] = useState<ShortAnswerQuestion[]>([]);
-    const [matchingExercise, setMatchingExercise] = useState<MatchingExercise | null>(null);
-    const [error, setError] = useState('');
-    const [userAnswers, setUserAnswers] = useState<{ [index: number]: string }>({});
-    const [hiddenWords, setHiddenWords] = useState<{ [index: number]: { [wordIndex: number]: boolean } }>({});
-    const [userShortAnswers, setUserShortAnswers] = useState<{ [index: number]: string }>({});
-    const [selectedMatches, setSelectedMatches] = useState<{ [category: string]: string }>({});
+const questionTypes = [
+    { label: 'Multiple Choice Questions', value: 'mcq' },
+    { label: 'Table Filling', value: 'tableFilling' },
+    { label: 'Short Answer Questions', value: 'shortAnswer' },
+    { label: 'Matching Exercise', value: 'matching' },
+];
 
-    const generateRandomScript = async () => {
+const ListeningPage = () => {
+    const [sections, setSections] = useState<{ script: Script | null; mcqs: MCQ[]; tableFilling: TableFilling[]; shortAnswerQuestions: ShortAnswerQuestion[]; matchingExercise: MatchingExercise | null; error: string; selectedQuestionType: string; }[]>([
+        { script: null, mcqs: [], tableFilling: [], shortAnswerQuestions: [], matchingExercise: null, error: '', selectedQuestionType: 'mcq' }
+    ]);
+
+    const generateRandomScript = async (index: number) => {
         const token = localStorage.getItem('token');
         try {
             const response = await axios.post(`${config.API_BASE_URL}api/generate_listening_script`, {}, {
@@ -48,16 +48,25 @@ const ListeningPage = () => {
                 },
             });
             const result = response.data;
-            setScript(result);
-            setError('');
+            setSections((prev) => {
+                const newSections = [...prev];
+                newSections[index].script = result;
+                newSections[index].error = '';
+                return newSections;
+            });
         } catch (error) {
             console.error('Error generating script:', error);
-            setScript(null);
-            setError('An error occurred while generating the script.');
+            setSections((prev) => {
+                const newSections = [...prev];
+                newSections[index].script = null;
+                newSections[index].error = 'An error occurred while generating the script.';
+                return newSections;
+            });
         }
     };
 
-    const generateMCQs = async () => {
+    const generateMCQs = async (index: number) => {
+        const script = sections[index].script;
         if (!script) return;
 
         const token = localStorage.getItem('token');
@@ -68,16 +77,25 @@ const ListeningPage = () => {
                 },
             });
             const result: MCQ[] = response.data;
-            setMcqs(result);
-            setError('');
+            setSections((prev) => {
+                const newSections = [...prev];
+                newSections[index].mcqs = result;
+                newSections[index].error = '';
+                return newSections;
+            });
         } catch (error) {
             console.error('Fetch error:', error);
-            setError('An error occurred while generating MCQs.');
-            setMcqs([]);
+            setSections((prev) => {
+                const newSections = [...prev];
+                newSections[index].error = 'An error occurred while generating MCQs.';
+                newSections[index].mcqs = [];
+                return newSections;
+            });
         }
     };
 
-    const generateTableFillingArray = async () => {
+    const generateTableFillingArray = async (index: number) => {
+        const script = sections[index].script;
         if (!script) return;
 
         const token = localStorage.getItem('token');
@@ -88,16 +106,25 @@ const ListeningPage = () => {
                 },
             });
             const result: TableFilling[] = response.data.tableFilling;
-            setTableFilling(result);
-            setError('');
+            setSections((prev) => {
+                const newSections = [...prev];
+                newSections[index].tableFilling = result;
+                newSections[index].error = '';
+                return newSections;
+            });
         } catch (error) {
             console.error('Fetch error:', error);
-            setError('An error occurred while generating Table Filling.');
-            setTableFilling([]);
+            setSections((prev) => {
+                const newSections = [...prev];
+                newSections[index].error = 'An error occurred while generating Table Filling.';
+                newSections[index].tableFilling = [];
+                return newSections;
+            });
         }
     };
 
-    const generateShortAnswerQuestions = async () => {
+    const generateShortAnswerQuestions = async (index: number) => {
+        const script = sections[index].script;
         if (!script) return;
 
         const token = localStorage.getItem('token');
@@ -107,304 +134,197 @@ const ListeningPage = () => {
                     'Authorization': `Bearer ${token}`,
                 },
             });
-            setShortAnswerQuestions(response.data);
-            setError('');
+            setSections((prev) => {
+                const newSections = [...prev];
+                newSections[index].shortAnswerQuestions = response.data;
+                newSections[index].error = '';
+                return newSections;
+            });
         } catch (error) {
             console.error('Error generating short answer questions:', error);
-            setError('An error occurred while generating short answer questions.');
-            setShortAnswerQuestions([]);
+            setSections((prev) => {
+                const newSections = [...prev];
+                newSections[index].error = 'An error occurred while generating short answer questions.';
+                newSections[index].shortAnswerQuestions = [];
+                return newSections;
+            });
         }
     };
 
-    const generateMatchingExercise = async () => {
+    const generateMatchingExercise = async (index: number) => {
+        const script = sections[index].script;
         if (!script) return;
-    
+
         const token = localStorage.getItem('token');
         try {
             const response = await axios.post(`${config.API_BASE_URL}api/generate_listening_matchings`, { script }, {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
             const data = response.data;
-    
-            // Adjust this part based on the actual response format
+
             const statements = data.matchings.map((item: any) => item.question);
             const features = data.matchings.map((item: any) => item.feature);
-    
-            setMatchingExercise({ statements, features });
-            setError('');
+
+            setSections((prev) => {
+                const newSections = [...prev];
+                newSections[index].matchingExercise = { statements, features };
+                newSections[index].error = '';
+                return newSections;
+            });
         } catch (error) {
             console.error('Error generating matching exercise:', error);
-            setError('An error occurred while generating the matching exercise.');
-            setMatchingExercise(null);
-        }
-    };
-
-    const computeHiddenWordsForCategories = (tableData: TableFilling[]): { [index: number]: { [wordIndex: number]: boolean } } => {
-        const hiddenWordsMap: { [index: number]: { [wordIndex: number]: boolean } } = {};
-        const maxCategoriesToHide = 5;
-        const hiddenCategoryIndices: Set<number> = new Set();
-
-        while (hiddenCategoryIndices.size < Math.min(tableData.length, maxCategoriesToHide)) {
-            const randomCategoryIndex = Math.floor(Math.random() * tableData.length);
-            hiddenCategoryIndices.add(randomCategoryIndex);
-        }
-
-        hiddenCategoryIndices.forEach(categoryIndex => {
-            const wordsArray = sanitizeText(tableData[categoryIndex].information).split(' ');
-
-            const validWordIndices = wordsArray
-                .map((word, wordIndex) => word.length <= 2 ? wordIndex : null)
-                .filter(index => index !== null) as number[];
-
-            if (validWordIndices.length > 0) {
-                const randomWordIndex = validWordIndices[Math.floor(Math.random() * validWordIndices.length)];
-                hiddenWordsMap[categoryIndex] = { [randomWordIndex]: true };
-            }
-        });
-
-        return hiddenWordsMap;
-    };
-
-    const sanitizeText = (text?: string): string => {
-        return text ? text.replace(/[,\[\]"]/g, '') : '';
-    };
-
-    const mergeTextboxes = (wordsArray: string[]): (string | JSX.Element)[] => {
-        const result: (string | JSX.Element)[] = [];
-        let inputSequence = false;
-        let inputIndexStart = 0;
-        let textBoxCount = 0;
-
-        for (let i = 0; i < wordsArray.length; i++) {
-            if (wordsArray[i] === '') {
-                if (!inputSequence && textBoxCount < 5) {
-                    inputSequence = true;
-                    inputIndexStart = i;
-                }
-            } else {
-                if (inputSequence && textBoxCount < 5) {
-                    result.push(
-                        <input
-                            key={`input-${inputIndexStart}-${i}`}
-                            type="text"
-                            style={{ width: `${(i - inputIndexStart) * 80}px`, margin: '0 5px', border: '1px solid black' }}
-                            onChange={(e) => setUserAnswers({ ...userAnswers, [`input-${inputIndexStart}-${i}`]: e.target.value })}
-                        />
-                    );
-                    inputSequence = false;
-                    textBoxCount++;
-                }
-                result.push(<span key={i} style={{ margin: '0 5px' }}>{wordsArray[i]}</span>);
-            }
-        }
-
-        if (inputSequence && textBoxCount < 5) {
-            result.push(
-                <input
-                    key={`input-${inputIndexStart}-end`}
-                    type="text"
-                    style={{ width: `${(wordsArray.length - inputIndexStart) * 80}px`, margin: '0 5px', border: '1px solid black' }}
-                    onChange={(e) => setUserAnswers({ ...userAnswers, [`input-${inputIndexStart}-end`]: e.target.value })}
-                />
-            );
-            textBoxCount++;
-        }
-
-        return result;
-    };
-
-    const handleInputChange = (index: number, value: string) => {
-        setUserShortAnswers({ ...userShortAnswers, [index]: value });
-    };
-
-    const handleChooseBoxChange = (index: number, value: string) => {
-        setSelectedMatches(prevState => ({
-            ...prevState,
-            [index]: value
-        }));
-    };
-
-    useEffect(() => {
-        if (tableFilling.length > 0) {
-            const newHiddenWords = computeHiddenWordsForCategories(tableFilling);
-            setHiddenWords(newHiddenWords);
-
-            // Extract and log hidden words as strings
-            const hiddenWordStrings = tableFilling.flatMap((entry, categoryIndex) => {
-                const wordsArray = sanitizeText(entry.information).split(' ');
-                return wordsArray
-                    .map((word, wordIndex) =>
-                        newHiddenWords[categoryIndex] && newHiddenWords[categoryIndex][wordIndex] ? word : null
-                    )
-                    .filter(word => word !== null) as string[];
+            setSections((prev) => {
+                const newSections = [...prev];
+                newSections[index].error = 'An error occurred while generating the matching exercise.';
+                newSections[index].matchingExercise = null;
+                return newSections;
             });
-
-            console.log('Hidden Words (as strings):', hiddenWordStrings.join(', ')); // Log hidden words as a string
         }
-    }, [tableFilling, script]);
+    };
+
+    const handleScriptChange = (index: number, e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setSections((prev) => {
+            const newSections = [...prev];
+            newSections[index].script = { title: 'Custom Script', content: e.target.value };
+            return newSections;
+        });
+    };
+
+    const handleQuestionTypeChange = (index: number, event: React.ChangeEvent<HTMLSelectElement>) => {
+        setSections((prev) => {
+            const newSections = [...prev];
+            newSections[index].selectedQuestionType = event.target.value;
+            return newSections;
+        });
+    };
+
+    const generateQuestions = async (index: number) => {
+        const selectedQuestionType = sections[index].selectedQuestionType;
+        switch (selectedQuestionType) {
+            case 'mcq':
+                await generateMCQs(index);
+                break;
+            case 'tableFilling':
+                await generateTableFillingArray(index);
+                break;
+            case 'shortAnswer':
+                await generateShortAnswerQuestions(index);
+                break;
+            case 'matching':
+                await generateMatchingExercise(index);
+                break;
+            default:
+                break;
+        }
+    };
+
+    const addSection = () => {
+        setSections((prev) => [
+            ...prev,
+            { script: null, mcqs: [], tableFilling: [], shortAnswerQuestions: [], matchingExercise: null, error: '', selectedQuestionType: 'mcq' }
+        ]);
+    };
 
     return (
         <div>
-            <button onClick={generateRandomScript}>
-                Generate Script
-            </button>
+            {sections.map((section, index) => (
+                <div key={index} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px' }}>
+                    {/* Section for script and question generation */}
+                    <div>
+                        <textarea
+                            placeholder="Type your custom script here..."
+                            onChange={(e) => handleScriptChange(index, e)}
+                            style={{ width: '100%', height: 'auto', minHeight: '100px', resize: 'none' }}
+                            value={section.script ? section.script.content : ''}
+                        />
+                        <button onClick={() => generateRandomScript(index)}>Generate Script</button>
+                    </div>
 
-            {script && (
-                <div>
-                    <h2>{script.title}</h2>
-                    <p>{script.content}</p>
-                </div>
-            )}
+                    {/* Dropdown for selecting question type */}
+                    <div>
+                        <label htmlFor={`questionType-${index}`}>Select Question Type:</label>
+                        <select id={`questionType-${index}`} onChange={(e) => handleQuestionTypeChange(index, e)} value={section.selectedQuestionType}>
+                            {questionTypes.map((type) => (
+                                <option key={type.value} value={type.value}>
+                                    {type.label}
+                                </option>
+                            ))}
+                        </select>
+                        <button onClick={() => generateQuestions(index)}>Generate Questions</button>
+                    </div>
 
-            {script && (
-                <div>
-                    <button onClick={generateMCQs}>
-                        Generate Multiple Choice Questions
-                    </button>
-                </div>
-            )}
+                    {/* Display Multiple Choice Questions */}
+                    {section.mcqs.length > 0 && (
+                        <div>
+                            {section.mcqs.map((mcq, mcqIndex) => (
+                                <div key={mcqIndex}>
+                                    <p><strong>{mcq.question}</strong></p>
+                                    <div>
+                                        {mcq.answers.map((answer, answerIndex) => (
+                                            <label key={answerIndex} style={{ display: 'block' }}>
+                                                <input
+                                                    type="radio"
+                                                    name={`question-${index}-${mcqIndex}`}
+                                                />
+                                                {answer}
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
-            {mcqs.length > 0 && (
-                <div>
-                    {mcqs.map((mcq, index) => (
-                        <div key={index}>
-                            <p><strong>{mcq.question}</strong></p>
+                    {/* Display Table Filling */}
+                    {section.tableFilling.length > 0 && (
+                        <div>
+                            <h4>Table Filling:</h4>
+                            {section.tableFilling.map((item, itemIndex) => (
+                                <div key={itemIndex}>
+                                    <p><strong>{item.category}:</strong> {item.information}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Display Short Answer Questions */}
+                    {section.shortAnswerQuestions.length > 0 && (
+                        <div>
+                            <h4>Short Answer Questions:</h4>
+                            {section.shortAnswerQuestions.map((item, itemIndex) => (
+                                <div key={itemIndex}>
+                                    <p><strong>{item.question}</strong></p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Display Matching Exercise */}
+                    {section.matchingExercise && (
+                        <div>
+                            <h4>Matching Exercise:</h4>
                             <div>
-                                {mcq.answers.map((answer, answerIndex) => (
-                                    <label key={answerIndex} style={{ display: 'block' }}>
-                                        <input
-                                            type="radio"
-                                            name={`question-${index}`}
-                                            onChange={() => setUserAnswers({ ...userAnswers, [index]: answer })}
-                                        />
-                                        {answer}
-                                    </label>
+                                {section.matchingExercise.statements.map((statement, statementIndex) => (
+                                    <div key={statementIndex}>
+                                        <p><strong>{statement}</strong></p>
+                                    </div>
+                                ))}
+                                {section.matchingExercise.features.map((feature, featureIndex) => (
+                                    <div key={featureIndex}>
+                                        <p><strong>{feature}</strong></p>
+                                    </div>
                                 ))}
                             </div>
                         </div>
-                    ))}
+                    )}
+
+                    {/* Error message */}   
+                    {section.error && <p style={{ color: 'red' }}>{section.error}</p>}
                 </div>
-            )}
-
-            {script && (
-                <div>
-                    <button onClick={generateTableFillingArray}>
-                        Generate Table Filling
-                    </button>
-                </div>
-            )}
-
-            {tableFilling.length > 0 && (
-                <table border={1} cellPadding={10} style={{ borderCollapse: 'collapse', width: '100%', marginTop: '20px' }}>
-                    <thead>
-                        <tr style={{ backgroundColor: '#f2f2f2', textAlign: 'left' }}>
-                            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Category</th>
-                            <th style={{ padding: '10px', border: '1px solid #ddd' }}>Information (Fill in the blanks)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {tableFilling.map((entry, categoryIndex) => {
-                            const wordsArray = sanitizeText(entry.information).split(' ');
-
-                            return (
-                                <tr key={categoryIndex} style={{ textAlign: 'left', backgroundColor: categoryIndex % 2 === 0 ? '#fafafa' : '#fff' }}>
-                                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>{sanitizeText(entry.category)}</td>
-                                    <td style={{ padding: '10px', border: '1px solid #ddd' }}>
-                                        {mergeTextboxes(
-                                            wordsArray.map((word, wordIndex) =>
-                                                hiddenWords[categoryIndex] && hiddenWords[categoryIndex][wordIndex] ? '' : word
-                                            )
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            )}
-
-            {script && (
-                <div>
-                    <button onClick={generateShortAnswerQuestions}>
-                        Generate Short Answer Questions
-                    </button>
-                </div>
-            )}
-
-            {shortAnswerQuestions.length > 0 && (
-                <div>
-                    {shortAnswerQuestions.map((question, index) => (
-                        <div key={index} style={{ marginBottom: '10px' }}>
-                            <p><strong>{question.question}</strong></p>
-                            <input
-                                type="text"
-                                onChange={(e) => handleInputChange(index, e.target.value)}
-                                value={userShortAnswers[index] || ''}
-                                style={{ 
-                                    border: '1px solid black', 
-                                    padding: '5px', 
-                                    width: '300px' // Adjust width as needed
-                                }}
-                            />
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {script && (
-                <div>
-                    <button onClick={generateMatchingExercise}>Generate Matching Exercise</button>
-                </div>
-            )}
-
-            {matchingExercise && (
-                <div>
-                    {/* Display features at the top */}
-                    <div>
-                        <p><strong>Features:</strong></p>
-                        <ul>
-                            {matchingExercise.features.map((feature, featureIndex) => (
-                                <li key={featureIndex}>{feature}</li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    <div>
-                        {matchingExercise.statements.map((statement, index) => {
-                            // Get the selected feature's index
-                            const selectedFeature = selectedMatches[index];
-                            const selectedFeatureIndex = matchingExercise.features.indexOf(selectedFeature);
-
-                            return (
-                                <div key={index} style={{ marginBottom: '10px' }}>
-                                    <p>{statement}</p>
-                                    <div>
-                                        <label htmlFor={`choosebox-${index}`}>Your answer: </label>
-                                        <select
-                                            id={`choosebox-${index}`}
-                                            onChange={(e) => handleChooseBoxChange(index, e.target.value)}
-                                            value={selectedMatches[index] || ''}
-                                        >
-                                            <option value=""></option>
-                                            {matchingExercise.features.map((feature, featureIndex) => (
-                                                <option key={featureIndex} value={feature}>
-                                                    {feature[0]}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-
+            ))}
+            <button onClick={addSection}>Add Section</button>
         </div>
     );
 };
 
 export default ListeningPage;
-
