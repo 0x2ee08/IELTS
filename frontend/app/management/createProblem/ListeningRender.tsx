@@ -27,6 +27,14 @@ interface MatchingExercise {
     features: string[];
 }
 
+interface QuestionPart {
+    mcqs: MCQ[];
+    tableFilling: TableFilling[];
+    shortAnswerQuestions: ShortAnswerQuestion[];
+    matchingExercise: MatchingExercise | null;
+    selectedQuestionType: string;
+}
+
 const questionTypes = [
     { label: 'Multiple Choice Questions', value: 'mcq' },
     { label: 'Table Filling', value: 'tableFilling' },
@@ -37,15 +45,29 @@ const questionTypes = [
 const ListeningPage = () => {
     const [sections, setSections] = useState<{
         script: Script | null;
-        mcqs: MCQ[];
-        tableFilling: TableFilling[];
-        shortAnswerQuestions: ShortAnswerQuestion[];
-        matchingExercise: MatchingExercise | null;
+        parts: QuestionPart[];
         error: string;
-        selectedQuestionType: string;
     }[]>([
-        { script: null, mcqs: [], tableFilling: [], shortAnswerQuestions: [], matchingExercise: null, error: '', selectedQuestionType: 'mcq' }
+        { script: null, parts: [{ mcqs: [], tableFilling: [], shortAnswerQuestions: [], matchingExercise: null, selectedQuestionType: 'mcq' }], error: '' }
     ]);
+
+    const deleteSection = (index: number) => {
+        setSections((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const addPart = (index: number) => {
+        setSections((prev) => {
+            const newSections = [...prev];
+            newSections[index].parts.push({
+                mcqs: [],
+                tableFilling: [],
+                shortAnswerQuestions: [],
+                matchingExercise: null,
+                selectedQuestionType: 'mcq',
+            });
+            return newSections;
+        });
+    };
 
     const generateRandomScript = async (index: number) => {
         const token = localStorage.getItem('token');
@@ -73,7 +95,27 @@ const ListeningPage = () => {
         }
     };
 
-    const generateMCQs = async (index: number) => {
+    const generateQuestions = async (index: number, partIndex: number) => {
+        const selectedQuestionType = sections[index].parts[partIndex].selectedQuestionType;
+        switch (selectedQuestionType) {
+            case 'mcq':
+                await generateMCQs(index, partIndex);
+                break;
+            case 'tableFilling':
+                await generateTableFillingArray(index, partIndex);
+                break;
+            case 'shortAnswer':
+                await generateShortAnswerQuestions(index, partIndex);
+                break;
+            case 'matching':
+                await generateMatchingExercise(index, partIndex);
+                break;
+            default:
+                break;
+        }
+    };
+
+    const generateMCQs = async (index: number, partIndex: number) => {
         const script = sections[index].script;
         if (!script) return;
 
@@ -87,7 +129,7 @@ const ListeningPage = () => {
             const result: MCQ[] = response.data;
             setSections((prev) => {
                 const newSections = [...prev];
-                newSections[index].mcqs = result;
+                newSections[index].parts[partIndex].mcqs = result;
                 newSections[index].error = '';
                 return newSections;
             });
@@ -96,13 +138,13 @@ const ListeningPage = () => {
             setSections((prev) => {
                 const newSections = [...prev];
                 newSections[index].error = 'An error occurred while generating MCQs.';
-                newSections[index].mcqs = [];
+                newSections[index].parts[partIndex].mcqs = [];
                 return newSections;
             });
         }
     };
 
-    const generateTableFillingArray = async (index: number) => {
+    const generateTableFillingArray = async (index: number, partIndex: number) => {
         const script = sections[index].script;
         if (!script) return;
 
@@ -116,7 +158,7 @@ const ListeningPage = () => {
             const result: TableFilling[] = response.data.tableFilling;
             setSections((prev) => {
                 const newSections = [...prev];
-                newSections[index].tableFilling = result;
+                newSections[index].parts[partIndex].tableFilling = result;
                 newSections[index].error = '';
                 return newSections;
             });
@@ -125,13 +167,41 @@ const ListeningPage = () => {
             setSections((prev) => {
                 const newSections = [...prev];
                 newSections[index].error = 'An error occurred while generating Table Filling.';
-                newSections[index].tableFilling = [];
+                newSections[index].parts[partIndex].tableFilling = [];
                 return newSections;
             });
         }
     };
 
-    const generateShortAnswerQuestions = async (index: number) => {
+    // Function to handle the change for short answer questions
+    const handleShortAnswerChange = (
+        sectionIndex: number,
+        partIndex: number,
+        questionIndex: number,
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        setSections((prev) => {
+            const newSections = [...prev];
+            newSections[sectionIndex].parts[partIndex].shortAnswerQuestions[questionIndex].answers = [event.target.value];
+            return newSections;
+        });
+    };
+
+    // Function to handle selection for matching exercise
+    const handleMatchingSelection = (
+        sectionIndex: number,
+        partIndex: number,
+        statementIndex: number,
+        event: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+        setSections((prev) => {
+            const newSections = [...prev];
+            newSections[sectionIndex].parts[partIndex].matchingExercise!.statements[statementIndex] = event.target.value;
+            return newSections;
+        });
+    };
+
+    const generateShortAnswerQuestions = async (index: number, partIndex: number) => {
         const script = sections[index].script;
         if (!script) return;
 
@@ -144,7 +214,7 @@ const ListeningPage = () => {
             });
             setSections((prev) => {
                 const newSections = [...prev];
-                newSections[index].shortAnswerQuestions = response.data;
+                newSections[index].parts[partIndex].shortAnswerQuestions = response.data;
                 newSections[index].error = '';
                 return newSections;
             });
@@ -153,13 +223,13 @@ const ListeningPage = () => {
             setSections((prev) => {
                 const newSections = [...prev];
                 newSections[index].error = 'An error occurred while generating short answer questions.';
-                newSections[index].shortAnswerQuestions = [];
+                newSections[index].parts[partIndex].shortAnswerQuestions = [];
                 return newSections;
             });
         }
     };
 
-    const generateMatchingExercise = async (index: number) => {
+    const generateMatchingExercise = async (index: number, partIndex: number) => {
         const script = sections[index].script;
         if (!script) return;
 
@@ -175,7 +245,7 @@ const ListeningPage = () => {
 
             setSections((prev) => {
                 const newSections = [...prev];
-                newSections[index].matchingExercise = { statements, features };
+                newSections[index].parts[partIndex].matchingExercise = { statements, features };
                 newSections[index].error = '';
                 return newSections;
             });
@@ -184,7 +254,7 @@ const ListeningPage = () => {
             setSections((prev) => {
                 const newSections = [...prev];
                 newSections[index].error = 'An error occurred while generating the matching exercise.';
-                newSections[index].matchingExercise = null;
+                newSections[index].parts[partIndex].matchingExercise = null;
                 return newSections;
             });
         }
@@ -198,173 +268,148 @@ const ListeningPage = () => {
         });
     };
 
-    const handleQuestionTypeChange = (index: number, event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleQuestionTypeChange = (sectionIndex: number, partIndex: number, event: React.ChangeEvent<HTMLSelectElement>) => {
         setSections((prev) => {
             const newSections = [...prev];
-            newSections[index].selectedQuestionType = event.target.value;
+            newSections[sectionIndex].parts[partIndex].selectedQuestionType = event.target.value;
             return newSections;
         });
-    };
-
-    const handleShortAnswerChange = (sectionIndex: number, questionIndex: number, event: React.ChangeEvent<HTMLInputElement>) => {
-        setSections((prev) => {
-            const newSections = [...prev];
-            newSections[sectionIndex].shortAnswerQuestions[questionIndex].answers = [event.target.value];  // Update the answer value
-            return newSections;
-        });
-    };
-
-    const handleMatchingSelection = (sectionIndex: number, statementIndex: number, event: React.ChangeEvent<HTMLSelectElement>) => {
-        setSections((prev) => {
-            const newSections = [...prev];
-            newSections[sectionIndex].matchingExercise!.statements[statementIndex] = event.target.value;  // Update the selected feature
-            return newSections;
-        });
-    };
-
-    const generateQuestions = async (index: number) => {
-        const selectedQuestionType = sections[index].selectedQuestionType;
-        switch (selectedQuestionType) {
-            case 'mcq':
-                await generateMCQs(index);
-                break;
-            case 'tableFilling':
-                await generateTableFillingArray(index);
-                break;
-            case 'shortAnswer':
-                await generateShortAnswerQuestions(index);
-                break;
-            case 'matching':
-                await generateMatchingExercise(index);
-                break;
-            default:
-                break;
-        }
-    };
-
-    const addSection = () => {
-        setSections((prev) => [
-            ...prev,
-            { script: null, mcqs: [], tableFilling: [], shortAnswerQuestions: [], matchingExercise: null, error: '', selectedQuestionType: 'mcq' }
-        ]);
     };
 
     return (
         <div>
-            {sections.map((section, index) => (
-                <div key={index} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px' }}>
+            {sections.map((section, sectionIndex) => (
+                <div key={sectionIndex} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px' }}>
                     <div>
                         <textarea
                             placeholder="Type your custom script here..."
-                            onChange={(e) => handleScriptChange(index, e)}
+                            onChange={(e) => handleScriptChange(sectionIndex, e)}
                             style={{ width: '100%', height: 'auto', minHeight: '100px', resize: 'none' }}
                             value={section.script ? section.script.content : ''}
                         />
-                        <button onClick={() => generateRandomScript(index)}>Generate Script</button>
+                        <button onClick={() => generateRandomScript(sectionIndex)}>Generate Script</button>
                     </div>
 
-                    <div>
-                        <label htmlFor={`questionType-${index}`}>Select Question Type:</label>
-                        <select id={`questionType-${index}`} onChange={(e) => handleQuestionTypeChange(index, e)}>
-                            {questionTypes.map((type) => (
-                                <option key={type.value} value={type.value}>
-                                    {type.label}
-                                </option>
-                            ))}
-                        </select>
-                        <button onClick={() => generateQuestions(index)}>Generate Questions</button>
-                    </div>
+                    {/* Delete section button */}
+                    <button onClick={() => deleteSection(sectionIndex)}>Delete Section</button>
 
-                    {/* Display Multiple Choice Questions */}
-                    {section.mcqs.length > 0 && (
-                        <div>
-                            {section.mcqs.map((mcq, mcqIndex) => (
-                                <div key={mcqIndex}>
-                                    <p><strong>{mcq.question}</strong></p>
+                    {/* Render Parts */}
+                    {section.parts.map((part, partIndex) => (
+                        <div key={partIndex} style={{ marginTop: '15px', padding: '10px', border: '1px solid #aaa' }}>
+                            <h4>Part {partIndex + 1}</h4>
+
+                            {/* Question Type Selector for each part */}
+                            <div>
+                                <label>Select Question Type:</label>
+                                <select value={part.selectedQuestionType} onChange={(event) => handleQuestionTypeChange(sectionIndex, partIndex, event)}>
+                                    {questionTypes.map((type, idx) => (
+                                        <option key={idx} value={type.value}>
+                                            {type.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Render selected question type */}
+                            <button onClick={() => generateQuestions(sectionIndex, partIndex)}>Generate Questions</button>
+
+                            {/* Display Multiple Choice Questions */}
+                            {part.mcqs.length > 0 && (
+                                <div>
+                                    {part.mcqs.map((mcq, mcqIndex) => (
+                                        <div key={mcqIndex}>
+                                            <p><strong>{mcq.question}</strong></p>
+                                            <div>
+                                                {mcq.answers.map((answer, answerIndex) => (
+                                                    <label key={answerIndex} style={{ display: 'block' }}>
+                                                        <input type="radio" name={`question-${sectionIndex}-${partIndex}-${mcqIndex}`} />
+                                                        {answer}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Table Filling */}
+                            {part.tableFilling.length > 0 && (
+                                <div>
+                                    <h4>Table Filling:</h4>
+                                    {part.tableFilling.map((item, itemIndex) => (
+                                        <div key={itemIndex}>
+                                            <p><strong>{item.category}:</strong> {item.information}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Short Answer Questions */}
+                            {part.shortAnswerQuestions.length > 0 && (
+                                <div>
+                                    <h4>Short Answer Questions:</h4>
+                                    {part.shortAnswerQuestions.map((item, itemIndex) => (
+                                        <div key={itemIndex}>
+                                            <p><strong>{item.question}</strong></p>
+                                            <input
+                                                type="text"
+                                                placeholder="Type your answer here"
+                                                onChange={(e) => handleShortAnswerChange(sectionIndex, partIndex, itemIndex, e)}
+                                                style={{ width: '100%', padding: '5px', marginTop: '5px' }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Render Matching Exercise */}
+                            {part.matchingExercise !== null && (
+                                <div>
+                                    <h4>Matching Exercise:</h4>
                                     <div>
-                                        {mcq.answers.map((answer, answerIndex) => (
-                                            <label key={answerIndex} style={{ display: 'block' }}>
-                                                <input
-                                                    type="radio"
-                                                    name={`question-${index}-${mcqIndex}`}
-                                                />
-                                                {answer}
-                                            </label>
+                                        <h5>Available Features:</h5>
+                                        <ul>
+                                            {part.matchingExercise.features.map((feature, featureIndex) => (
+                                                <li key={featureIndex}>{feature}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        {part.matchingExercise.statements.map((statement, statementIndex) => (
+                                            <div key={statementIndex} style={{ marginBottom: '10px' }}>
+                                                <p><strong>{statement}</strong></p>
+                                                <select
+                                                    onChange={(e) => handleMatchingSelection(sectionIndex, partIndex, statementIndex, e)}
+                                                    style={{ width: '100%', padding: '5px' }}
+                                                >
+                                                    <option value="">Select Feature</option>
+                                                    {part.matchingExercise.features.map((feature, featureIndex) => (
+                                                        <option key={featureIndex} value={feature}>
+                                                            {feature}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                            )}
 
-                    {/* Display Table Filling */}
-                    {section.tableFilling.length > 0 && (
-                        <div>
-                            <h4>Table Filling:</h4>
-                            {section.tableFilling.map((item, itemIndex) => (
-                                <div key={itemIndex}>
-                                    <p><strong>{item.category}:</strong> {item.information}</p>
-                                </div>
-                            ))}
                         </div>
-                    )}
+                    ))}
 
-                    {/* Display Short Answer Questions with Textbox */}
-                    {section.shortAnswerQuestions.length > 0 && (
-                        <div>
-                            <h4>Short Answer Questions:</h4>
-                            {section.shortAnswerQuestions.map((item, itemIndex) => (
-                                <div key={itemIndex}>
-                                    <p><strong>{item.question}</strong></p>
-                                    <input
-                                        type="text"
-                                        placeholder="Type your answer here"
-                                        onChange={(e) => handleShortAnswerChange(index, itemIndex, e)}
-                                        style={{ width: '100%', padding: '5px', marginTop: '5px' }}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Display Matching Exercise with Dropdown */}
-                    {section.matchingExercise && (
-                        <div>
-                            <h4>Matching Exercise:</h4>
-                            <div>
-                                <h5>All Available Features:</h5>
-                                <ul>
-                                    {section.matchingExercise.features.map((feature, featureIndex) => (
-                                        <li key={featureIndex}>{feature}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div>
-                                {section.matchingExercise.statements.map((statement, statementIndex) => (
-                                    <div key={statementIndex} style={{ marginBottom: '10px' }}>
-                                        <p><strong>{statement}</strong></p>
-                                        <select
-                                            onChange={(e) => handleMatchingSelection(index, statementIndex, e)}
-                                            style={{ width: '100%', padding: '5px' }}
-                                        >
-                                            <option value="">Select Feature</option>
-                                            {section.matchingExercise!.features.map((feature, featureIndex) => (
-                                                <option key={featureIndex} value={feature}>
-                                                    {feature}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    {/* Add more parts */}
+                    <button onClick={() => addPart(sectionIndex)}>Add Part</button>
 
                     {/* Error message */}
                     {section.error && <p style={{ color: 'red' }}>{section.error}</p>}
                 </div>
             ))}
-            <button onClick={addSection}>Add Section</button>
+
+            {/* Add new section */}
+            <button onClick={() => setSections((prev) => [...prev, { script: null, parts: [{ mcqs: [], tableFilling: [], shortAnswerQuestions: [], matchingExercise: null, selectedQuestionType: 'mcq' }], error: '' }])}>
+                Add Section
+            </button>
         </div>
     );
 };
