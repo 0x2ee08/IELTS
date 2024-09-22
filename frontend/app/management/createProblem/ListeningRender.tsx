@@ -35,7 +35,15 @@ const questionTypes = [
 ];
 
 const ListeningPage = () => {
-    const [sections, setSections] = useState<{ script: Script | null; mcqs: MCQ[]; tableFilling: TableFilling[]; shortAnswerQuestions: ShortAnswerQuestion[]; matchingExercise: MatchingExercise | null; error: string; selectedQuestionType: string; }[]>([
+    const [sections, setSections] = useState<{
+        script: Script | null;
+        mcqs: MCQ[];
+        tableFilling: TableFilling[];
+        shortAnswerQuestions: ShortAnswerQuestion[];
+        matchingExercise: MatchingExercise | null;
+        error: string;
+        selectedQuestionType: string;
+    }[]>([
         { script: null, mcqs: [], tableFilling: [], shortAnswerQuestions: [], matchingExercise: null, error: '', selectedQuestionType: 'mcq' }
     ]);
 
@@ -198,6 +206,22 @@ const ListeningPage = () => {
         });
     };
 
+    const handleShortAnswerChange = (sectionIndex: number, questionIndex: number, event: React.ChangeEvent<HTMLInputElement>) => {
+        setSections((prev) => {
+            const newSections = [...prev];
+            newSections[sectionIndex].shortAnswerQuestions[questionIndex].answers = [event.target.value];  // Update the answer value
+            return newSections;
+        });
+    };
+
+    const handleMatchingSelection = (sectionIndex: number, statementIndex: number, event: React.ChangeEvent<HTMLSelectElement>) => {
+        setSections((prev) => {
+            const newSections = [...prev];
+            newSections[sectionIndex].matchingExercise!.statements[statementIndex] = event.target.value;  // Update the selected feature
+            return newSections;
+        });
+    };
+
     const generateQuestions = async (index: number) => {
         const selectedQuestionType = sections[index].selectedQuestionType;
         switch (selectedQuestionType) {
@@ -229,7 +253,6 @@ const ListeningPage = () => {
         <div>
             {sections.map((section, index) => (
                 <div key={index} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px' }}>
-                    {/* Section for script and question generation */}
                     <div>
                         <textarea
                             placeholder="Type your custom script here..."
@@ -240,10 +263,9 @@ const ListeningPage = () => {
                         <button onClick={() => generateRandomScript(index)}>Generate Script</button>
                     </div>
 
-                    {/* Dropdown for selecting question type */}
                     <div>
                         <label htmlFor={`questionType-${index}`}>Select Question Type:</label>
-                        <select id={`questionType-${index}`} onChange={(e) => handleQuestionTypeChange(index, e)} value={section.selectedQuestionType}>
+                        <select id={`questionType-${index}`} onChange={(e) => handleQuestionTypeChange(index, e)}>
                             {questionTypes.map((type) => (
                                 <option key={type.value} value={type.value}>
                                     {type.label}
@@ -287,38 +309,58 @@ const ListeningPage = () => {
                         </div>
                     )}
 
-                    {/* Display Short Answer Questions */}
+                    {/* Display Short Answer Questions with Textbox */}
                     {section.shortAnswerQuestions.length > 0 && (
                         <div>
                             <h4>Short Answer Questions:</h4>
                             {section.shortAnswerQuestions.map((item, itemIndex) => (
                                 <div key={itemIndex}>
                                     <p><strong>{item.question}</strong></p>
+                                    <input
+                                        type="text"
+                                        placeholder="Type your answer here"
+                                        onChange={(e) => handleShortAnswerChange(index, itemIndex, e)}
+                                        style={{ width: '100%', padding: '5px', marginTop: '5px' }}
+                                    />
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    {/* Display Matching Exercise */}
+                    {/* Display Matching Exercise with Dropdown */}
                     {section.matchingExercise && (
                         <div>
                             <h4>Matching Exercise:</h4>
                             <div>
+                                <h5>All Available Features:</h5>
+                                <ul>
+                                    {section.matchingExercise.features.map((feature, featureIndex) => (
+                                        <li key={featureIndex}>{feature}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div>
                                 {section.matchingExercise.statements.map((statement, statementIndex) => (
-                                    <div key={statementIndex}>
+                                    <div key={statementIndex} style={{ marginBottom: '10px' }}>
                                         <p><strong>{statement}</strong></p>
-                                    </div>
-                                ))}
-                                {section.matchingExercise.features.map((feature, featureIndex) => (
-                                    <div key={featureIndex}>
-                                        <p><strong>{feature}</strong></p>
+                                        <select
+                                            onChange={(e) => handleMatchingSelection(index, statementIndex, e)}
+                                            style={{ width: '100%', padding: '5px' }}
+                                        >
+                                            <option value="">Select Feature</option>
+                                            {section.matchingExercise!.features.map((feature, featureIndex) => (
+                                                <option key={featureIndex} value={feature}>
+                                                    {feature}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* Error message */}   
+                    {/* Error message */}
                     {section.error && <p style={{ color: 'red' }}>{section.error}</p>}
                 </div>
             ))}
