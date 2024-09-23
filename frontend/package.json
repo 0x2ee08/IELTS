@@ -21,6 +21,7 @@
     "d3": "^7.9.0",
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.13",
+    "draft-js": "^0.11.7",
     "framer-motion": "^11.5.4",
     "js-cookie": "^3.0.5",
     "markdown-it": "^14.1.0",
@@ -37,6 +38,7 @@
     "react-simplemde-editor": "^5.2.0",
     "react-slick": "^0.30.2",
     "react-youtube": "^10.1.0",
+    "reactjs-editor": "^10.0.1",
     "remark-gfm": "^4.0.0",
     "slick-carousel": "^1.8.1",
     "unified": "^11.0.5",
@@ -45,6 +47,7 @@
   },
   "devDependencies": {
     "@types/d3": "^7.4.3",
+    "@types/draft-js": "^0.11.18",
     "@types/js-cookie": "^3.0.6",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^20",

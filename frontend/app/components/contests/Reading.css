@@ -38,6 +38,8 @@
 
 
 .reading-contest-page .contest-layout {
+    position: relative;
+    z-index: 1;
     display: flex;
     margin-top: 20px;
     background-color: white;
@@ -116,6 +118,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    z-index: 1001;
 } 
 
 .reading-contest-page button {
@@ -137,6 +140,7 @@
     justify-content: center;
     align-items: center;
     pointer-events: auto;
+    z-index: 1000;
   }
 
 @media (max-width: 768px) {
@@ -151,6 +155,19 @@
     }
 }
 
-
+/* CustomEditor.css */
+.public-DraftStyleDefault-greenlight {
+    background-color: #90EE90;
+  }
+  .public-DraftStyleDefault-bluelight {
+    background-color: #ADD8E6;
+  }
+  .public-DraftStyleDefault-yellow {
+    background-color: #FFFF00;
+  }
+  .public-DraftStyleDefault-white {
+    background-color: #FFFFFF;
+  }
+  
 
 

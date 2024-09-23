@@ -7,6 +7,13 @@ import { time } from 'console';
 import axios from 'axios';
 import config from '../../config';
 import { useRouter } from 'next/navigation';
+import { Editor, EditorState, ContentState, Modifier, convertToRaw, convertFromRaw } from 'draft-js';
+import 'draft-js/dist/Draft.css';
+
+interface Paragraph {
+    content: ContentState; // Store content state instead of plain text
+    questions: ContentState[]; // Store content state for each question
+  }
 
 const ReadingContest = ({ contest }: { contest: any }) => {
     const [activeParagraph, setActiveParagraph] = useState(0);
@@ -68,10 +75,6 @@ const ReadingContest = ({ contest }: { contest: any }) => {
     // Save updated answers to cookie every time user updates the answer
     const saveAnswersToCookie = (updatedAnswers: any) => {
         Cookies.set('readingContestAnswers-' + contest.id, JSON.stringify(updatedAnswers), { expires: 7 });
-    };
-
-    const handleParagraphSwitch = (index: number) => {
-        setActiveParagraph(index);
     };
 
     const handleAnswerChange = (sectionIndex: number, questionIndex: number, value: string) => {
@@ -228,6 +231,113 @@ const ReadingContest = ({ contest }: { contest: any }) => {
         ))
     );    
 
+    const initialParagraphs: Paragraph[] = [
+        {
+          content: ContentState.createFromText(contest.paragraphs[0].content || ''),
+          questions:[ ContentState.createFromText(contest.paragraphs[0].section || ''),]
+        },
+        {
+            content: ContentState.createFromText(contest.paragraphs[1].content || ''),
+            questions:[ ContentState.createFromText(contest.paragraphs[1].section || ''),]
+        },
+        {
+            content: ContentState.createFromText(contest.paragraphs[2].content || ''),
+            questions:[ ContentState.createFromText(contest.paragraphs[2].section || ''),]
+        },
+      ];
+
+      const [paragraphs, setParagraphs] = useState<Paragraph[]>(initialParagraphs);
+  const [editorState, setEditorState] = useState(() =>
+    EditorState.createWithContent(paragraphs[0].content)
+  );
+  const [questionStates, setQuestionStates] = useState(() =>
+    paragraphs[0].questions.map((q) => EditorState.createWithContent(q))
+  );
+  const [highlightPosition, setHighlightPosition] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const [isHighlighting, setIsHighlighting] = useState(false);
+  const [currentEditor, setCurrentEditor] = useState<'paragraph' | 'question' | null>(null);
+  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number | null>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+
+  // Check if text is selected and update highlighting status and position
+  const checkSelection = () => {
+    const selection = window.getSelection();
+    const textContent = textRef.current?.innerText.trim() || '';
+
+    // If no text or selection, hide highlight options
+    if (textContent === '' || !selection || selection.rangeCount === 0) {
+      setIsHighlighting(false);
+      setHighlightPosition(null);
+      return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0 && !selection.isCollapsed) {
+      setHighlightPosition({
+        top: rect.top + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+        height: rect.height,
+      });
+      setIsHighlighting(true);
+    } else {
+      setIsHighlighting(false);
+      setHighlightPosition(null);
+    }
+  };
+
+  // Handle paragraph changes
+  const handleParagraphChange = (index: number) => {
+    // Save the current editor states before switching
+    const updatedParagraphs = [...paragraphs];
+    updatedParagraphs[activeParagraph].content = editorState.getCurrentContent();
+    updatedParagraphs[activeParagraph].questions = questionStates.map((q) => q.getCurrentContent());
+    setParagraphs(updatedParagraphs);
+
+    // Load new paragraph and questions
+    setActiveParagraph(index);
+    setEditorState(EditorState.createWithContent(paragraphs[index].content));
+    setQuestionStates(paragraphs[index].questions.map((q) => EditorState.createWithContent(q)));
+    setIsHighlighting(false); // Reset highlighting state when switching
+    setCurrentEditor(null); // Reset the active editor
+  };
+
+  // Apply inline style for highlighting with a specific color
+  const applyHighlight = (color: string) => {
+    if (currentEditor === 'paragraph') {
+      const selection = editorState.getSelection();
+      const contentState = editorState.getCurrentContent();
+      const newContentState = Modifier.applyInlineStyle(contentState, selection, color);
+      setEditorState(EditorState.push(editorState, newContentState, 'change-inline-style'));
+    } else if (currentEditor === 'question' && selectedQuestionIndex !== null) {
+      const questionState = questionStates[selectedQuestionIndex];
+      const selection = questionState.getSelection();
+      const contentState = questionState.getCurrentContent();
+      const newContentState = Modifier.applyInlineStyle(contentState, selection, color);
+      const newQuestionStates = [...questionStates];
+      newQuestionStates[selectedQuestionIndex] = EditorState.push(questionState, newContentState, 'change-inline-style');
+      setQuestionStates(newQuestionStates);
+    }
+    setIsHighlighting(false); // Hide buttons after applying the highlight
+  };
+
+  // Define custom style mapping for highlight colors
+  const styleMap = {
+    GREENLIGHT: { backgroundColor: '#90EE90' },
+    BLUELIGHT: { backgroundColor: '#ADD8E6' },
+    YELLOW: { backgroundColor: '#FFFF00' },
+    WHITE: { backgroundColor: '#FFFFFF' },
+  };
+
+  // Handle mouse and key events for checking selection in paragraphs and questions
+  const handleMouseUp = (editorType: 'paragraph' | 'question', index?: number) => {
+    setCurrentEditor(editorType);
+    if (editorType === 'question' && index !== undefined) {
+      setSelectedQuestionIndex(index);
+    }
+    checkSelection();
+  };
 
     let cnt=0;
     console.log(contest);
@@ -248,14 +358,9 @@ const ReadingContest = ({ contest }: { contest: any }) => {
             <div className="contest-layout" style={{ height: `${windowHeight - 150}px` }}>
                 <div className="paragraph-content">
                     <h2>{contest.paragraphs[activeParagraph].title}</h2>
-                    <p>
-                        {contest.paragraphs[activeParagraph].content.split('\n\n').map((text: string, index: number) => (
-                            <span key={index}>
-                                {text}
-                                <br /><br />
-                            </span>
-                        ))}
-                    </p>
+                    <div onMouseUp={() => handleMouseUp('paragraph')} ref={textRef}>
+                        <Editor editorState={editorState} onChange={setEditorState} customStyleMap={styleMap} />
+                    </div>
                 </div>
 
                 <div className="sections-content">
@@ -289,6 +394,31 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                     ))}
                 </div>
             </div>
+            {isHighlighting && highlightPosition && (
+                <div
+                style={{
+                    position: 'absolute',
+                    padding:'5px',
+                    top: highlightPosition.top + highlightPosition.height + 10,
+                    left: highlightPosition.left,
+                    background:'black',
+                    zIndex: 1000,
+                }}
+                >
+                <button style={{ background:'#90EE90', 
+                                marginRight: '5px', marginLeft:'0px',
+                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('GREENLIGHT')}></button>
+                <button style={{ background:'#ADD8E6', 
+                                marginRight: '5px', marginLeft:'0px',
+                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('BLUELIGHT')}></button>
+                <button style={{ background:'#FFFF00', 
+                                marginRight: '5px', marginLeft:'0px',
+                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('YELLOW')}></button>
+                <button style={{ background:'#FFFFFF', 
+                                marginRight: '0px', marginLeft:'0px',
+                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('WHITE')}></button>
+                </div>
+            )}
         </div>
         {!initialState && <header className="sticky bottom-0 bg-gray-200 dark:bg-gray-400 bg-opacity-90 text-white backdrop-blur-sm shadow-sm z-50">
             <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -299,7 +429,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                             <button 
                             className={`rounded-full p-2 ml-2 ${activeParagraph === index ? 'bg-[#3d5a80]' : 'bg-[#0077B6]'}`}
                             key={index}
-                             onClick={() => handleParagraphSwitch(index)}>
+                             onClick={() => handleParagraphChange(index)}>
                                 {index + 1}
                             </button>
                         ))}
