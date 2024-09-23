@@ -13,14 +13,14 @@ const PentagonChart: React.FC<PentagonChartProps> = React.memo(({ data }) => {
     console.log(data);
 
     const svg = d3.select(svgRef.current);
-    const width = 350;
+    const width = 400;
     const height = 300;
     const centerX = width / 2;
     const centerY = height / 2;
     const radius = Math.min(width, height) / 2 - 40;
     const pointsPerSegment = 10;
     const segments = 5;
-    const segmentLabels = ["Pronunciation", "Fluency", "Lexical", "Grammar", "Total"];
+    const segmentLabels = ["Pronunciation", "Fluency", "Lexical", "Grammar", "Task Response"];
 
     svg.attr('width', width).attr('height', height);
 

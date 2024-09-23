@@ -21,20 +21,32 @@ transform = Resample(orig_freq=48000, new_freq=16000)
 import math
 
 def calculate_pronunciation_accuracy(is_letter_correct_all_words: str) -> int:
-    correct = 0
-    count = 0
-    
-    for letter in is_letter_correct_all_words:
-        if letter == '1':
-            correct += 1
-        if letter == '1' or letter == '0':
-            count += 1
+    errors = 0
 
-    if count == 0:
-        return 0
+    for word in is_letter_correct_all_words.split(' '):
+        if '0' in word:
+            errors += 1
 
-    pronunciation_accuracy = math.ceil((correct / count) * 100)
-    return pronunciation_accuracy
+    if errors <= 1:
+        return 9
+    elif errors <= 2:
+        return 8.5
+    elif errors <= 4:
+        return 8
+    elif errors <= 6:
+        return 7.5
+    elif errors <= 8:
+        return 7
+    elif errors <= 10:
+        return 6.5
+    elif errors <= 12:
+        return 6
+    elif errors <= 14:
+        return 5.5
+    elif errors <= 16:
+        return 5
+    else:
+        return 4
 
 
 def lambda_handler(event, context):

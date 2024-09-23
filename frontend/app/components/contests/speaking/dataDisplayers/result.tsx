@@ -53,6 +53,7 @@ interface Band {
     fluency: number;
     lexical: number;
     grammar: number;
+    response: number;
 }
 
 interface Feedback {
@@ -60,6 +61,7 @@ interface Feedback {
     fluency: string;
     lexical: string;
     grammar: string;
+    response: string;
 }
 
 const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
@@ -71,12 +73,14 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
         fluency: "",
         lexical: "",
         grammar: "",
+        response: "",
     });
     const [band, setBand] = useState<Band>({ 
         pronunciation: 0, 
         fluency: 0,
         lexical: 0,
         grammar: 0,
+        response: 0,
     });
     const username = localStorage.getItem('username');
     const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb';

@@ -13,6 +13,16 @@ const app = express();
 
 const router = express.Router();
 
+function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
 router.post('/get_problemlist', authenticateToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
@@ -94,7 +104,7 @@ router.post('/getSpeakingAnswer', authenticateToken, async (req, res) => {
 });
 
 router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
-    const { id, result, task_id } = req.body;
+    const { id, result, task_id, task } = req.body;
     const { username } = req.user;
     const time_created = new Date();
 
@@ -127,6 +137,28 @@ router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
                 }
             );
         }
+
+        const contestCollection = db.collection('contest');
+        const contest = await contestCollection.findOne({ id: id });
+
+        if (contest.accessUser !== "" && !contest.accessUser.split(',').includes(username)) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+        const submissionCollection = db.collection('user_answer');
+        const newSubmission = {
+            type: 'Speaking',
+            id: generateRandomString(20),
+            contestID: id,
+            task_id: task_id,
+            answer: result,
+            questions: task.questions,
+            submit_by: username,
+            result: result,
+            visibility: (contest.accessUser === '' ? 'public':'private'),
+            submit_time: new Date().toISOString()
+        };
+        await submissionCollection.insertOne(newSubmission);
 
         res.json({ success: true, message: 'Answer updated successfully' });
     } catch (error) {

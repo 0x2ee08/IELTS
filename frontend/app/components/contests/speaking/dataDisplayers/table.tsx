@@ -4,18 +4,20 @@ import { EyeIcon } from '../icons/EyeIcon';
 import '../cssCustomFiles/dot.css';
 import '../cssCustomFiles/error.css'
 
-interface Feedback {
-    pronunciation: string;
-    fluency: string;
-    lexical: string;
-    grammar: string;
-}
-
 interface Band {
     pronunciation: number;
     fluency: number;
     lexical: number;
     grammar: number;
+    response: number;
+}
+
+interface Feedback {
+    pronunciation: string;
+    fluency: string;
+    lexical: string;
+    grammar: string;
+    response: string;
 }
 
 interface TableProps {
@@ -173,6 +175,27 @@ const FeedbackTable: React.FC<TableProps> = ({ feedback, band }) => {
                         </TableCell>
                     </TableRow>
                     <TableRow key="5">
+                        <TableCell style={{ fontSize: '1rem' }}>Task Response</TableCell>
+                        <TableCell style={{ fontSize: '1rem' }}>
+                            <span
+                                className={`dot ${getDotColorClass(band.response)}`}
+                                style={{display: 'inline-block',width: '10px',height: '10px',borderRadius: '50%',marginRight: '10px',}}
+                            />
+                            {band.response}
+                        </TableCell>
+                        <TableCell style={{ fontSize: '1rem' }}>Click to see</TableCell>
+                        <TableCell style={{ fontSize: '1rem' }}>
+                            <Tooltip content={'Detail'} placement="left">
+                                <span 
+                                    className="text-lg text-default-400 cursor-pointer active:opacity-50"
+                                    onClick={() => handleTooltipClick('Task response', feedback.response)}
+                                >
+                                    <EyeIcon />
+                                </span>
+                            </Tooltip>
+                        </TableCell>
+                    </TableRow>
+                    <TableRow key="6">
                         <TableCell style={{ fontSize: '1rem' }}><strong>Total</strong></TableCell>
                         <TableCell style={{ fontSize: '1rem' }}>
                             <span
