@@ -340,27 +340,59 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
         return Math.min(Math.max(band, 1), 9);
     }
 
-    const calculateFluency = (detailResult: any) => {
-        const wordList = detailResult.data.matched_transcripts.split(' ')
-        let n = wordList.length
-        if(n === 0) return 0;
-        let sr = n / Math.floor(detailResult.data.end_time[n - 1] - detailResult.data.start_time[0]);
-        const punctuationSet = new Set(['?', '.', '!', ',', ';']);
-        let apw = 0, aps = 0;
-        for(let i=1; i<n; i++) {
-            let dis = Math.max(0, detailResult.data.start_time[i] - detailResult.data.end_time[i - 1]);
-            const lastChar = wordList[i - 1].slice(-1);
-            if (punctuationSet.has(lastChar)) {
-                aps += dis;
-            } else {
-                apw += dis;
+    const calculateFluency = (detailResult: any): number => {
+        const transcriptWords: string[] = detailResult.data.real_transcript.trim().split(' ');
+        const totalWords: number = transcriptWords.length;
+        const audioLength: number = detailResult.data.end_time[detailResult.data.end_time.length - 1] - detailResult.data.start_time[0];
+        const SR: number = totalWords / audioLength;
+        const SRmin: number = Math.min(...transcriptWords.map((_, i) => (transcriptWords[i + 1] ? 1 / (detailResult.data.end_time[i] - detailResult.data.start_time[i]) : 0)));
+        const SRmax: number = Math.max(...transcriptWords.map((_, i) => (transcriptWords[i + 1] ? 1 / (detailResult.data.end_time[i] - detailResult.data.start_time[i]) : 0)));
+        const SRnorm: number = (SR - SRmin) / (SRmax - SRmin);
+
+        const pauses: number[] = detailResult.data.start_time.map((_: number, i: number) =>
+            (detailResult.data.start_time[i + 1] || 0) - (detailResult.data.end_time[i] || 0)
+        );
+    
+        const APW: number = pauses.reduce((acc: number, pause: number) => acc + pause, 0) / pauses.length;
+    
+        const APWmin: number = Math.min(...pauses);
+        const APWmax: number = Math.max(...pauses);
+        const APWnorm: number = 1 - (APW - APWmin) / (APWmax - APWmin);
+    
+        const APS: number = 2.0; 
+        const APSnorm: number = (3.0 - APS) / (3.0 - 1.5); 
+    
+        const fillerWords: string[] = ["um", "uh", "like"]; 
+        const FWC: number = transcriptWords.filter((word: string) => fillerWords.includes(word)).length;
+    
+        const pauseDurations: number[] = pauses.filter((pause: number) => pause > 0);
+        const meanPause: number = pauseDurations.reduce((acc: number, pause: number) => acc + pause, 0) / pauseDurations.length;
+        const stdDevPause: number = Math.sqrt(pauseDurations.reduce((acc: number, pause: number) => acc + Math.pow(pause - meanPause, 2), 0) / pauseDurations.length);
+    
+        const threshold: number = meanPause + 1 * stdDevPause;  
+        const PPH: number = pauses.filter((pause: number) => pause > threshold).length;  
+    
+        const HFmin: number = 0;  
+        const HFmax: number = Math.max(FWC + PPH, 20);
+        const HF: number = FWC + PPH;
+        const HFnorm: number = 1 - (HF - HFmin) / (HFmax - HFmin);
+    
+        let R: number = 0;
+        for (let i: number = 0; i < transcriptWords.length - 1; i++) {
+            if (transcriptWords[i] === transcriptWords[i + 1]) {
+                R++; 
             }
         }
-        aps = aps / n;
-        apw = apw / n;
-        const fluency = 0.25 * sr + 0.20 * apw + 0.15 * aps;
+    
+        const Rmin: number = 0;  
+        const Rmax: number = Math.max(R, 10);  
+        const Rnorm: number = 1 - (R - Rmin) / (Rmax - Rmin);
+
+        const fluency: number = (0.25 * SRnorm) + (0.20 * APWnorm) + (0.15 * APSnorm) + (0.25 * HFnorm) + (0.15 * Rnorm);
+        // console.log(fluency, fluency*9.0);
         return fluency;
-    }
+    };
+    
 
     const getSpeakingLexicalResource = async(question: string, answer: string) => {
         const token = localStorage.getItem('token');
