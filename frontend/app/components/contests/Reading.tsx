@@ -229,118 +229,111 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                 /> {option.trim()}
             </label>
         ))
-    );    
+    );  
+    const createInitialParagraphs = (contest: any): Paragraph[] => {
+        return contest.paragraphs.map((paragraph: any, index: number) => ({
+          content: ContentState.createFromText(paragraph.content || ''),
+          questions: [ContentState.createFromText(paragraph.section || '')],
+        }));
+      };
+      
+      const initialParagraphs = createInitialParagraphs(contest);
+    
 
-    const initialParagraphs: Paragraph[] = [
-        {
-          content: ContentState.createFromText(contest.paragraphs[0].content || ''),
-          questions:[ ContentState.createFromText(contest.paragraphs[0].section || ''),]
-        },
-        {
-            content: ContentState.createFromText(contest.paragraphs[1].content || ''),
-            questions:[ ContentState.createFromText(contest.paragraphs[1].section || ''),]
-        },
-        {
-            content: ContentState.createFromText(contest.paragraphs[2].content || ''),
-            questions:[ ContentState.createFromText(contest.paragraphs[2].section || ''),]
-        },
-      ];
+    const [paragraphs, setParagraphs] = useState<Paragraph[]>(initialParagraphs);
+    const [editorState, setEditorState] = useState(() =>
+        EditorState.createWithContent(paragraphs[0].content)
+    );
+    const [questionStates, setQuestionStates] = useState(() =>
+        paragraphs[0].questions.map((q) => EditorState.createWithContent(q))
+    );
+    const [highlightPosition, setHighlightPosition] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+    const [isHighlighting, setIsHighlighting] = useState(false);
+    const [currentEditor, setCurrentEditor] = useState<'paragraph' | 'question' | null>(null);
+    const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number | null>(null);
+    const textRef = useRef<HTMLDivElement>(null);
 
-      const [paragraphs, setParagraphs] = useState<Paragraph[]>(initialParagraphs);
-  const [editorState, setEditorState] = useState(() =>
-    EditorState.createWithContent(paragraphs[0].content)
-  );
-  const [questionStates, setQuestionStates] = useState(() =>
-    paragraphs[0].questions.map((q) => EditorState.createWithContent(q))
-  );
-  const [highlightPosition, setHighlightPosition] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
-  const [isHighlighting, setIsHighlighting] = useState(false);
-  const [currentEditor, setCurrentEditor] = useState<'paragraph' | 'question' | null>(null);
-  const [selectedQuestionIndex, setSelectedQuestionIndex] = useState<number | null>(null);
-  const textRef = useRef<HTMLDivElement>(null);
+    // Check if text is selected and update highlighting status and position
+    const checkSelection = () => {
+        const selection = window.getSelection();
+        const textContent = textRef.current?.innerText.trim() || '';
 
-  // Check if text is selected and update highlighting status and position
-  const checkSelection = () => {
-    const selection = window.getSelection();
-    const textContent = textRef.current?.innerText.trim() || '';
+        // If no text or selection, hide highlight options
+        if (textContent === '' || !selection || selection.rangeCount === 0) {
+        setIsHighlighting(false);
+        setHighlightPosition(null);
+        return;
+        }
 
-    // If no text or selection, hide highlight options
-    if (textContent === '' || !selection || selection.rangeCount === 0) {
-      setIsHighlighting(false);
-      setHighlightPosition(null);
-      return;
-    }
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0 && !selection.isCollapsed) {
+        setHighlightPosition({
+            top: rect.top + window.scrollY,
+            left: rect.left + window.scrollX,
+            width: rect.width,
+            height: rect.height,
+        });
+        setIsHighlighting(true);
+        } else {
+        setIsHighlighting(false);
+        setHighlightPosition(null);
+        }
+    };
 
-    const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0 && !selection.isCollapsed) {
-      setHighlightPosition({
-        top: rect.top + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: rect.width,
-        height: rect.height,
-      });
-      setIsHighlighting(true);
-    } else {
-      setIsHighlighting(false);
-      setHighlightPosition(null);
-    }
-  };
+    // Handle paragraph changes
+    const handleParagraphChange = (index: number) => {
+        // Save the current editor states before switching
+        const updatedParagraphs = [...paragraphs];
+        updatedParagraphs[activeParagraph].content = editorState.getCurrentContent();
+        updatedParagraphs[activeParagraph].questions = questionStates.map((q) => q.getCurrentContent());
+        setParagraphs(updatedParagraphs);
 
-  // Handle paragraph changes
-  const handleParagraphChange = (index: number) => {
-    // Save the current editor states before switching
-    const updatedParagraphs = [...paragraphs];
-    updatedParagraphs[activeParagraph].content = editorState.getCurrentContent();
-    updatedParagraphs[activeParagraph].questions = questionStates.map((q) => q.getCurrentContent());
-    setParagraphs(updatedParagraphs);
+        // Load new paragraph and questions
+        setActiveParagraph(index);
+        setEditorState(EditorState.createWithContent(paragraphs[index].content));
+        setQuestionStates(paragraphs[index].questions.map((q) => EditorState.createWithContent(q)));
+        setIsHighlighting(false); // Reset highlighting state when switching
+        setCurrentEditor(null); // Reset the active editor
+    };
 
-    // Load new paragraph and questions
-    setActiveParagraph(index);
-    setEditorState(EditorState.createWithContent(paragraphs[index].content));
-    setQuestionStates(paragraphs[index].questions.map((q) => EditorState.createWithContent(q)));
-    setIsHighlighting(false); // Reset highlighting state when switching
-    setCurrentEditor(null); // Reset the active editor
-  };
+    // Apply inline style for highlighting with a specific color
+    const applyHighlight = (color: string) => {
+        if (currentEditor === 'paragraph') {
+        const selection = editorState.getSelection();
+        const contentState = editorState.getCurrentContent();
+        const newContentState = Modifier.applyInlineStyle(contentState, selection, color);
+        setEditorState(EditorState.push(editorState, newContentState, 'change-inline-style'));
+        } else if (currentEditor === 'question' && selectedQuestionIndex !== null) {
+        const questionState = questionStates[selectedQuestionIndex];
+        const selection = questionState.getSelection();
+        const contentState = questionState.getCurrentContent();
+        const newContentState = Modifier.applyInlineStyle(contentState, selection, color);
+        const newQuestionStates = [...questionStates];
+        newQuestionStates[selectedQuestionIndex] = EditorState.push(questionState, newContentState, 'change-inline-style');
+        setQuestionStates(newQuestionStates);
+        }
+        setIsHighlighting(false); // Hide buttons after applying the highlight
+    };
 
-  // Apply inline style for highlighting with a specific color
-  const applyHighlight = (color: string) => {
-    if (currentEditor === 'paragraph') {
-      const selection = editorState.getSelection();
-      const contentState = editorState.getCurrentContent();
-      const newContentState = Modifier.applyInlineStyle(contentState, selection, color);
-      setEditorState(EditorState.push(editorState, newContentState, 'change-inline-style'));
-    } else if (currentEditor === 'question' && selectedQuestionIndex !== null) {
-      const questionState = questionStates[selectedQuestionIndex];
-      const selection = questionState.getSelection();
-      const contentState = questionState.getCurrentContent();
-      const newContentState = Modifier.applyInlineStyle(contentState, selection, color);
-      const newQuestionStates = [...questionStates];
-      newQuestionStates[selectedQuestionIndex] = EditorState.push(questionState, newContentState, 'change-inline-style');
-      setQuestionStates(newQuestionStates);
-    }
-    setIsHighlighting(false); // Hide buttons after applying the highlight
-  };
+    // Define custom style mapping for highlight colors
+    const styleMap = {
+        GREENLIGHT: { backgroundColor: '#90EE90' },
+        BLUELIGHT: { backgroundColor: '#ADD8E6' },
+        YELLOW: { backgroundColor: '#FFFF00' },
+        WHITE: { backgroundColor: '#FFFFFF' },
+    };
 
-  // Define custom style mapping for highlight colors
-  const styleMap = {
-    GREENLIGHT: { backgroundColor: '#90EE90' },
-    BLUELIGHT: { backgroundColor: '#ADD8E6' },
-    YELLOW: { backgroundColor: '#FFFF00' },
-    WHITE: { backgroundColor: '#FFFFFF' },
-  };
-
-  // Handle mouse and key events for checking selection in paragraphs and questions
-  const handleMouseUp = (editorType: 'paragraph' | 'question', index?: number) => {
-    setCurrentEditor(editorType);
-    if (editorType === 'question' && index !== undefined) {
-      setSelectedQuestionIndex(index);
-    }
-    checkSelection();
-  };
+    // Handle mouse and key events for checking selection in paragraphs and questions
+    const handleMouseUp = (editorType: 'paragraph' | 'question', index?: number) => {
+        setCurrentEditor(editorType);
+        if (editorType === 'question' && index !== undefined) {
+        setSelectedQuestionIndex(index);
+        }
+        checkSelection();
+    };
 
     let cnt=0;
-    console.log(contest);
     return (
         <>
         <div className="reading-contest-page">
