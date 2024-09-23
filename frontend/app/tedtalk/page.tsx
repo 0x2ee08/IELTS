@@ -6,11 +6,15 @@ import config from '../config';
 import axios from 'axios';
 import { convertDuration } from '../components/tedtalk/convertDuration';
 import { useRouter } from 'next/navigation';
-import {Card, Skeleton, Button} from "@nextui-org/react";
+import { Pagination, Card, Skeleton, Button, Divider } from "@nextui-org/react";
+
+const ITEMS_PER_PAGE = 20;
 
 const TedTalkPage: React.FC = () => {
     const [videos, setVideos] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const observerRef = useRef<HTMLDivElement | null>(null);
     const router = useRouter();
 
@@ -26,6 +30,7 @@ const TedTalkPage: React.FC = () => {
 
             console.log('Fetched videos:', response.data);
             setVideos(response.data.videos || []);
+            setTotalPages(Math.ceil(response.data.videos.length / ITEMS_PER_PAGE));
             setLoading(false);
         } catch (error) {
             console.error('Error fetching videos:', error);
@@ -72,16 +77,38 @@ const TedTalkPage: React.FC = () => {
         };
     }, [loading]);
 
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+
+    const currentVideos = videos.slice(startIndex, endIndex);
+
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
 
             <main className="flex-grow p-4">
-                <h1 className="text-2xl font-bold mb-4">TEDx Talks Videos</h1>
+                <h1 className="flex justify-center text-2xl font-bold mb-4">
+                    TED Ed Videos
+                </h1>
+
+                <div className="mb-10 flex justify-center">
+                    <Pagination 
+                        total={totalPages} 
+                        initialPage={1} 
+                        onChange={handlePageChange} 
+                        page={currentPage} 
+                    />
+                </div>
+
+                <Divider className='mb-4'/>
 
                 <div className="overflow-y-auto h-full">
                     <div className="space-y-4">
-                        {videos.map((video, index) => (
+                        {currentVideos.map((video, index) => (
                             <a
                                 key={index}
                                 href={`/loader/tedtalk?id=${video._id}`}
@@ -99,7 +126,6 @@ const TedTalkPage: React.FC = () => {
                                     <p className="text-sm">Likes: {video.likes}</p>
                                 </div>
                             </a>
-                        
                         ))}
                     </div>
                 </div>
