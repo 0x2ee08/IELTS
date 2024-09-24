@@ -22,6 +22,7 @@ const problemsRoutes = require('./routes/problemsRoutes')
 const generateListeningRoutes = require('./routes/genListeningRoutes');
 const graderWritingTask2 = require('./routes/graderWritingTask2');
 const graderWritingTask1Academic = require('./routes/graderWritingTask1Academic');
+const rankingRoutes = require('./routes/rankingRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -51,6 +52,7 @@ app.use('/api', generateSpeakingRoutes);
 app.use('/api', problemsRoutes);
 app.use('/api', graderWritingTask2);
 app.use('/api', graderWritingTask1Academic);
+app.use('/api', rankingRoutes);
 
 const flashcardsRoutes = require('./routes/flashcards');
 app.use('/api/flashcards', flashcardsRoutes);

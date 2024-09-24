@@ -23,6 +23,26 @@ function generateRandomString(length) {
     return result;
 }
 
+function convertToIELTSBand(score, maxScore) {
+    const d = maxScore / 9;
+    if (d === 0) return 0;
+
+    const x = Math.floor(score / d);
+    const lowerBound = x * d;
+    const upperBound = (x + 1) * d;
+    const middle1 = lowerBound + d / 3;
+    const middle2 = lowerBound + 2 * (d / 3);
+    
+    let band = x;
+    if (score >= middle1 && score <= middle2) {
+        band += 0.5;
+    } else if (score > middle2 && score <= upperBound) {
+        band += 1;
+    }
+    
+    return Math.round(Math.min(Math.max(band, 1), 9));
+}
+
 router.post('/get_problemlist', authenticateToken, async (req, res) => {
     try {
         const db = await connectToDatabase();
@@ -159,6 +179,55 @@ router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
             submit_time: new Date().toISOString()
         };
         await submissionCollection.insertOne(newSubmission);
+
+        // if (time_created <= new Date(contest.endTime)) {
+            const rankingCollection = db.collection('ranking');
+            let ranking = await rankingCollection.findOne({ id: id });
+
+            if (!ranking) {
+                await rankingCollection.insertOne({
+                    id: id,
+                    data: []
+                });
+                ranking = await rankingCollection.findOne({ id: id });
+            }
+
+            let userRanking = ranking.data.find(entry => entry.username === username);
+
+            if (!userRanking) {
+                await rankingCollection.updateOne(
+                    { id: id },
+                    {
+                        $push: {
+                            data: {
+                                username: username,
+                                score: Array(contest.taskArray.length).fill(0)
+                            }
+                        }
+                    }
+                );
+                ranking = await rankingCollection.findOne({ id: id });
+                userRanking = ranking.data.find(entry => entry.username === username);
+            }
+
+            let total = 0, mx = 0;
+            for(let i=0; i<result.length; i++) {
+                total = total + result[i].band.total;
+                mx = mx + 9;
+            }
+
+            const currentScore = userRanking.score[task_id] || 0;
+            const updatedScore = Math.max(currentScore, convertToIELTSBand(total, mx));
+
+            await rankingCollection.updateOne(
+                { id: id, "data.username": username },
+                {
+                    $set: {
+                        [`data.$.score.${task_id}`]: updatedScore
+                    }
+                }
+            );
+        // }
 
         res.json({ success: true, message: 'Answer updated successfully' });
     } catch (error) {

@@ -10,6 +10,7 @@ interface Band {
     lexical: number;
     grammar: number;
     response: number;
+    total: number;
 }
 
 interface Feedback {

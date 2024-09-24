@@ -1,0 +1,52 @@
+table {
+    border-collapse: collapse;
+    width: 100%; /* Ensures the table takes full width */
+}
+
+th, td {
+    padding: 8px;
+    text-align: center;
+}
+
+thead th {
+    background-color: #f4f4f5; /* Gray background for the header */
+    border-bottom: 1px solid #d1d5db; /* Only bottom border */
+}
+
+tbody td {
+    border-bottom: none; /* Remove bottom borders */
+}
+
+tbody td, thead th {
+    border-right: 1px solid #d1d5db; /* Vertical border */
+}
+
+/* Remove the right border for the last column in the body */
+tbody td:last-child,
+thead th:last-child {
+    border-right: none;
+}
+
+.score-column {
+    width: 125px;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.score-green {
+    background-color: rgb(1, 181, 1); /* Light green */
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+}
+
+.score-orange {
+    background-color: rgb(252, 186, 65); /* Light orange */
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+}
+
+.score-red {
+    background-color: red; /* Light red */
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+}

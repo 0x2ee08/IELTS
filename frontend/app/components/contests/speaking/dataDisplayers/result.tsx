@@ -54,6 +54,7 @@ interface Band {
     lexical: number;
     grammar: number;
     response: number;
+    total: number;
 }
 
 interface Feedback {
@@ -81,6 +82,7 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
         lexical: 0,
         grammar: 0,
         response: 0,
+        total: 0,
     });
     const username = localStorage.getItem('username');
     const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb';

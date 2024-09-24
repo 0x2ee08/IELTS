@@ -1,44 +1,54 @@
-'use client'
+'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
 import config from '../../config';
-import { useSearchParams } from "next/navigation";
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Task1Page from './speaking/task1';
 import Task2Page from './speaking/task2';
 import Task3Page from './speaking/task3';
 import CustomPagination from './speaking/dataDisplayers/customPagination';
+import RankingPage from '../ranking/ranking';
 
-export interface task1QuestionGeneral {
-    type: string,
-    number_of_task: string,
+export interface Task1QuestionGeneral {
+    type: string;
+    number_of_task: string;
     length: number;
-    questions: string[],
-    audioData: string[],
+    questions: string[];
+    audioData: string[];
 }
 
 interface SpeakingPageProps {
     id: string;
 }
 
-const SpeakingPage: React.FC<SpeakingPageProps> = ({id}) => {
+interface UserInfo {
+    username: string;
+    score: number[];
+}
+
+const SpeakingPage: React.FC<SpeakingPageProps> = ({ id }) => {
     const params = useSearchParams();
     const [taskArray, setTaskArray] = useState<any[]>([]);
-    const [choosenTask, setChoosenTask] = useState<number>(1e9);
-    const [problem_type, setProblem_type] = useState('');
+    const [chosenTask, setChosenTask] = useState<number>(1e9);
+    const [problemType, setProblemType] = useState('');
     const [currentPage, setCurrentPage] = useState(0);
     const [description, setDescription] = useState<any>();
-
-    const hasInitialize = useRef(false);
+    const [users, setUsers] = useState<UserInfo[]>([]); // Store users in state
+    const hasInitialized = useRef(false);
 
     useEffect(() => {
-        if (!hasInitialize.current) {
+        if (!hasInitialized.current) {
             getProblem();
             getProblemDescription();
-            hasInitialize.current = true;
+            hasInitialized.current = true;
         }
     }, []);
+
+    useEffect(() => {
+        if (currentPage >= taskArray.length) {
+            fetchUsersScore(); // Fetch users score when currentPage changes
+        }
+    }, [currentPage, taskArray]);
 
     const getProblem = async () => {
         const token = localStorage.getItem('token');
@@ -51,9 +61,7 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({id}) => {
             body: JSON.stringify({ id }),
         });
         const result = await response.json();
-
         setTaskArray(result.task);
-        console.log(result.task);
     };
 
     const getProblemDescription = async () => {
@@ -67,14 +75,32 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({id}) => {
             body: JSON.stringify({ id }),
         });
         const result = await response.json();
-
         setDescription(result.data);
     };
 
-    const renderTaskPage = (type: string, task_id: number, task: task1QuestionGeneral) => {
+    const fetchUsersScore = async () => {
+        const indexToLetter = (index: number) => String.fromCharCode(65 + index);
+        const questions = taskArray.map((_, index) => `Task ${indexToLetter(index)}`);
+
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${config.API_BASE_URL}api/getUsersScore`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ id }),
+        });
+
+        const result = await response.json();
+        setUsers(result.users); // Update users in state
+        console.log(result.users);
+    };
+
+    const renderTaskPage = (type: string, task_id: number, task: Task1QuestionGeneral) => {
         if (!type) return null;
         switch (type) {
-            case "Task 1":
+            case 'Task 1':
                 return (
                     <Task1Page
                         key={currentPage}
@@ -82,10 +108,10 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({id}) => {
                         task_id={task_id}
                         id={id}
                         description={description}
-                        onTaskUpdate={(task: any) => handleTaskUpdate()}
+                        onTaskUpdate={() => handleTaskUpdate()}
                     />
                 );
-            case "Task 2":
+            case 'Task 2':
                 return (
                     <Task2Page
                         key={currentPage}
@@ -93,10 +119,10 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({id}) => {
                         task_id={task_id}
                         id={id}
                         description={description}
-                        onTaskUpdate={(task: any) => handleTaskUpdate()}
+                        onTaskUpdate={() => handleTaskUpdate()}
                     />
                 );
-            case "Task 3":
+            case 'Task 3':
                 return (
                     <Task3Page
                         key={currentPage}
@@ -104,7 +130,7 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({id}) => {
                         task_id={task_id}
                         id={id}
                         description={description}
-                        onTaskUpdate={(task: any) => handleTaskUpdate()}
+                        onTaskUpdate={() => handleTaskUpdate()}
                     />
                 );
             default:
@@ -112,18 +138,29 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({id}) => {
         }
     };
 
+    const renderRankingPage = () => {
+        const indexToLetter = (index: number) => String.fromCharCode(65 + index);
+        const questions = taskArray.map((_, index) => `Task ${indexToLetter(index)}`);
+
+        return (
+            <div>
+                <RankingPage questions={questions} users={users} />
+            </div>
+        );
+    };
+
     const handleTaskUpdate = async () => {
         // Your logic to handle task update
     };
 
     const chooseTask = async (idx: number, type: string) => {
-        setChoosenTask(idx);
-        setProblem_type(type);
+        setChosenTask(idx);
+        setProblemType(type);
     };
 
     return (
         <div>
-            {hasInitialize.current && (
+            {hasInitialized.current && (
                 <>
                     <div className='flex justify-center m-4 ml-20 mr-20 mb-10'>
                         <CustomPagination
@@ -132,7 +169,9 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({id}) => {
                             onPageChange={(page) => setCurrentPage(page)}
                         />
                     </div>
-                    {renderTaskPage(taskArray[currentPage]?.type, currentPage, taskArray[currentPage])}
+                    {currentPage < taskArray.length 
+                        ? renderTaskPage(taskArray[currentPage]?.type, currentPage, taskArray[currentPage])
+                        : renderRankingPage()}
                 </>
             )}
         </div>

@@ -8,33 +8,35 @@ const { secret } = require('../config/config');
 const router = express.Router();
 
 // User registration
-router.post('/register', async (req, res) => {
-    const { username, email, name, school, class_, password, role, tokens } = req.body;
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-    if (!passwordRegex.test(password)) {
-        return res.status(400).json({ error: 'Password must be at least 8 characters long and include uppercase letters, lowercase letters, and numbers.' });
+router.post('/getUsersScore', async (req, res) => {
+    const { id } = req.body;
+
+    try {
+        const db = await connectToDatabase();
+        const rankingCollection = db.collection('ranking');
+
+        const rankingData = await rankingCollection.findOne({ id });
+
+        res.json({users: rankingData.data});
+    } catch (error) {
+        console.error('Error fetching ranking data:', error);
+        res.status(500).json({ error: 'Failed to fetch ranking data' });
     }
+});
+
+router.post('/getUserRankingDetail', async (req, res) => {
+    const { username } = req.body;
 
     try {
         const db = await connectToDatabase();
         const usersCollection = db.collection('users');
-
-        const user = await usersCollection.findOne({ $or: [{ username }, { email }] });
-        if (user) {
-            if (user.username === username) {
-                return res.status(400).json({ error: 'Username is already taken' });
-            }
-            if (user.email === email) {
-                return res.status(400).json({ error: 'Email is already registered' });
-            }
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await usersCollection.insertOne({ username, email, name, school, class_, password: hashedPassword, role, tokens, created_at: new Date() });
-        res.json({ id: result.insertedId, username, email, name });
+        const user = await usersCollection.findOne({ username });
+        const { name, class_, school } = user;
+        res.json({ name, class_, school });
+        
     } catch (error) {
-        console.error('Error registering user:', error);
-        res.status(500).json({ error: 'Failed to register user' });
+        console.error('Error fetching ranking data:', error);
+        res.status(500).json({ error: 'Failed to fetch ranking data' });
     }
 });
 

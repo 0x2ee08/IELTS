@@ -21,6 +21,8 @@ export const grader = async (data: any, question: string): Promise<[any, any]> =
     band.lexical = extractBandNumber(lexicalResource);
     band.grammar = extractBandNumber(grammar);
     band.response = extractBandNumber(response);
+    band.total = convertToIELTSBand(band.fluency + band.pronunciation + 
+        band.grammar + band.response + band.lexical, 45);
 
     return [band, feedback];
 };

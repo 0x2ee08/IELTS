@@ -52,6 +52,7 @@ interface Band {
     lexical: number;
     grammar: number;
     response: number;
+    total: number;
 }
 
 interface Feedback {
@@ -112,6 +113,7 @@ const Task2Page: React.FC<Task2PageProps> = ({ task, task_id, id, onTaskUpdate, 
         lexical: 0,
         grammar: 0,
         response: 0,
+        total: 0,
     });
 
     useEffect(() => {
