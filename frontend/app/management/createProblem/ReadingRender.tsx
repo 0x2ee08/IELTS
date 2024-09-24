@@ -231,27 +231,6 @@ const ReadingRender: React.FC = () => {
         setAccessUser(value);
     };
 
-    const removeDuplicates = (value: string) => {
-        // Split the string by comma and trim any extra spaces
-        const usersArray = value.split(',').map(user => user.trim());
-      
-        // Create a Set to remove duplicates
-        const uniqueUsers = [...new Set(usersArray)];
-      
-        // Join the unique values back into a string
-        return uniqueUsers.join(', ');
-    };
-
-    const addStudent =() =>{
-        let value = accessUser;
-        if(value !== '') value = value + ',' + studentClass;
-        else value = studentClass;
-        // console.log(value);
-        value = value.replace(/,\s*/g, ', ');
-        value = removeDuplicates(value);
-        setAccessUser(value);
-    };
-
     const handleGeneratePara = (pIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         setIsLoading(true);
@@ -752,6 +731,27 @@ const ReadingRender: React.FC = () => {
             // console.log('Setting isLoading to false');
             setIsLoading(false);
         });
+    };
+
+    const removeDuplicates = (value: string) => {
+        // Split the string by comma and trim any extra spaces
+        const usersArray = value.split(',').map(user => user.trim());
+      
+        // Create a Set to remove duplicates
+        const uniqueUsers = [...new Set(usersArray)];
+      
+        // Join the unique values back into a string
+        return uniqueUsers.join(', ');
+    };
+
+    const addStudent =() =>{
+        let value = accessUser;
+        if(value !== '') value = value + ',' + studentClass;
+        else value = studentClass;
+        // console.log(value);
+        value = value.replace(/,\s*/g, ', ');
+        value = removeDuplicates(value);
+        setAccessUser(value);
     };
 
     const [schoollist, setSchoollist] = useState<any[]>([]);

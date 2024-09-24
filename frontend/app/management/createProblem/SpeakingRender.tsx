@@ -28,6 +28,7 @@ const SpeakingPage: React.FC = () => {
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
     const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb';
+    const [isLoading, setIsLoading] = useState(false);
 
     const hasInitialize = useRef(false);
 
@@ -90,6 +91,7 @@ const SpeakingPage: React.FC = () => {
         });
     };
 
+
     const renderTaskPage = (id: string, idx: number) => {
         switch (id) {
             case 'Task 1':
@@ -148,6 +150,101 @@ const SpeakingPage: React.FC = () => {
         }
     }
 
+    const handleAccessUserChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let value = e.target.value;
+        
+        // Automatically add a space after each comma if not already present
+        value = value.replace(/,\s*/g, ', ');
+
+        setAccessUser(value);
+    };
+
+    const removeDuplicates = (value: string) => {
+        // Split the string by comma and trim any extra spaces
+        const usersArray = value.split(',').map(user => user.trim());
+      
+        // Create a Set to remove duplicates
+        const uniqueUsers = [...new Set(usersArray)];
+      
+        // Join the unique values back into a string
+        return uniqueUsers.join(', ');
+    };
+
+    const addStudent =() =>{
+        let value = accessUser;
+        if(value !== '') value = value + ',' + studentClass;
+        else value = studentClass;
+        // console.log(value);
+        value = value.replace(/,\s*/g, ', ');
+        value = removeDuplicates(value);
+        setAccessUser(value);
+    };
+
+    const [schoollist, setSchoollist] = useState<any[]>([]);
+    const [classlist, setClasslist] = useState<any[]>([]);
+    const [school, setSchool] = useState('');
+    const [class_, setClass_] = useState('');
+    const [studentClass, setStudentClass] = useState('');
+
+    const getSchoolList = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_school_list`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setSchoollist(response.data.result);
+        } catch (error) {
+            console.error('Error fetching school list:', error);
+        }
+    };
+
+    const getClassList = async (selectedSchool: string) => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_class_list`, { school: selectedSchool }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setClasslist(response.data.classlist || []);
+        } catch (error) {
+            console.error('Error fetching class list:', error);
+        }
+    };
+
+    const getStudentList = async (selectedSchool: string, selectedClass: string) => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/getAllStudent`, { school: selectedSchool, _class: selectedClass }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setStudentClass(response.data.students);
+        } catch (error) {
+            console.error('Error fetching class list:', error);
+        }
+    };
+
+    const handleSchoolChange = (newschool: string) => {
+        setSchool(newschool);
+        setClass_(''); // Reset class selection when school changes
+        setStudentClass('');
+        getClassList(newschool); // Fetch classes for the selected school
+    };
+
+    const handleClassChange = (selectSchool: string, newclass: string) => {
+        setClass_(newclass); // Reset class selection when school changes
+        setStudentClass('');
+        getStudentList(selectSchool, newclass);
+    };
+
+    useEffect(() => {
+        getSchoolList();
+    }, []);
+
     return (
         <div>
             <input
@@ -158,14 +255,61 @@ const SpeakingPage: React.FC = () => {
                 value={problemName}
                 onChange={(e) => setProblemName(e.target.value)}
             />
-            <input
-                key={"name"}
-                type="text"
-                placeholder={`Access User (comma separated, blank for public access)`}
-                className="border border-gray-300 px-4 py-2 rounded-md w-full h-10 my-2"
-                value={accessUser}
-                onChange={(e) => setAccessUser(e.target.value)}
-            />
+            <div  className="border border-gray-300 rounded-md p-4 mb-4">
+                Access user
+                <input 
+                    type="text" 
+                    placeholder='Access User (comma separated, blank for public access)' 
+                    className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
+                    value={accessUser}
+                    onChange={handleAccessUserChange}
+                />
+
+                Or choose classes:
+
+                <div className='flex space-x-4'>
+                    <select
+                        value={school}
+                        onChange={(e) => handleSchoolChange(e.target.value)}
+                        className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                    >
+                        <option value="">Select a school</option>
+                        {schoollist.map((schoolOption) => (
+                            <option key={schoolOption.id} value={schoolOption.id}>
+                                {schoolOption.name}
+                            </option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={class_}
+                        onChange={(e) => handleClassChange(school, e.target.value)}
+                        className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                    >
+                        <option value="">Select a class</option>
+                        {classlist.map((schoolOption) => (
+                            <option key={schoolOption} value={schoolOption.id}>
+                                {schoolOption}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <br />
+                <textarea
+                    value={studentClass}
+                    className="border border-gray-300 px-3 py-2 rounded-md w-full h-32"
+                    disabled={true}
+                />
+
+                <button 
+                    onClick={addStudent} 
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
+                    disabled={isLoading}
+                >
+                    Add Student
+                </button>
+            </div>
+
             <div className='flex space-x-4'>
                 <input 
                     type="datetime-local" 
