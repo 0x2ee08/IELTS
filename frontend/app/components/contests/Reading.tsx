@@ -300,20 +300,32 @@ const ReadingContest = ({ contest }: { contest: any }) => {
     // Apply inline style for highlighting with a specific color
     const applyHighlight = (color: string) => {
         if (currentEditor === 'paragraph') {
-        const selection = editorState.getSelection();
-        const contentState = editorState.getCurrentContent();
-        const newContentState = Modifier.applyInlineStyle(contentState, selection, color);
-        setEditorState(EditorState.push(editorState, newContentState, 'change-inline-style'));
+            const selection = editorState.getSelection();
+            const contentState = editorState.getCurrentContent();
+            const stylesToRemove = ['GREENLIGHT', 'BLUELIGHT', 'YELLOW', 'WHITE'];
+            let newContentState = stylesToRemove.reduce((contentState, style) => {
+                return Modifier.removeInlineStyle(contentState, selection, style);
+            }, contentState);
+            newContentState = Modifier.applyInlineStyle(newContentState, selection, color);
+            const newEditorState = EditorState.push(editorState, newContentState, 'change-inline-style');
+            const updatedEditorState = EditorState.setInlineStyleOverride(newEditorState, newEditorState.getCurrentInlineStyle());
+            setEditorState(updatedEditorState);
         } else if (currentEditor === 'question' && selectedQuestionIndex !== null) {
-        const questionState = questionStates[selectedQuestionIndex];
-        const selection = questionState.getSelection();
-        const contentState = questionState.getCurrentContent();
-        const newContentState = Modifier.applyInlineStyle(contentState, selection, color);
-        const newQuestionStates = [...questionStates];
-        newQuestionStates[selectedQuestionIndex] = EditorState.push(questionState, newContentState, 'change-inline-style');
-        setQuestionStates(newQuestionStates);
+            const questionState = questionStates[selectedQuestionIndex];
+            const selection = questionState.getSelection();
+            const contentState = questionState.getCurrentContent();
+            const stylesToRemove = ['GREENLIGHT', 'BLUELIGHT', 'YELLOW', 'WHITE'];
+            let newContentState = stylesToRemove.reduce((contentState, style) => {
+                return Modifier.removeInlineStyle(contentState, selection, style);
+            }, contentState);
+            newContentState = Modifier.applyInlineStyle(newContentState, selection, color);
+            const newQuestionState = EditorState.push(questionState, newContentState, 'change-inline-style');
+            const updatedQuestionState = EditorState.setInlineStyleOverride(newQuestionState, newQuestionState.getCurrentInlineStyle());
+            const newQuestionStates = [...questionStates];
+            newQuestionStates[selectedQuestionIndex] = updatedQuestionState;
+            setQuestionStates(newQuestionStates);
         }
-        setIsHighlighting(false); // Hide buttons after applying the highlight
+        setIsHighlighting(false);
     };
 
     // Define custom style mapping for highlight colors
