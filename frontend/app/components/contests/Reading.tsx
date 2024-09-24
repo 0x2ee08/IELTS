@@ -300,20 +300,32 @@ const ReadingContest = ({ contest }: { contest: any }) => {
     // Apply inline style for highlighting with a specific color
     const applyHighlight = (color: string) => {
         if (currentEditor === 'paragraph') {
-        const selection = editorState.getSelection();
-        const contentState = editorState.getCurrentContent();
-        const newContentState = Modifier.applyInlineStyle(contentState, selection, color);
-        setEditorState(EditorState.push(editorState, newContentState, 'change-inline-style'));
+            const selection = editorState.getSelection();
+            const contentState = editorState.getCurrentContent();
+            const stylesToRemove = ['GREENLIGHT', 'BLUELIGHT', 'YELLOW', 'WHITE'];
+            let newContentState = stylesToRemove.reduce((contentState, style) => {
+                return Modifier.removeInlineStyle(contentState, selection, style);
+            }, contentState);
+            newContentState = Modifier.applyInlineStyle(newContentState, selection, color);
+            const newEditorState = EditorState.push(editorState, newContentState, 'change-inline-style');
+            const updatedEditorState = EditorState.setInlineStyleOverride(newEditorState, newEditorState.getCurrentInlineStyle());
+            setEditorState(updatedEditorState);
         } else if (currentEditor === 'question' && selectedQuestionIndex !== null) {
-        const questionState = questionStates[selectedQuestionIndex];
-        const selection = questionState.getSelection();
-        const contentState = questionState.getCurrentContent();
-        const newContentState = Modifier.applyInlineStyle(contentState, selection, color);
-        const newQuestionStates = [...questionStates];
-        newQuestionStates[selectedQuestionIndex] = EditorState.push(questionState, newContentState, 'change-inline-style');
-        setQuestionStates(newQuestionStates);
+            const questionState = questionStates[selectedQuestionIndex];
+            const selection = questionState.getSelection();
+            const contentState = questionState.getCurrentContent();
+            const stylesToRemove = ['GREENLIGHT', 'BLUELIGHT', 'YELLOW', 'WHITE'];
+            let newContentState = stylesToRemove.reduce((contentState, style) => {
+                return Modifier.removeInlineStyle(contentState, selection, style);
+            }, contentState);
+            newContentState = Modifier.applyInlineStyle(newContentState, selection, color);
+            const newQuestionState = EditorState.push(questionState, newContentState, 'change-inline-style');
+            const updatedQuestionState = EditorState.setInlineStyleOverride(newQuestionState, newQuestionState.getCurrentInlineStyle());
+            const newQuestionStates = [...questionStates];
+            newQuestionStates[selectedQuestionIndex] = updatedQuestionState;
+            setQuestionStates(newQuestionStates);
         }
-        setIsHighlighting(false); // Hide buttons after applying the highlight
+        setIsHighlighting(false);
     };
 
     // Define custom style mapping for highlight colors
@@ -391,25 +403,26 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                 <div
                 style={{
                     position: 'absolute',
-                    padding:'5px',
+                    padding:'4px',
+                    borderRadius:'5px',
                     top: highlightPosition.top + highlightPosition.height + 10,
                     left: highlightPosition.left,
-                    background:'black',
+                    backgroundColor:'rgba(0, 0, 0, 0.7)',
                     zIndex: 1000,
                 }}
                 >
-                <button style={{ background:'#90EE90', 
+                <button style={{ borderRadius:'3px', background:'#90EE90', 
+                                marginRight: '5px', marginLeft:'3px', padding:'4px',
+                                width:'20px',height:'20px'  }} onClick={() => applyHighlight('GREENLIGHT')}></button>
+                <button style={{ borderRadius:'3px', background:'#ADD8E6', padding:'4px',
                                 marginRight: '5px', marginLeft:'0px',
-                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('GREENLIGHT')}></button>
-                <button style={{ background:'#ADD8E6', 
+                                width:'20px',height:'20px'  }} onClick={() => applyHighlight('BLUELIGHT')}></button>
+                <button style={{ borderRadius:'3px', background:'#FFFF00', padding:'4px',
                                 marginRight: '5px', marginLeft:'0px',
-                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('BLUELIGHT')}></button>
-                <button style={{ background:'#FFFF00', 
-                                marginRight: '5px', marginLeft:'0px',
-                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('YELLOW')}></button>
-                <button style={{ background:'#FFFFFF', 
-                                marginRight: '0px', marginLeft:'0px',
-                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('WHITE')}></button>
+                                width:'20px',height:'20px'  }} onClick={() => applyHighlight('YELLOW')}></button>
+                <button style={{ borderRadius:'3px', background:'#FFFFFF', padding:'4px',
+                                marginRight: '3px', marginLeft:'0px',
+                                width:'20px',height:'20px'  }} onClick={() => applyHighlight('WHITE')}></button>
                 </div>
             )}
         </div>

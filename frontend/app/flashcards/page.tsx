@@ -24,8 +24,8 @@ export default function FlashcardsAndParagraphs() {
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [paragraphs, setParagraphs] = useState<Paragraph[]>([]);
   const [error, setError] = useState('');
-  const [flashcardsVisible, setFlashcardsVisible] = useState(3); // Start by showing 4 flashcards
-  const [paragraphsVisible, setParagraphsVisible] = useState(3); // Start by showing 4 paragraphs
+  const [flashcardsVisible, setFlashcardsVisible] = useState(3); // Start by showing 3 flashcards
+  const [paragraphsVisible, setParagraphsVisible] = useState(3); // Start by showing 3 paragraphs
 
   useEffect(() => {
     const fetchFlashcards = async () => {
@@ -34,7 +34,8 @@ export default function FlashcardsAndParagraphs() {
         const response = await axios.get(`${config.API_BASE_URL}api/getAllFlashcards`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setFlashcards(response.data);
+        // Reverse the flashcards array here after fetching
+        setFlashcards(response.data.reverse());
       } catch (error) {
         console.error('Error fetching flashcards:', error);
         setError('Failed to load flashcards');
