@@ -90,7 +90,7 @@ const ResultPage: React.FC = () => {
     
         fetchSubmissions();
     }, []);
-
+    console.log(submissions)
     return (
         <div>
             <Header />
@@ -111,37 +111,79 @@ const ResultPage: React.FC = () => {
     
                             return (
                                 <li key={index} className="border p-6 rounded-lg shadow-md">
-                                    <Link href={`/results/${submission.sid}`}>
-                                        <div className="flex items-center">
-                                            {/* Band Score */}
-                                            <span className={`text-4xl font-bold ${bandColor} mr-6`}>
-                                                {bandScore.toFixed(1)}
-                                            </span>
-    
-                                            {/* Contest Info */}
-                                            <div className="text-lg space-y-1">
-                                                <p className="font-semibold">
-                                                    {titles[submission.cid] || 'Loading...'}
-                                                </p>
-                                                <p className="text-sm text-gray-500">
-                                                    Contest type: {submission.type}
-                                                </p>
-                                                <p className="text-sm text-gray-500">
-                                                    Submit by: {submission.submit_by || 'Unknown'}
-                                                </p>
-                                                <p className="text-sm text-gray-500">
-                                                    Submit time: {new Date(submission.submit_time).toLocaleString()}
-                                                </p>
-                                            </div>
-                                        </div>
-    
-                                        {/* Answer Stats */}
-                                        <div className="mt-4 text-base">
-                                            <span className="text-green-500 mr-4">Correct: {submission.result.correct}</span>
-                                            <span className="text-red-500 mr-4">Wrong: {submission.result.wrong}</span>
-                                            <span className="text-gray-500">Empty: {submission.result.empty}</span>
-                                        </div>
-                                    </Link>
+                                    {submission.type === 'Reading' && (
+                                        <>
+                                            <Link href={`/results/${submission.sid}`}>
+                                                <div className="flex items-center">
+                                                    {/* Band Score */}
+                                                    <span className={`text-4xl font-bold ${bandColor} mr-6`}>
+                                                        {bandScore.toFixed(1)}
+                                                    </span>
+            
+                                                    {/* Contest Info */}
+                                                    <div className="text-lg space-y-1">
+                                                        <p className="font-semibold">
+                                                            {titles[submission.cid] || 'Loading...'}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Contest type: {submission.type}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Submit by: {submission.submit_by || 'Unknown'}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Submit time: {new Date(submission.submit_time).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+            
+                                                {/* Answer Stats */}
+                                                <div className="mt-4 text-base">
+                                                    <span className="text-green-500 mr-4">Correct: {submission.result.correct}</span>
+                                                    <span className="text-red-500 mr-4">Wrong: {submission.result.wrong}</span>
+                                                    <span className="text-gray-500">Empty: {submission.result.empty}</span>
+                                                </div>
+                                            </Link>
+                                        </>
+                                    )}
+
+                                    {submission.type === 'Speaking' && (
+                                        <>
+                                            <Link href={`/results/${submission.sid}`}>
+                                                <div className="flex items-center">
+                                                    {/* Band Score */}
+                                                    <span className={`text-4xl font-bold ${bandColor} mr-6`}>
+                                                        {bandScore.toFixed(1)}
+                                                    </span>
+            
+                                                    {/* Contest Info */}
+                                                    <div className="text-lg space-y-1">
+                                                        <p className="font-semibold">
+                                                            {titles[submission.cid] || 'Loading...'}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Contest type: {submission.type}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Submit by: {submission.submit_by || 'Unknown'}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Submit time: {new Date(submission.submit_time).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+            
+                                                {/* Answer Stats */}
+                                                <div className="mt-4 text-base">
+                                                    {/* <span className="text-gray-500 mr-4">Fluency: {submission.result.band.fluency}</span>
+                                                    <span className="text-gray-500 mr-4">Grammar: {submission.result.band.grammar}</span>
+                                                    <span className="text-gray-500 mr-4">Lexical Resource: {submission.result.band.lexical}</span>
+                                                    <span className="text-gray-500 mr-4">Pronunciation: {submission.result.band.pronunciation}</span>
+                                                    <span className="text-gray-500 mr-4">Response: {submission.result.band.response}</span> */}
+                                                </div>
+                                            </Link>
+                                        </>
+                                    )}
                                 </li>
                             );
                         })}

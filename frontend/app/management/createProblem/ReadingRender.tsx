@@ -1158,6 +1158,14 @@ const ReadingRender: React.FC = () => {
                                                                 value={q.answer} 
                                                                 onChange={(e) => handleQuestionChange(pIndex, sIndex, qIndex, e.target.value, 'answer')}
                                                             />
+                                                            
+                                                            <button 
+                                                                onClick={() => deleteQuestion(pIndex, sIndex, qIndex)} 
+                                                                className="px-2 rounded-md ml-2"
+                                                            >
+                                                                x
+                                                            </button>
+
                                                         </div>
                                                     )}
                                                     <textarea 
