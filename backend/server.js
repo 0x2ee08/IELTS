@@ -57,7 +57,7 @@ app.use('/api', rankingRoutes);
 const flashcardsRoutes = require('./routes/flashcards');
 app.use('/api/flashcards', flashcardsRoutes);
 
-const getallfcRoutes = require('./routes/getallflashcards');
+const getallfcRoutes = require('./routes/getAllFlashcards');
 app.use('/api/getAllFlashcards', getallfcRoutes);
 
 app.listen(PORT, () => {
