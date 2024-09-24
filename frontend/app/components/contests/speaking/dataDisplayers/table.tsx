@@ -62,6 +62,9 @@ const FeedbackTable: React.FC<TableProps> = ({ feedback, band }) => {
         formattedText = formattedText.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, word, suggestion) => {
             return `<span class="highlight" data-suggestion="${suggestion}">${word}</span>`;
         });
+        formattedText = formattedText.replace(/\* \*\*([^*]+)\*\*/g, (match, boldText) => {
+            return `<br/><strong>${boldText.trim()}</strong>`;
+        });
         return formattedText;
     };
 
@@ -219,8 +222,13 @@ const FeedbackTable: React.FC<TableProps> = ({ feedback, band }) => {
             <Divider className='mb-4'/>
             <div
                 className='tooltip-content mb-4'
-                dangerouslySetInnerHTML={{ __html: activeCategory ? `<strong>${activeCategory}</strong>: ${tooltipContent || ''}` : '' }}
+                dangerouslySetInnerHTML={{
+                    __html: activeCategory
+                    ? `<strong>${activeCategory}</strong>: ${tooltipContent || ''}`
+                    : ''
+                }}
             />
+
         </div>
     );
 };

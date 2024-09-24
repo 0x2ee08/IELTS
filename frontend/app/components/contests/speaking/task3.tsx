@@ -1,5 +1,6 @@
 'use client'
 
+import { grader } from './grader';
 import React, { useState, useEffect, useRef } from 'react';
 import config from '../../../config';
 import Box from '@mui/material/Box';
@@ -61,7 +62,7 @@ interface Feedback {
     response: string;
 }
 
-const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onTaskUpdate, description }) => {
+const Task3Page: React.FC<Task3PageProps> = ({ task, task_id, id, onTaskUpdate, description }) => {
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [recordingError, setRecordingError] = useState<string | null>(null);
@@ -354,108 +355,16 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
             });
             const data = await res.json();
             setResponseData(data);
-            feedback.pronunciation = data.is_letter_correct_all_words;
-            feedback.fluency = "none"
-            console.log(data.pronunciation_accuracy);
-            band.pronunciation = Number(data.pronunciation_accuracy);
-            console.log(band.pronunciation);
-            band.fluency = convertToIELTSBand(calculateFluency(data), 1);
-
-            const [lexicalResource, grammar, response] = await Promise.all([
-                getSpeakingLexicalResource(task.questions[i], data.matched_transcripts),
-                getSpeakingGrammar(task.questions[i], data.matched_transcripts),
-                getSpeakingTaskResponse(task.questions[i], data.matched_transcripts),
-            ]);
-
-            feedback.lexical = lexicalResource;
-            feedback.grammar = grammar;
-            feedback.response = response;
-            band.lexical = extractBandNumber(lexicalResource);
-            band.grammar = extractBandNumber(grammar);
-            band.response = extractBandNumber(response);
-
-            console.log(lexicalResource);
-            console.log(grammar);
-            console.log(band.lexical);
-            console.log(band.grammar);
+            const [band, feedback] = await grader(data, task.questions[i]);
 
             setResult(prevResult => [
                 ...prevResult,
-                { data: data, band, feedback, audioData }
+                { data, band, feedback, audioData }
             ]);
+
         }
         setDoneRecording(false);
         setIsProcess(false);
-    }
-
-    const extractBandNumber = (input: string): number => {
-        const bandRegex = /\[BAND\]:\s*(\d+(\.\d+)?)/;
-        const match = bandRegex.exec(input);
-        return match ? parseFloat(match[1]) : 0;
-    };
-
-    const calculateFluency = (detailResult: any) => {
-        const wordList = detailResult.matched_transcripts.split(' ')
-        let n = wordList.length
-        if(n === 0) return 0;
-        let sr = n / Math.floor(detailResult.end_time[n - 1] - detailResult.start_time[0]);
-        const punctuationSet = new Set(['?', '.', '!', ',', ';']);
-        let apw = 0, aps = 0;
-        for(let i=1; i<n; i++) {
-            let dis = Math.max(0, detailResult.start_time[i] - detailResult.end_time[i - 1]);
-            const lastChar = wordList[i - 1].slice(-1);
-            if (punctuationSet.has(lastChar)) {
-                aps += dis;
-            } else {
-                apw += dis;
-            }
-        }
-        aps = aps / n;
-        apw = apw / n;
-        const fluency = 0.25 * sr + 0.20 * apw + 0.15 * aps;
-        return fluency;
-    }
-
-    const getSpeakingLexicalResource = async (question: string, answer: string) => {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${config.API_BASE_URL}api/getSpeakingLexicalResource`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ question, answer }),
-        });
-        const result = await response.json();
-        return result.content;
-    }
-
-    const getSpeakingGrammar = async (question: string, answer: string) => {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${config.API_BASE_URL}api/getSpeakingGrammar`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ question, answer }),
-        });
-        const result = await response.json();
-        return result.content;
-    }
-
-    const getSpeakingTaskResponse = async (question: string, answer: string) => {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${config.API_BASE_URL}api/getSpeakingTaskResponse`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ question, answer }),
-        });
-        const result = await response.json();
-        return result.content;
     }
 
     const save_record = async() => {
@@ -737,6 +646,6 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
             </div>
         </div>
     );
-});
+};
 
 export default Task3Page;
