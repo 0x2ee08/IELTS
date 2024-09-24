@@ -15,9 +15,17 @@ router.post('/getUsersScore', async (req, res) => {
         const db = await connectToDatabase();
         const rankingCollection = db.collection('ranking');
 
-        const rankingData = await rankingCollection.findOne({ id });
+        const ranking = await rankingCollection.findOne({ id });
 
-        res.json({users: rankingData.data});
+        if (!ranking) {
+            await rankingCollection.insertOne({
+                id: id,
+                data: []
+            });
+            ranking = await rankingCollection.findOne({ id: id });
+        }
+
+        res.json({users: ranking.data});
     } catch (error) {
         console.error('Error fetching ranking data:', error);
         res.status(500).json({ error: 'Failed to fetch ranking data' });
