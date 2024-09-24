@@ -32,6 +32,26 @@ router.post('/get_class_list', async (req, res) => {
     res.json({id: result.insertedId, classlist: lst});
 });
 
+router.post('/getAllStudent', authenticateToken, async(req, res) => {
+    const {school, _class} = req.body;
+
+    console.log(school, _class)
+
+    const db = await connectToDatabase();
+    const userCollection = db.collection(`users`);
+
+    const querySnapshot = await userCollection
+      .find({ school: school, class_: _class })
+      .project({ username: 1 }) // Only return the username field
+      .toArray();
+
+    // Extract usernames
+    const usernames = querySnapshot.map(user => user.username);
+
+    // Join usernames into a string format
+    return res.json({students: usernames.join(', ')}); 
+});
+
 router.post('/update_class_list', async (req, res) => {
     // const { username } = req.user;
     const { school, classlist } = req.body;
