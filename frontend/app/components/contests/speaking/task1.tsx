@@ -326,17 +326,15 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, id, onTaskUpdate, 
             setResponseData(data);
             const [band, feedback] = await grader(data, task.questions[i]);
 
-            setResult(prevResult => [
-                ...prevResult,
-                { data, band, feedback, audioData }
-            ]);
+            result.push({ data, band, feedback, audioData });
 
         }
         setDoneRecording(false);
         setIsProcess(false);
+        save_record();
     }
 
-    const save_record = async() => {
+    const save_record = async () => {
         const token = localStorage.getItem('token');
         await fetch(`${config.API_BASE_URL}api/add_new_speaking_answer`, {
             method: 'POST',
@@ -457,20 +455,9 @@ const Task1Page: React.FC<Task1PageProps> = ({ task, task_id, id, onTaskUpdate, 
                             className="mr-4"
                             color="primary"
                             style={{ fontSize: '1rem' }}
+                            isDisabled={isProcess}
                         >
-                            Process Record
-                        </Button>
-                    ) : (
-                        null
-                    )}
-                    {!saveRecord && !doneRecording && !isTesting ? (
-                        <Button 
-                            onClick={save_record}
-                            className="mr-4"
-                            color="primary"
-                            style={{ fontSize: '1rem' }}
-                        >
-                            Save Record
+                            Process & save record
                         </Button>
                     ) : (
                         null
