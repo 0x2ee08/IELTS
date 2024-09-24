@@ -62,7 +62,7 @@ interface Feedback {
     response: string;
 }
 
-const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onTaskUpdate, description }) => {
+const Task2Page: React.FC<Task2PageProps> = ({ task, task_id, id, onTaskUpdate, description }) => {
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [recordingError, setRecordingError] = useState<string | null>(null);
@@ -413,6 +413,19 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
         return Math.round(Math.min(Math.max(band, 1), 9));
     }
 
+    function insertNewlineBeforeDash(input: string): string {
+        let result = '';
+        
+        for (let i = 0; i < input.length; i++) {
+            if (input[i] === '-' && input[i - 1] !== '\n') {
+                result += '\n';
+            }
+            result += input[i]; 
+        }
+        
+        return result;
+    }
+
     return (
         <div>
             <div className='ml-20 mr-20 mb-10'>
@@ -581,7 +594,7 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
 
                                     <div className="mb-4">
                                         <strong>
-                                            {task.questions[0].split('\n').map((line, index) => (
+                                            {insertNewlineBeforeDash(task.questions[0]).split('\n').map((line, index) => (
                                                 <React.Fragment key={index}>
                                                     {line}
                                                     <br />
@@ -624,6 +637,6 @@ const Task2Page: React.FC<Task2PageProps> = React.memo(({ task, task_id, id, onT
             </div>
         </div>
     );
-});
+};
 
 export default Task2Page;

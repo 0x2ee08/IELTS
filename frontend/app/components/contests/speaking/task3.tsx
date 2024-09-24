@@ -62,7 +62,7 @@ interface Feedback {
     response: string;
 }
 
-const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onTaskUpdate, description }) => {
+const Task3Page: React.FC<Task3PageProps> = ({ task, task_id, id, onTaskUpdate, description }) => {
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [recordingError, setRecordingError] = useState<string | null>(null);
@@ -646,6 +646,6 @@ const Task3Page: React.FC<Task3PageProps> = React.memo(({ task, task_id, id, onT
             </div>
         </div>
     );
-});
+};
 
 export default Task3Page;
