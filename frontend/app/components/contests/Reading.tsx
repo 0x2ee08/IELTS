@@ -403,25 +403,26 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                 <div
                 style={{
                     position: 'absolute',
-                    padding:'5px',
+                    padding:'4px',
+                    borderRadius:'5px',
                     top: highlightPosition.top + highlightPosition.height + 10,
                     left: highlightPosition.left,
-                    background:'black',
+                    backgroundColor:'rgba(0, 0, 0, 0.7)',
                     zIndex: 1000,
                 }}
                 >
-                <button style={{ background:'#90EE90', 
+                <button style={{ borderRadius:'3px', background:'#90EE90', 
+                                marginRight: '5px', marginLeft:'3px', padding:'4px',
+                                width:'20px',height:'20px'  }} onClick={() => applyHighlight('GREENLIGHT')}></button>
+                <button style={{ borderRadius:'3px', background:'#ADD8E6', padding:'4px',
                                 marginRight: '5px', marginLeft:'0px',
-                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('GREENLIGHT')}></button>
-                <button style={{ background:'#ADD8E6', 
+                                width:'20px',height:'20px'  }} onClick={() => applyHighlight('BLUELIGHT')}></button>
+                <button style={{ borderRadius:'3px', background:'#FFFF00', padding:'4px',
                                 marginRight: '5px', marginLeft:'0px',
-                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('BLUELIGHT')}></button>
-                <button style={{ background:'#FFFF00', 
-                                marginRight: '5px', marginLeft:'0px',
-                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('YELLOW')}></button>
-                <button style={{ background:'#FFFFFF', 
-                                marginRight: '0px', marginLeft:'0px',
-                                width:'50px',height:'50px'  }} onClick={() => applyHighlight('WHITE')}></button>
+                                width:'20px',height:'20px'  }} onClick={() => applyHighlight('YELLOW')}></button>
+                <button style={{ borderRadius:'3px', background:'#FFFFFF', padding:'4px',
+                                marginRight: '3px', marginLeft:'0px',
+                                width:'20px',height:'20px'  }} onClick={() => applyHighlight('WHITE')}></button>
                 </div>
             )}
         </div>
