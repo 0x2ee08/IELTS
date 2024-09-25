@@ -46,4 +46,4 @@ if __name__ == "__main__":
     language = 'en'
     print(os.system('pwd'))
     # webbrowser.open_new('http://localhost:3000/')
-    app.run(host="localhost", port=8081, debug=True)
+    app.run(host="localhost", port=5002, debug=True)

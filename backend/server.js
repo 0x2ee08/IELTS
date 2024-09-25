@@ -25,7 +25,7 @@ const graderWritingTask1Academic = require('./routes/graderWritingTask1Academic'
 const rankingRoutes = require('./routes/rankingRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 5001;
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
