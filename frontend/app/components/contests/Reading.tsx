@@ -150,17 +150,13 @@ const ReadingContest = ({ contest }: { contest: any }) => {
     );
 
     const renderYesNoNotGiven = (sectionIndex: number, questionIndex: number) => (
-        ['','Yes', 'No', 'Not Given'].map((option: string) => (
-            <label key={option}>
-                <input
-                    type="radio"
-                    name={`question-${sectionIndex}-${questionIndex}`}
-                    value={option}
-                    checked={userAnswers[activeParagraph]?.[sectionIndex]?.[questionIndex] === option}
-                    onChange={(e) => handleAnswerChange(sectionIndex, questionIndex, e.target.value)}
-                /> {option}
-            </label>
-        ))
+        <select 
+            value={userAnswers[activeParagraph]?.[sectionIndex]?.[questionIndex] || ''}
+            onChange={(e) => handleAnswerChange(sectionIndex, questionIndex, e.target.value)}>
+            {['','Yes', 'No', 'Not Given'].map((option: string, oIndex: number) => (
+                <option key={oIndex} value={option}>{option}</option>
+            ))}
+        </select>
     );
 
     const renderMatchingTable = (section: any) => {
