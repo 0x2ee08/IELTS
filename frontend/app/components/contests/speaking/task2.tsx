@@ -306,7 +306,7 @@ const Task2Page: React.FC<Task2PageProps> = ({ task, task_id, id, onTaskUpdate, 
                 return;
             }
 
-            await fetch(`${config.API_PRONOUNCE_BASE_URL}/api_pronounce/saveToGGDrive`, {
+            await fetch(`${config.API_PRONOUNCE_BASE_URL}api_pronounce/saveToGGDrive`, {
                 method: "post",
                 body: JSON.stringify({ "audioBase64": audioBase64 }),
                 headers: { "X-Api-Key": STScoreAPIKey }
@@ -315,7 +315,7 @@ const Task2Page: React.FC<Task2PageProps> = ({ task, task_id, id, onTaskUpdate, 
                     audioData = data['audioData'];
                 });
 
-            const res = await fetch(`${config.API_PRONOUNCE_BASE_URL}/api_pronounce/GetAccuracyFromRecordedAudio`, {
+            const res = await fetch(`${config.API_PRONOUNCE_BASE_URL}api_pronounce/GetAccuracyFromRecordedAudio`, {
                 method: "post",
                 body: JSON.stringify({ "title": "", "base64Audio": audioBase64, "language": 'en' }),
                 headers: { "X-Api-Key": STScoreAPIKey }
