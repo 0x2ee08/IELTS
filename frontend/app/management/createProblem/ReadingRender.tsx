@@ -86,7 +86,7 @@ const ReadingRender: React.FC = () => {
 
     const questionTypes = [
         "Choose a question type",
-        "Yes/No/Not given",
+        "Yes/No/Not Given",
         "True/False/Not Given",
         "Fill in the blank with one word only",
         "Fill in the blank with no more than two words",
