@@ -2,7 +2,6 @@ from TTS.api import TTS
 import base64
 import json
 import os
-from playsound import playsound
 
 def lambda_handler(event, context):
 
