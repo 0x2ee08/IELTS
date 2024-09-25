@@ -110,7 +110,7 @@ const SpeakingPage: React.FC = () => {
             console.log(taskArray[i]);
             if(taskArray[i].type !== "Task 2") {
                 for(let j=0; j<taskArray[i].number_of_task; j++) {
-                    await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromText`, {
+                    await fetch(`${config.API_PRONOUNCE_BASE_URL}/api_pronounce/getAudioFromText`, {
                         method: "post",
                         body: JSON.stringify({ "text": taskArray[i].questions[j] }),
                         headers: { "X-Api-Key": STScoreAPIKey }
@@ -118,7 +118,7 @@ const SpeakingPage: React.FC = () => {
                         .then(data => {
                             taskArray[i].audioData[j] = data['audioBase64'];
                         });
-                    await fetch(`${config.API_PRONOUNCE_BASE_URL}/saveToGGDrive`, {
+                    await fetch(`${config.API_PRONOUNCE_BASE_URL}/api_pronounce/saveToGGDrive`, {
                         method: "post",
                         body: JSON.stringify({ "audioBase64": taskArray[i].audioData[j] }),
                         headers: { "X-Api-Key": STScoreAPIKey }

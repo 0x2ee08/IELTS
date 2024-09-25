@@ -195,7 +195,7 @@ const Task3Page: React.FC<Task3PageProps> = ({ task, task_id, id, onTaskUpdate, 
     const preprocess = async () => {
         for(let i=0; i<Number(task.number_of_task); i++) {
             console.log(i, task.questions[i]);
-            await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromDrive`, {
+            await fetch(`${config.API_PRONOUNCE_BASE_URL}/api_pronounce/getAudioFromDrive`, {
                 method: "post",
                 body: JSON.stringify({ "url": task.audioData[i] }),
                 headers: { "X-Api-Key": STScoreAPIKey }
@@ -341,7 +341,7 @@ const Task3Page: React.FC<Task3PageProps> = ({ task, task_id, id, onTaskUpdate, 
                 return;
             }
 
-            await fetch(`${config.API_PRONOUNCE_BASE_URL}/saveToGGDrive`, {
+            await fetch(`${config.API_PRONOUNCE_BASE_URL}/api_pronounce/saveToGGDrive`, {
                 method: "post",
                 body: JSON.stringify({ "audioBase64": audioBase64 }),
                 headers: { "X-Api-Key": STScoreAPIKey }
@@ -350,7 +350,7 @@ const Task3Page: React.FC<Task3PageProps> = ({ task, task_id, id, onTaskUpdate, 
                     audioData = data['audioData'];
                 });
 
-            const res = await fetch(`${config.API_PRONOUNCE_BASE_URL}/GetAccuracyFromRecordedAudio`, {
+            const res = await fetch(`${config.API_PRONOUNCE_BASE_URL}/api_pronounce/GetAccuracyFromRecordedAudio`, {
                 method: "post",
                 body: JSON.stringify({ "title": "", "base64Audio": audioBase64, "language": 'en' }),
                 headers: { "X-Api-Key": STScoreAPIKey }
