@@ -7,7 +7,7 @@ import { time } from 'console';
 import axios from 'axios';
 import config from '../../config';
 import { useRouter } from 'next/navigation';
-import { Editor, EditorState, ContentState, Modifier, convertToRaw, convertFromRaw } from 'draft-js';
+import { Editor, DraftHandleValue, EditorState, ContentState, Modifier, convertToRaw, convertFromRaw } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 
 interface Paragraph {
@@ -389,6 +389,40 @@ const ReadingContest = ({ contest }: { contest: any }) => {
     const handleGoBack = async() => {
         window.location.href = '../contests'
     }
+
+    const handleBeforeInput = (chars: string, editorState: EditorState): DraftHandleValue => {
+        return 'handled';
+    };
+    
+    const handleKeyCommand = (command: string, editorState: EditorState): DraftHandleValue => {
+        if (command === 'delete' || command === 'backspace') {
+          return 'handled';
+        }
+        return 'not-handled'; 
+      };
+    const handlePastedText = (text: string, html: string | undefined, editorState: EditorState): DraftHandleValue => {
+    return 'handled';
+    };
+    const handleDrop = (selection: any, dataTransfer: any, isInternal: any): DraftHandleValue => {
+        return 'handled';
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
+            e.preventDefault();
+        }
+    };
+    useEffect(() => {
+        const editorElement = textRef.current;
+        if (editorElement) {
+            editorElement.addEventListener('keydown', handleKeyDown);
+        }
+        return () => {
+            if (editorElement) {
+                editorElement.removeEventListener('keydown', handleKeyDown);
+            }
+        };
+    }, []);
+
     let cnt=0;
     return (
         <>
@@ -462,8 +496,18 @@ const ReadingContest = ({ contest }: { contest: any }) => {
             <div ref={containerRef} className="contest-layout" style={{ height: `${windowHeight - 150}px` }}>
                 <div className="paragraph-content" style={{ width: `${leftWidth}px` }}>
                     <h2>{contest.paragraphs[activeParagraph].title}</h2>
-                    <div onMouseUp={() => handleEditorMouseUp('paragraph')} ref={textRef}>
-                        <Editor editorState={editorState} onChange={setEditorState} customStyleMap={styleMap} />
+                    <div onCut={(e) => e.preventDefault()} 
+                        onMouseUp={() => handleEditorMouseUp('paragraph')} 
+                        ref={textRef}
+                        onDrop={(e) => e.preventDefault()}>
+                        <Editor editorState={editorState}
+                                onChange={setEditorState}
+                                customStyleMap={styleMap} 
+                                handleBeforeInput={handleBeforeInput}
+                                handleKeyCommand={handleKeyCommand}
+                                handlePastedText={handlePastedText}
+                                handleDrop={handleDrop}
+                        />
                     </div>
                 </div>
                 <div className="splitter-bar" onMouseDown={handleMouseDown} />
