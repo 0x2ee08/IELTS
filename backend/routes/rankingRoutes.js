@@ -15,7 +15,10 @@ router.post('/getUsersScore', async (req, res) => {
         const db = await connectToDatabase();
         const userAnswerCollection = db.collection('user_answer');
 
-        const totalTask = 3;
+        const contestCollection = db.collection('contest');
+        const cts = await contestCollection.find({id}).toArray();
+
+        const totalTask = cts[0].taskArray.length;
         const userScores = {};
 
         for (let task_id = 0; task_id < totalTask; task_id++) {
