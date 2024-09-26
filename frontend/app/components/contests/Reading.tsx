@@ -16,51 +16,46 @@ interface Paragraph {
   }
 
 const ReadingContest = ({ contest }: { contest: any }) => {
-    const [leftWidth, setLeftWidth] = useState(850); // Default width of the left pane
-    const containerRef = useRef<HTMLDivElement | null>(null);
-    const [windowHeight, setWindowHeight] = useState(window.innerHeight);
-  
-    useEffect(() => {
-      const handleResize = () => {
-        setWindowHeight(window.innerHeight);
-      };
-  
-      window.addEventListener('resize', handleResize);
-  
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
-    }, []);
-  
-    const handleMouseDown = (e: React.MouseEvent) => {
-      const startX = e.clientX;
-      const initialLeftWidth = leftWidth;
-  
-      const handleMouseMove = (event: MouseEvent) => {
-        if (containerRef.current) {
-          const containerWidth = containerRef.current.offsetWidth;
-          const newLeftWidth = initialLeftWidth + (event.clientX - startX);
-  
-          // Define limits
-          const minLeftWidth = 150; 
-          const minRightWidth = 150; 
-          const maxLeftWidth = containerWidth - minRightWidth; 
+    const [leftWidth, setLeftWidth] = useState(50); // Left section width in percentage
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight);
 
-          // Ensure new left width stays within limits
-          if (newLeftWidth >= minLeftWidth && newLeftWidth <= maxLeftWidth) {
-            setLeftWidth(newLeftWidth);
-          }
-        }
-      };
-  
-      const handleMouseUp = () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-  
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowHeight(window.innerHeight);
     };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const startX = e.clientX;
+    const initialLeftWidth = leftWidth; // Initial width in percentage
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const newLeftWidth = (event.clientX / window.innerWidth) * 100; // Calculate new width in percentage
+
+        // Restrict the new width between 20% and 80%
+        if (newLeftWidth >= 20 && newLeftWidth <= 80) {
+          setLeftWidth(newLeftWidth);
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
 
     const [activeParagraph, setActiveParagraph] = useState(0);
     const [initialState, setInitialState] = useState(true);
@@ -494,7 +489,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
             </div>
             }
             <div ref={containerRef} className="contest-layout" style={{ height: `${windowHeight - 150}px` }}>
-                <div className="paragraph-content" style={{ width: `${leftWidth}px` }}>
+                <div className="paragraph-content" style={{ width: `${leftWidth}%` }}>
                     <h2>{contest.paragraphs[activeParagraph].title}</h2>
                     <div onCut={(e) => e.preventDefault()} 
                         onMouseUp={() => handleEditorMouseUp('paragraph')} 
@@ -511,7 +506,9 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                     </div>
                 </div>
                 <div className="splitter-bar" onMouseDown={handleMouseDown} />
-                <div className="sections-content">
+                <div 
+                    style={{ width: `${100 - leftWidth}%` }}
+                    className="sections-content">
                     {contest.paragraphs[activeParagraph].sections.map((section: any, secIndex: number) => (
                         <div key={secIndex}>
                             <p className="mb-4 font-bold"> Section {secIndex + 1}: {section.type}</p> 

@@ -42,17 +42,20 @@
     display: flex;
     margin-top: 20px;
     background-color: white;
+    width: 100vw;
 }
 
 .reading-contest-page .paragraph-content {
     overflow-y: scroll;
     padding: 15px;
     caret-color: transparent;
+    transition: width 0.005s;
 }
 .reading-contest-page .sections-content {
     flex-grow: 1;
     overflow-y: scroll;
     padding: 15px;
+    transition: width 0.005s;
 }
 
 
