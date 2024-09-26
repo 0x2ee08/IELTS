@@ -16,6 +16,52 @@ interface Paragraph {
   }
 
 const ReadingContest = ({ contest }: { contest: any }) => {
+    const [leftWidth, setLeftWidth] = useState(850); // Default width of the left pane
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const [windowHeight, setWindowHeight] = useState(window.innerHeight);
+  
+    useEffect(() => {
+      const handleResize = () => {
+        setWindowHeight(window.innerHeight);
+      };
+  
+      window.addEventListener('resize', handleResize);
+  
+      return () => {
+        window.removeEventListener('resize', handleResize);
+      };
+    }, []);
+  
+    const handleMouseDown = (e: React.MouseEvent) => {
+      const startX = e.clientX;
+      const initialLeftWidth = leftWidth;
+  
+      const handleMouseMove = (event: MouseEvent) => {
+        if (containerRef.current) {
+          const containerWidth = containerRef.current.offsetWidth;
+          const newLeftWidth = initialLeftWidth + (event.clientX - startX);
+  
+          // Define limits
+          const minLeftWidth = 150; 
+          const minRightWidth = 150; 
+          const maxLeftWidth = containerWidth - minRightWidth; 
+
+          // Ensure new left width stays within limits
+          if (newLeftWidth >= minLeftWidth && newLeftWidth <= maxLeftWidth) {
+            setLeftWidth(newLeftWidth);
+          }
+        }
+      };
+  
+      const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+  
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    };
+
     const [activeParagraph, setActiveParagraph] = useState(0);
     const [initialState, setInitialState] = useState(true);
     const initialTime = 60 * 60; // 60 minutes in seconds
@@ -62,7 +108,6 @@ const ReadingContest = ({ contest }: { contest: any }) => {
         const savedAnswers = Cookies.get('readingContestAnswers-' + contest.id);
         return savedAnswers ? JSON.parse(savedAnswers) : {};
     });
-    const [windowHeight, setWindowHeight] = useState(window.innerHeight);
 
     // Update window height dynamically on resize
     useEffect(() => {
@@ -333,7 +378,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
     };
 
     // Handle mouse and key events for checking selection in paragraphs and questions
-    const handleMouseUp = (editorType: 'paragraph' | 'question', index?: number) => {
+    const handleEditorMouseUp = (editorType: 'paragraph' | 'question', index?: number) => {
         setCurrentEditor(editorType);
         if (editorType === 'question' && index !== undefined) {
         setSelectedQuestionIndex(index);
@@ -414,14 +459,14 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                 </div>
             </div>
             }
-            <div className="contest-layout" style={{ height: `${windowHeight - 150}px` }}>
-                <div className="paragraph-content">
+            <div ref={containerRef} className="contest-layout" style={{ height: `${windowHeight - 150}px` }}>
+                <div className="paragraph-content" style={{ width: `${leftWidth}px` }}>
                     <h2>{contest.paragraphs[activeParagraph].title}</h2>
-                    <div onMouseUp={() => handleMouseUp('paragraph')} ref={textRef}>
+                    <div onMouseUp={() => handleEditorMouseUp('paragraph')} ref={textRef}>
                         <Editor editorState={editorState} onChange={setEditorState} customStyleMap={styleMap} />
                     </div>
                 </div>
-
+                <div className="splitter-bar" onMouseDown={handleMouseDown} />
                 <div className="sections-content">
                     {contest.paragraphs[activeParagraph].sections.map((section: any, secIndex: number) => (
                         <div key={secIndex}>

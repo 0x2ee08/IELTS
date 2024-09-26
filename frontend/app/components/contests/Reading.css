@@ -6,8 +6,7 @@
     padding: 10px;
     color: #333;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    
 }
 
 .reading-contest-page h1 {
@@ -43,21 +42,16 @@
     display: flex;
     margin-top: 20px;
     background-color: white;
-    gap: 10px;
 }
 
 .reading-contest-page .paragraph-content {
     overflow-y: scroll;
     padding: 15px;
-    flex-basis: 40%;
-    border-right: 2px solid #000;
 }
 .reading-contest-page .sections-content {
-    flex: 1;
+    flex-grow: 1;
     overflow-y: scroll;
     padding: 15px;
-    background-color: #fff;
-    flex-basis: 60%;
 }
 
 
@@ -142,6 +136,12 @@
     pointer-events: auto;
     z-index: 1000;
   }
+
+.reading-contest-page .splitter-bar {
+    width: 5px;
+    background-color: black; /* Adjustable bar color */
+    cursor: col-resize; /* Horizontal resize cursor */
+}
 
 @media (max-width: 768px) {
     .reading-contest-page .contest-layout {
