@@ -11,7 +11,6 @@ import audioread
 import numpy as np
 from torchaudio.transforms import Resample
 
-
 trainer_SST_lambda = {}
 trainer_SST_lambda['de'] = pronunciationTrainer.getTrainer("de")
 trainer_SST_lambda['en'] = pronunciationTrainer.getTrainer("en")
@@ -121,7 +120,7 @@ def lambda_handler(event, context):
            'end_time': result['end_time'],
            'is_letter_correct_all_words': is_letter_correct_all_words}
 
-    return json.dumps(res)
+    return res
 
 # From Librosa
 

@@ -9,6 +9,7 @@ import lambdaSpeechToScore
 import lambdaGetSample
 import lambdaSaveToGGDrive
 import lambdaGetAudioFromDrive
+import lambdaUpdateQueue
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -31,6 +32,11 @@ def testAPI():
 def getAudioFromText():
     event = {'body': json.dumps(request.get_json(force=True))}
     return lambdaTTS.lambda_handler(event, [])
+
+@app.route(rootPath+'/api_pronounce/updateQueue', methods=['POST'])
+def updateQueue():
+    event = {'body': json.dumps(request.get_json(force=True))}
+    return lambdaUpdateQueue.lambda_handler(event, [])
 
 @app.route(rootPath+'/api_pronounce/getAudioFromDrive', methods=['POST'])
 def getAudioFromDrive():

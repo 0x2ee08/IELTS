@@ -12,6 +12,8 @@ const path = require('path');
 const app = express();
 
 const router = express.Router();
+const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb';
+const API_PRONOUNCE_URL = process.env.API_PRONOUNCE_URL;
 
 function generateRandomString(length) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -179,13 +181,10 @@ router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
         await submissionCollection.insertOne(newSubmission);
 
         try {
-            const response = await fetch(`${config.API_PRONOUNCE_URL}api_pronounce/updateQueue`, {
+            const response = await fetch(`${API_PRONOUNCE_URL}api_pronounce/updateQueue`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`, // Include token if required
-                },
-                body: JSON.stringify({ submission_id: newSubmission.id, contestID: newSubmission.contestID, task_id, submit_time })
+                headers: { "X-Api-Key": STScoreAPIKey },
+                body: JSON.stringify({ submission_id: newSubmission.id, contestID: newSubmission.contestID, task_id })
             });
             if (response.ok) {
                 const result = await response.json();
