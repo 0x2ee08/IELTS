@@ -566,7 +566,7 @@ const ReadingContest = ({ contest }: { contest: any }) => {
                 </div>
             )}
         </div>
-        {!initialState && <header className="sticky bottom-0 bg-gray-200 dark:bg-gray-400 bg-opacity-90 text-white backdrop-blur-sm shadow-sm z-50">
+        {!initialState && <header className="sticky bottom-0 bg-gray-200 bg-opacity-90 text-white backdrop-blur-sm shadow-sm z-50">
             <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center py-5"> 
                     <div>
