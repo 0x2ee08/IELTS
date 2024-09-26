@@ -7,6 +7,7 @@ import Task1Page from './speaking/task1';
 import Task2Page from './speaking/task2';
 import Task3Page from './speaking/task3';
 import CustomPagination from './speaking/dataDisplayers/customPagination';
+import QueuePage from './speaking/dataDisplayers/queue';
 import RankingPage from '../ranking/ranking';
 
 export interface Task1QuestionGeneral {
@@ -149,6 +150,14 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({ id }) => {
         );
     };
 
+    const renderQueuePage = () => {
+        return (
+            <div>
+                <QueuePage id={id}/>
+            </div>
+        );
+    };
+
     const handleTaskUpdate = async () => {
         // Your logic to handle task update
     };
@@ -171,7 +180,12 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({ id }) => {
                     </div>
                     {currentPage < taskArray.length 
                         ? renderTaskPage(taskArray[currentPage]?.type, currentPage, taskArray[currentPage])
-                        : renderRankingPage()}
+                        : (currentPage === taskArray.length
+                            ? renderRankingPage() 
+                            : renderQueuePage()
+                        )
+                    }
+
                 </>
             )}
         </div>

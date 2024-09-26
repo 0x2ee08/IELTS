@@ -145,6 +145,29 @@ router.post('/getSpeakingAnswer', authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/getSpeakingInQueueAnswer', authenticateToken, async (req, res) => {
+    const { id } = req.body;
+    const { username } = req.user;
+    try {
+        const db = await connectToDatabase();
+        const problemsCollection = db.collection('user_answer');
+
+        let query = {
+            submit_by: username,
+            contestID: id,
+            status: false,
+        };
+
+        const submissions = await problemsCollection.find(query).toArray();
+        console.log(submissions);
+
+        res.json({ submissions: submissions });
+    } catch (error) {
+        console.error('Error fetching blog list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
     let { id, task_id, task, audioData } = req.body;
     // let { id, task_id, task, result } = req.body;
