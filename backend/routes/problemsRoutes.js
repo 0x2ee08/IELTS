@@ -126,7 +126,7 @@ router.post('/getSpeakingAnswer', authenticateToken, async (req, res) => {
         // console.log("--------");
         // console.log(result);
         const extractedResults = result.map((item, index) => ({
-            ...item.answer.result.reduce((acc, value, idx) => {
+            ...item.result.reduce((acc, value, idx) => {
                 acc[idx] = value; // Use the index of item.answer as the key and value as the value
                 return acc;
             }, {}),
@@ -145,6 +145,7 @@ router.post('/getSpeakingAnswer', authenticateToken, async (req, res) => {
 
 router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
     let { id, task_id, task, audioData } = req.body;
+    // let { id, task_id, task, result } = req.body;
     const { username } = req.user;
     const time_created = new Date();
 
@@ -164,11 +165,13 @@ router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
             id: generateRandomString(20),
             contestID: id,
             task_id: task_id,
+
             // answer: result,
+            // result: result,
             audioData: audioData,
             questions: task.questions,
             submit_by: username,
-            // result: result,
+            
             status: false,
             visibility: (contest.accessUser === '' ? 'public':'private'),
             submit_time: new Date().toISOString()
@@ -270,7 +273,7 @@ router.post('/getSpeakingGrading', authenticateToken, async (req, res) => {
         // console.log(query)
         const result = await problemCollection.find(query).toArray();
         console.log(result);
-        const extractedResults = result.map(item => item.answer.result);
+        const extractedResults = result.map(item => item.result);
         // console.log(skibidi);
         // const extractedResults = skibidi.map(innerArray => 
         //     innerArray.map(item => ({ band: item.band }))

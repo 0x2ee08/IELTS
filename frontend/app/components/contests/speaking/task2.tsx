@@ -335,7 +335,7 @@ const Task2Page: React.FC<Task2PageProps> = ({ task, task_id, id, onTaskUpdate, 
         // Ensure audioData is available before calling the second API
         if (audioDataArray.length > 0) {
             // Second API call to add the speaking answer
-            await fetch(`${config.API_BASE_URL}api/add_new_speaking_answer_test`, {
+            await fetch(`${config.API_BASE_URL}api/add_new_speaking_answer`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

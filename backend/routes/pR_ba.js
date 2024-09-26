@@ -115,14 +115,28 @@ router.post('/getSpeakingAnswer', authenticateToken, async (req, res) => {
 
         let query = {
             submit_by: username,
-            contestID: id
+            contestID: id,
+            $or: [
+                { status: true },
+                { status: { $exists: false } }
+            ]
         };
 
         const result = await problemsCollection.find(query).toArray();
-        const extractedResults = result.map(item => item.answer);
+        // console.log("--------");
+        // console.log(result);
+        const extractedResults = result.map((item, index) => ({
+            ...item.result.reduce((acc, value, idx) => {
+                acc[idx] = value; // Use the index of item.answer as the key and value as the value
+                return acc;
+            }, {}),
+            task_id: item.task_id,
+            time_created: item.submit_time
+        }));
+        // console.log(extractedResults)
         // const userAnswer = result.userAnswer.find(answer => answer.username === username);
 
-        res.json({ answer: extractedResults });
+        res.json({ answer: {username, "result": extractedResults} });
     } catch (error) {
         console.error('Error fetching blog list:', error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -130,13 +144,10 @@ router.post('/getSpeakingAnswer', authenticateToken, async (req, res) => {
 });
 
 router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
-    let { id, result, task_id, task } = req.body;
+    let { id, task_id, task, audioData } = req.body;
+    // let { id, task_id, task, result } = req.body;
     const { username } = req.user;
     const time_created = new Date();
-
-    console.log(result);
-    result['task_id'] = task_id
-    console.log(result);
 
     try {
         const db = await connectToDatabase();
@@ -154,65 +165,87 @@ router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
             id: generateRandomString(20),
             contestID: id,
             task_id: task_id,
-            answer: {
-                username,
-                result
-            },
+
+            // answer: result,
+            // result: result,
+            audioData: audioData,
             questions: task.questions,
             submit_by: username,
-            result: result,
+            
+            status: false,
             visibility: (contest.accessUser === '' ? 'public':'private'),
             submit_time: new Date().toISOString()
         };
         await submissionCollection.insertOne(newSubmission);
 
+        try {
+            const response = await fetch(`${config.API_PRONOUNCE_URL}api_pronounce/updateQueue`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`, // Include token if required
+                },
+                body: JSON.stringify({ submission_id: newSubmission.id, contestID: newSubmission.contestID, task_id, submit_time })
+            });
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Queue updated successfully:', result);
+            }
+            else{
+                const errorData = await response.json();
+                console.error(`Error updating queue: ${errorData.message || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error sending request to /updateQueue:', error);
+        }
+
         // if (time_created <= new Date(contest.endTime)) {
-            const rankingCollection = db.collection('ranking');
-            let ranking = await rankingCollection.findOne({ id: id });
+        //     const rankingCollection = db.collection('ranking');
+        //     let ranking = await rankingCollection.findOne({ id: id });
 
-            if (!ranking) {
-                await rankingCollection.insertOne({
-                    id: id,
-                    data: []
-                });
-                ranking = await rankingCollection.findOne({ id: id });
-            }
+        //     if (!ranking) {
+        //         await rankingCollection.insertOne({
+        //             id: id,
+        //             data: []
+        //         });
+        //         ranking = await rankingCollection.findOne({ id: id });
+        //     }
 
-            let userRanking = ranking.data.find(entry => entry.username === username);
+        //     let userRanking = ranking.data.find(entry => entry.username === username);
 
-            if (!userRanking) {
-                await rankingCollection.updateOne(
-                    { id: id },
-                    {
-                        $push: {
-                            data: {
-                                username: username,
-                                score: Array(contest.taskArray.length).fill(0)
-                            }
-                        }
-                    }
-                );
-                ranking = await rankingCollection.findOne({ id: id });
-                userRanking = ranking.data.find(entry => entry.username === username);
-            }
+        //     if (!userRanking) {
+        //         await rankingCollection.updateOne(
+        //             { id: id },
+        //             {
+        //                 $push: {
+        //                     data: {
+        //                         username: username,
+        //                         score: Array(contest.taskArray.length).fill(0)
+        //                     }
+        //                 }
+        //             }
+        //         );
+        //         ranking = await rankingCollection.findOne({ id: id });
+        //         userRanking = ranking.data.find(entry => entry.username === username);
+        //     }
 
-            let total = 0, mx = 0;
-            for(let i=0; i<result.length; i++) {
-                total = total + result[i].band.total;
-                mx = mx + 9;
-            }
+        //     let total = 0, mx = 0;
+        //     for(let i=0; i<result.length; i++) {
+        //         total = total + result[i].band.total;
+        //         mx = mx + 9;
+        //     }
 
-            const currentScore = userRanking.score[task_id] || 0;
-            const updatedScore = Math.max(currentScore, convertToIELTSBand(total, mx));
+        //     const currentScore = userRanking.score[task_id] || 0;
+        //     const updatedScore = Math.max(currentScore, convertToIELTSBand(total, mx));
 
-            await rankingCollection.updateOne(
-                { id: id, "data.username": username },
-                {
-                    $set: {
-                        [`data.$.score.${task_id}`]: updatedScore
-                    }
-                }
-            );
+        //     await rankingCollection.updateOne(
+        //         { id: id, "data.username": username },
+        //         {
+        //             $set: {
+        //                 [`data.$.score.${task_id}`]: updatedScore
+        //             }
+        //         }
+        //     );
         // }
 
         res.json({ success: true, message: 'Answer updated successfully' });
@@ -231,16 +264,20 @@ router.post('/getSpeakingGrading', authenticateToken, async (req, res) => {
         const problemCollection = db.collection('user_answer');
         let query = {
             contestID: id,
-            task_id: task_id
+            task_id: task_id,
+            $or: [
+                { status: true },
+                { status: { $exists: false } }
+            ]
         };
         // console.log(query)
         const result = await problemCollection.find(query).toArray();
-        // console.log(result);
-        const skibidi = result.map(item => item.answer.result);
+        console.log(result);
+        const extractedResults = result.map(item => item.result);
         // console.log(skibidi);
-        const extractedResults = skibidi.map(innerArray => 
-            innerArray.map(item => ({ band: item.band }))
-          );
+        // const extractedResults = skibidi.map(innerArray => 
+        //     innerArray.map(item => ({ band: item.band }))
+        //   );
           
         //   console.log(extractedResults);
         // console.log(result);
