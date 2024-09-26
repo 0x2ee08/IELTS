@@ -15,6 +15,18 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 rootPath = ''
 
+@app.route('/')
+def mainPage():
+    return "Still working"
+
+@app.route('/test')
+def testFunc():
+    return "Working pretty well"
+
+@app.route('/api_pronounce/test')
+def testAPI():
+    return "OK! No problem"
+
 @app.route(rootPath+'/api_pronounce/getAudioFromText', methods=['POST'])
 def getAudioFromText():
     event = {'body': json.dumps(request.get_json(force=True))}
@@ -46,4 +58,4 @@ if __name__ == "__main__":
     language = 'en'
     print(os.system('pwd'))
     # webbrowser.open_new('http://localhost:3000/')
-    app.run(host="localhost", port=5002, debug=True)
+    app.run(host="0.0.0.0", port=5002, debug=True)

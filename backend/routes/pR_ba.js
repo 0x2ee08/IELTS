@@ -119,20 +119,10 @@ router.post('/getSpeakingAnswer', authenticateToken, async (req, res) => {
         };
 
         const result = await problemsCollection.find(query).toArray();
-        // console.log("--------");
-        // console.log(result);
-        const extractedResults = result.map((item, index) => ({
-            ...item.answer.reduce((acc, value, idx) => {
-                acc[idx] = value; // Use the index of item.answer as the key and value as the value
-                return acc;
-            }, {}),
-            task_id: item.task_id,
-            time_created: item.submit_time
-        }));
-        // console.log(extractedResults)
+        const extractedResults = result.map(item => item.answer);
         // const userAnswer = result.userAnswer.find(answer => answer.username === username);
 
-        res.json({ answer: {username, "result": extractedResults} });
+        res.json({ answer: extractedResults });
     } catch (error) {
         console.error('Error fetching blog list:', error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -143,6 +133,10 @@ router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
     let { id, result, task_id, task } = req.body;
     const { username } = req.user;
     const time_created = new Date();
+
+    console.log(result);
+    result['task_id'] = task_id
+    console.log(result);
 
     try {
         const db = await connectToDatabase();
@@ -160,7 +154,10 @@ router.post('/add_new_speaking_answer', authenticateToken, async (req, res) => {
             id: generateRandomString(20),
             contestID: id,
             task_id: task_id,
-            answer: result,
+            answer: {
+                username,
+                result
+            },
             questions: task.questions,
             submit_by: username,
             result: result,
@@ -238,12 +235,12 @@ router.post('/getSpeakingGrading', authenticateToken, async (req, res) => {
         };
         // console.log(query)
         const result = await problemCollection.find(query).toArray();
-        console.log(result);
-        const extractedResults = result.map(item => item.answer);
+        // console.log(result);
+        const skibidi = result.map(item => item.answer.result);
         // console.log(skibidi);
-        // const extractedResults = skibidi.map(innerArray => 
-        //     innerArray.map(item => ({ band: item.band }))
-        //   );
+        const extractedResults = skibidi.map(innerArray => 
+            innerArray.map(item => ({ band: item.band }))
+          );
           
         //   console.log(extractedResults);
         // console.log(result);

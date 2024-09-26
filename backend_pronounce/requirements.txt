@@ -17,4 +17,9 @@ transformers
 sentencepiece
 ortools
 TTS
-whisper
+openai-whisper
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-cloud-storage

@@ -166,7 +166,7 @@ router.post('/create_speaking_problem', authenticateToken, async (req, res) => {
         endTime: endTime,
         problemName: problemName,
         created_by: username.username,
-        userAnswer: [],
+        //userAnswer: [],
     });
 
     res.json({ success: true, message: 'Problem created successfully' });

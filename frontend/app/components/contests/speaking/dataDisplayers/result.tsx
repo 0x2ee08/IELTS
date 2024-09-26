@@ -124,6 +124,7 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
         });
         const result = await response.json();
         const userAnswer = result.answer;
+        console.log(userAnswer)
         if (userAnswer && Array.isArray(userAnswer.result)) {
             setAnswerArray([]);
             for (let i = userAnswer.result.length - 1; i>=0 ; i--) {
@@ -160,7 +161,7 @@ const ResultPage: React.FC<ResultPageProps> = ({ task, task_id, id }) => {
 
     const getAudio = async (idx: number, audioUrl: string) => {
         let audioBase64 = ""
-        await fetch(`${config.API_PRONOUNCE_BASE_URL}/getAudioFromDrive`, {
+        await fetch(`${config.API_PRONOUNCE_BASE_URL}getAudioFromDrive`, {
             method: "post",
             body: JSON.stringify({ url: audioUrl }),
             headers: { "X-Api-Key": STScoreAPIKey }
