@@ -59,8 +59,8 @@ export default function FlashcardPage() {
         ) : (
           <>
             <h1 className="flex justify-center items-center text-4xl mb-4 text-[#03045E]">Flashcard Set: {title}</h1>
-            <h2 className="text-lg mb-4">Created by: {userName}</h2>
-            <div className="flashcard-container">
+            <h2 className="text-lg mb-4 flex items-center justify-center">Created by:<div style={{marginLeft:"5px"}} className='text-[#1fa2ff]'>{userName}</div></h2>
+            <div className="flashcard-container flashcard-grid">
               {flashcardSet.map((flashcard, index) => (
                 <div
                   key={index}
