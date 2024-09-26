@@ -341,17 +341,75 @@ const ReadingContest = ({ contest }: { contest: any }) => {
         checkSelection();
     };
 
+    const handleGoBack = async() => {
+        window.location.href = '../contests'
+    }
     let cnt=0;
     return (
         <>
         <div className="reading-contest-page">
             {initialState && <div className="overlay">
                 <div className="contest-alert" > 
-                    <p> Thời gian làm: 60p</p>
+                        <span
+                    onClick={handleGoBack}
+                    style={{
+                        cursor: 'pointer',
+                        float: 'right',
+                        fontSize: '24px',
+                        marginTop: '-10px',
+                        marginRight: '0px',
+                        position: 'absolute',
+                        right: '10px',
+                        top: '10px',
+                    }}
+                    >
+                        &times;
+                    </span>
+                    <h2
+                    style={{
+                        fontSize: '20px',
+                        fontWeight: 'bold',
+                        marginBottom: '15px',
+                    }}
+                    >
+                    Bắt đầu làm bài
+                    </h2>
+                    <p
+                    style={{
+                        fontSize: '16px',
+                        marginBottom: '10px',
+                        fontWeight: 'normal',
+                        textAlign: 'center'
+                    }}
+                    >
+                        Bài test này gồm <span style={{ color: '#007bff', fontWeight: 'bold'}}>3 phần</span> và{' '}
+                        <span style={{ color: '#007bff', fontWeight: 'bold' }}>36 câu hỏi</span>. Bạn có{' '}
+                        <span style={{ color: '#007bff', fontWeight: 'bold' }}>60 phút</span> để hoàn thành.
+                    </p>
+                    <p
+                    style={{
+                        fontSize: '16px',
+                        marginBottom: '20px',
+                        fontWeight: 'normal',
+                    }}
+                    >
+                        Nếu bạn đã sẵn sàng, hãy bấm vào nút Bắt đầu làm bài.
+                    </p>
                     <button
                         onClick={handleInitialState}
+                        style={{
+                            backgroundColor: '#007bff',
+                            color: 'white',
+                            padding: '10px 20px',
+                            border: 'none',
+                            borderRadius: '5px',
+                            fontWeight: 'bold',
+                            fontSize: '16px',
+                            cursor: 'pointer',
+                            width: '93%',
+                        }}
                     >
-                        Bắt Đầu 
+                        Bắt đầu làm bài
                     </button>
                 </div>
             </div>
