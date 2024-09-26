@@ -331,54 +331,76 @@ const Task3Page: React.FC<Task3PageProps> = ({ task, task_id, id, onTaskUpdate, 
     const processBlob = async () => {
         setIsProcess(true);
         if(!doneRecording) return;
+        let audioDataArray = [];
         for(let i=0; i<blobArray.length; i++) {
             const audioBlob = blobArray[i];
             const audioBase64 = await convertBlobToBase64(audioBlob);
-            let audioData = "";
+            // let audioData = "";
 
             if (audioBase64.length < 6) {
                 setRecordingError('Recording is too short.');
                 return;
             }
 
-            await fetch(`${config.API_PRONOUNCE_BASE_URL}api_pronounce/saveToGGDrive`, {
-                method: "post",
+            const saveResponse = await fetch(`${config.API_PRONOUNCE_BASE_URL}api_pronounce/saveToGGDrive`, {
+                method: "POST",
                 body: JSON.stringify({ "audioBase64": audioBase64 }),
                 headers: { "X-Api-Key": STScoreAPIKey }
-            }).then(res => res.json())
-                .then(data => {
-                    audioData = data['audioData'];
-                });
-
-            const res = await fetch(`${config.API_PRONOUNCE_BASE_URL}api_pronounce/GetAccuracyFromRecordedAudio`, {
-                method: "post",
-                body: JSON.stringify({ "title": "", "base64Audio": audioBase64, "language": 'en' }),
-                headers: { "X-Api-Key": STScoreAPIKey }
             });
-            const data = await res.json();
-            setResponseData(data);
-            const [band, feedback] = await grader(data, task.questions[i]);
 
-            result.push({ data, band, feedback, audioData });
+            if (!saveResponse.ok) {
+                const errorData = await saveResponse.json();
+                setRecordingError(`Error saving audio: ${errorData.message || 'Unknown error'}`);
+                return;
+            }    
 
+            const saveData = await saveResponse.json();
+            const audioData = saveData['audioData'];
+
+            if (audioData) {
+                audioDataArray.push(audioData); // Append audioData to the array
+            } else {
+                console.error('No audioData received from the first API call');
+            }
         }
+
+        // console.log({ id, task_id, task, audioData})
+        const token = localStorage.getItem('token');
+
+        // Ensure audioData is available before calling the second API
+        if (audioDataArray.length > 0) {
+            // Second API call to add the speaking answer
+            await fetch(`${config.API_BASE_URL}api/add_new_speaking_answer_test`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ id, task_id, task, audioData: audioDataArray }),
+            });
+        } else {
+            console.error('No audioData received from the first API call');
+        }
+
+
         setDoneRecording(false);
         setIsProcess(false);
-        save_record();
+        setSaveRecord(true);
+        // save_record();
     }
 
-    const save_record = async() => {
-        const token = localStorage.getItem('token');
-        await fetch(`${config.API_BASE_URL}api/add_new_speaking_answer`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ id, result, task_id, task}),   
-        });
-        setSaveRecord(true);
-    }
+    // const save_record = async() => {
+    //     const token = localStorage.getItem('token');
+    //     await fetch(`${config.API_BASE_URL}api/add_new_speaking_answer`, {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //             'Authorization': `Bearer ${token}`,
+    //         },
+    //         body: JSON.stringify({ id, result, task_id, task}),   
+    //     });
+    //     setSaveRecord(true);
+    // }
 
     const formatDateRange = (startTime: string, endTime: string) => {
         const startDate = new Date(startTime);
