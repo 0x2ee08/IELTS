@@ -47,6 +47,7 @@
 .reading-contest-page .paragraph-content {
     overflow-y: scroll;
     padding: 15px;
+    caret-color: transparent;
 }
 .reading-contest-page .sections-content {
     flex-grow: 1;
