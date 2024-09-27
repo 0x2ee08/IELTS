@@ -205,7 +205,9 @@ OUTPUT FORMAT:
 [QUESTION 6]
 [ANSWER 6]
 [EXPALINATION 6]
-<END>`}],
+<END>
+
+The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -238,7 +240,9 @@ OUTPUT FORMAT:
 [QUESTION 6]
 [ANSWER 6]
 [EXPALINATION 6]
-<END>`}],
+<END>
+
+The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -247,7 +251,7 @@ OUTPUT FORMAT:
     });
 
     var evaluation = response.data.choices[0].message.content.trim();
-
+    console.log(evaluation);
     const parsedEvaluation = parseEvaluationType1(evaluation);
     res.json(parsedEvaluation);
     console.log(parsedEvaluation);
@@ -284,7 +288,9 @@ OUTPUT FORMAT:
 [OPTION 4]
 [ANSWER 6]
 [EXPLAINATION 6]
-<END>`}],
+<END>
+
+The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -336,7 +342,9 @@ OUTPUT FORMAT:
 [OPTION 6]
 [ANSWER 6]
 [EXPLAINATION 6]
-<END>`}],
+<END>
+
+The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -372,7 +380,9 @@ router.post('/generateReadingFillOneWord', authenticateToken, async (req, res) =
             [ANSWER 6]
             [EXPLANATION 6]
             <END>
-            based on the paragraph with title "${title}" and content "${content}"`
+            based on the paragraph with title "${title}" and content "${content}
+            
+            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
@@ -407,7 +417,9 @@ router.post('/generateReadingFillTwoWords', authenticateToken, async (req, res) 
             [ANSWER 6]
             [EXPLANATION 6]
             <END>
-            based on the paragraph with title "${title}" and content "${content}"`
+            based on the paragraph with title "${title}" and content "${content}
+            
+            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
@@ -452,7 +464,9 @@ router.post('/generateReadingMatchingHeading', authenticateToken, async (req, re
             [ANSWER 6]
             [EXPLANATION 6]
             <END>
-            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 QUESTION and 8 OPTIONS"`
+            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 QUESTION and 8 OPTIONS
+            
+            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
@@ -498,7 +512,9 @@ router.post('/generateReadingMatchingParagraphInfo', authenticateToken, async (r
             [ANSWER 6]
             [EXPLANATION 6]
             <END>
-            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 QUESTION and 8 OPTIONS"`
+            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 QUESTION and 8 OPTIONS
+            
+            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
@@ -540,7 +556,9 @@ router.post('/generateReadingMatchingFeatures', authenticateToken, async (req, r
             [ANSWER 6]
             [EXPLANATION 6]
             <END>
-            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 FEATURE and 8 OPTIONS"`
+            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 FEATURE and 8 OPTIONS
+            
+            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
@@ -582,7 +600,9 @@ router.post('/generateReadingMatchingSentenceEnding', authenticateToken, async (
             [ANSWER 6]
             [EXPLANATION 6]
             <END>
-            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 SENTENCE and 8 OPTIONS (ENDING)"`
+            based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 SENTENCE and 8 OPTIONS (ENDING)
+            
+            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
