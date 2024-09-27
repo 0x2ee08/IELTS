@@ -14,9 +14,10 @@ interface Submission {
     // wrong: string,
     // empty: string, 
     // total: string,
-    result: Record<string,any>;
+    result: any,
     submit_time: string,
-    submit_by: string
+    submit_by: string,
+    status ?: boolean
 }
 
 function calculateBand(correct: string, total: string) {
@@ -37,6 +38,28 @@ function calculateBand(correct: string, total: string) {
     const roundedBand = Math.round(base9Ratio * 2) / 2;
   
     return roundedBand;
+  }
+
+  function calculateSpeakingBand(submission: Record<string,any>[]) {
+    let averageTotal = 0, averageFluency = 0, averageGrammar = 0, averageLexcial = 0, averagePronunciation = 0, averageResponse= 0;
+    let Total = 0, Fluency = 0, Grammar = 0, Lexcial = 0, Pronunciation = 0, Response= 0;
+    submission.forEach(element => {
+        Total +=  element.band.total;
+        Fluency += element.band.fluency;
+        Grammar += element.band.grammar;
+        Lexcial += element.band.lexical;
+        Pronunciation += element.band.pronunciation;
+        Response += element.band.response;
+    })
+    // console.log("HI", submission.length);
+    averageTotal = Total / submission.length;
+    averageFluency = Fluency / submission.length;
+    averageGrammar = Grammar / submission.length;
+    averageLexcial = Lexcial / submission.length;
+    averagePronunciation = Pronunciation / submission.length;
+    averageResponse = Response / submission.length;
+
+    return {averageTotal, averageFluency, averageGrammar, averageLexcial, averagePronunciation, averageResponse}
   }
 
   
@@ -98,15 +121,32 @@ const ResultPage: React.FC = () => {
                 <h2 className="text-xl font-semibold mb-6">List of All Submissions</h2>
                 {error && <p className="error text-red-500">{error}</p>}
                 {!error && submissions.length === 0 && <p>No submissions found.</p>}
-                {submissions.length > 0 && (
+                {submissions.length > 0 && submissions && (
                     <ul className="space-y-6">
                         {submissions.map((submission, index) => {
-                            const bandScore = calculateBand(submission.result.correct, submission.result.total);
-                            let bandColor = "text-red-600"; // Default color for band < 5.0
-                            if (bandScore >= 7.0) {
-                                bandColor = "text-green-600";
-                            } else if (bandScore >= 5.0) {
-                                bandColor = "text-yellow-600";
+                            let bandScore, bandColor, fluencyScore, grammarScore, lexicalScore, pronunciationScore, responseScore;
+                            if(submission.status == false){
+                                bandScore = 'In queue';
+                                bandColor = "text-gray-600";
+                            }
+                            else{
+                                if(submission.type != "Speaking") bandScore = calculateBand(submission.result.correct, submission.result.total);
+                                else{
+                                    var results = calculateSpeakingBand(submission.result);
+                                    bandScore = results.averageTotal;
+                                    fluencyScore = results.averageFluency;
+                                    grammarScore = results.averageGrammar;
+                                    lexicalScore = results.averageLexcial;
+                                    pronunciationScore = results.averagePronunciation;
+                                    responseScore = results.averageResponse;
+                                }
+                                bandColor = "text-red-600"; // Default color for band < 5.0
+                                if (bandScore >= 7.0) {
+                                    bandColor = "text-green-600";
+                                } else if (bandScore >= 5.0) {
+                                    bandColor = "text-yellow-600";
+                                }
+                                bandScore = bandScore.toFixed(1);
                             }
     
                             return (
@@ -117,7 +157,7 @@ const ResultPage: React.FC = () => {
                                                 <div className="flex items-center">
                                                     {/* Band Score */}
                                                     <span className={`text-4xl font-bold ${bandColor} mr-6`}>
-                                                        {bandScore.toFixed(1)}
+                                                        {bandScore}
                                                     </span>
             
                                                     {/* Contest Info */}
@@ -147,13 +187,40 @@ const ResultPage: React.FC = () => {
                                         </>
                                     )}
 
-                                    {submission.type === 'Speaking' && (
+                                    {submission.type === 'Speaking' && submission.status === false && (
+                                        <>
+                                                <div className="flex items-center">
+                                                    {/* Band Score */}
+                                                    <span className={`text-2xl font-bold ${bandColor} mr-6`}>
+                                                        {bandScore}
+                                                    </span>
+            
+                                                    {/* Contest Info */}
+                                                    <div className="text-lg space-y-1">
+                                                        <p className="font-semibold">
+                                                            {titles[submission.cid] || 'Loading...'}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Contest type: {submission.type}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Submit by: {submission.submit_by || 'Unknown'}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Submit time: {new Date(submission.submit_time).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                        </>
+                                    )}
+
+                                    {submission.type === 'Speaking' && submission.status !== false && (
                                         <>
                                             <Link href={`/results/${submission.sid}`}>
                                                 <div className="flex items-center">
                                                     {/* Band Score */}
                                                     <span className={`text-4xl font-bold ${bandColor} mr-6`}>
-                                                        {bandScore.toFixed(1)}
+                                                        {bandScore}
                                                     </span>
             
                                                     {/* Contest Info */}
@@ -175,11 +242,11 @@ const ResultPage: React.FC = () => {
             
                                                 {/* Answer Stats */}
                                                 <div className="mt-4 text-base">
-                                                    {/* <span className="text-gray-500 mr-4">Fluency: {submission.result.band.fluency}</span>
-                                                    <span className="text-gray-500 mr-4">Grammar: {submission.result.band.grammar}</span>
-                                                    <span className="text-gray-500 mr-4">Lexical Resource: {submission.result.band.lexical}</span>
-                                                    <span className="text-gray-500 mr-4">Pronunciation: {submission.result.band.pronunciation}</span>
-                                                    <span className="text-gray-500 mr-4">Response: {submission.result.band.response}</span> */}
+                                                    <span className="text-gray-500 mr-4">Fluency: {fluencyScore}</span>
+                                                    <span className="text-gray-500 mr-4">Grammar: {grammarScore}</span>
+                                                    <span className="text-gray-500 mr-4">Lexical Resource: {lexicalScore}</span>
+                                                    <span className="text-gray-500 mr-4">Pronunciation: {pronunciationScore}</span>
+                                                    <span className="text-gray-500 mr-4">Response: {responseScore}</span>
                                                 </div>
                                             </Link>
                                         </>

@@ -22,6 +22,7 @@ import { ClockIcon } from './icons/ClockIcon';
 import { MicroIcon } from './icons/MicroIcon';
 import PentagonChart from './dataDisplayers/pentagonChart';
 import DollarIcon from './icons/DollarIcon';
+import { useRouter } from 'next/navigation';
 
 export interface task2QuestionGeneral {
     type: string;
@@ -64,6 +65,7 @@ interface Feedback {
 }
 
 const Task2Page: React.FC<Task2PageProps> = ({ task, task_id, id, onTaskUpdate, description }) => {
+    const router = useRouter();
     const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [recordingError, setRecordingError] = useState<string | null>(null);
@@ -351,6 +353,7 @@ const Task2Page: React.FC<Task2PageProps> = ({ task, task_id, id, onTaskUpdate, 
         setDoneRecording(false);
         setIsProcess(false);
         setSaveRecord(true);
+        router.push('/results');
         // save_record();
     }
 

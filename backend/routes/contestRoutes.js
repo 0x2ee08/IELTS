@@ -463,7 +463,8 @@ router.get('/getAllSubmission', authenticateToken, async (req, res) => {
                 cid: submission.contestID,
                 result: submission.result,
                 submit_time: submission.submit_time,
-                submit_by: submission.submit_by
+                submit_by: submission.submit_by,
+                status: submission.status
             };
         });
 
@@ -503,7 +504,8 @@ router.get('/getGlobalSubmission', authenticateToken, async (req, res) => {
                 result: submission.result,
                 submit_time: submission.submit_time,
                 visibility: submission.visibility,
-                submit_by: submission.submit_by
+                submit_by: submission.submit_by,
+                status: submission.status
             };
         });
 
