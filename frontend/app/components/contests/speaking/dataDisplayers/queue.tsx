@@ -36,12 +36,12 @@ const QueuePage: React.FC<QueuePageProps> = ({ id }) => {
 
     return (
         <div className="p-8">
-            <h1 className='mb-4 text-xl'>
+            {/* <h1 className='mb-4 text-xl'>
                 Waiting too long for checking Speaking records? 
                 <Link href="/premiumPlan" className="text-blue-500 hover:underline">
                     {' '}Check our premium plan!
                 </Link>
-            </h1>
+            </h1> */}
             <h1 className='text-xl'><strong>Your in queue submissions</strong></h1>
             <ul className="mt-4">
                 {submissions.map((submission, index) => (
