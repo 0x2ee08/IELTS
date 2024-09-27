@@ -18,6 +18,8 @@ submissions = queue.Queue()
 submissions.put(1)
 submissions.put(2)
 submissions.put(3)
+duplicateQueue = set()
+
 processing = False
 lock = threading.Lock()
 
@@ -29,6 +31,7 @@ def lambda_handler(event, context):
 
     print("Receive:", submissionId)
     submissions.put(submissionId)
+    duplicateQueue.add(submissionId)
 
     if not processing:
         processing = True
@@ -46,7 +49,14 @@ def download_audio_from_google_drive(url):
         return None
 
 def process_submissions():
-    while not submissions.empty():
+    user_answer_collection = db["user_answer"]
+    response = user_answer_collection.find({"status": False, "type": "Speaking"})
+    for submission in response:
+        print(submission)
+        if submission['id'] not in duplicateQueue:
+            duplicateQueue.add(submission['id'])
+            submissions.put(submission['id'])
+    while not submissions.empty():  
         submission_id = submissions.get()
         try:
             print("Processing:", submission_id)
@@ -74,22 +84,47 @@ def process_submissions():
                             })
                         }
 
-                        pronunciation_result = lambdaSpeechToScore.lambda_handler(event, None)
-                        graderResponse = speakingGrader.grader(pronunciation_result, questions[i])
-                        band, feedback = graderResponse
+                        try:
+                            pronunciation_result = lambdaSpeechToScore.lambda_handler(event, None)
+                            graderResponse = speakingGrader.grader(pronunciation_result, questions[i])
+                            band, feedback = graderResponse
 
-                        result.append({
-                            'audioData': audio_url,
-                            'band': band,
-                            'feedback': feedback,
-                            'data': pronunciation_result
-                        })
+                            result.append({
+                                'audioData': audio_url,
+                                'band': band,
+                                'feedback': feedback,
+                                'data': pronunciation_result
+                            })
+                        except Exception as e:
+                            # Log the exception for debugging purposes
+                            print(f"Error processing audio {audio_url}: {str(e)}")
+
+                            result.append({
+                                'audioData': audio_url,
+                                'band': {
+                                    'pronunciation': 0,
+                                    'fluency': 0,
+                                    'lexical': 0,
+                                    'grammar': 0,
+                                    'response': 0,
+                                    'total': 0
+                                },
+                                'feedback': {
+                                    'pronunciation': "",
+                                    'fluency': "",
+                                    'lexical': "",
+                                    'grammar': "",
+                                    'response': "cannot process audio"
+                                },
+                                'data': {}
+                            })
                     else:
                         print(f"Audio download failed for {audio_url}")
             
                 response['result'] = result
                 
                 user_answer_collection.update_one({"id": submission_id}, {"$set": {"result": result, "status": True}})
+                duplicateQueue.discard(submission_id)
 
                 print(f"Successfully save submission for: {submission_id}")
 
