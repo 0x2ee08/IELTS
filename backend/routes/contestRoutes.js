@@ -650,4 +650,69 @@ router.post('/get_contest_type', authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/get_speaking_submission_global', authenticateToken, async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const Collection = db.collection('user_answer');
+        const { username } = req.user;
+        const { submissionID } = req.body;
+        let query = {
+            id: submissionID
+            // submit_by: username //should it be private or not, hmmm...
+        };
+
+        // console.log(query);
+
+        let submission = await Collection.find(query).toArray();
+
+        submission = submission[0];
+        if(!submission){
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+        // interface Submission {
+        //     contest_title: string;
+        //     correct_answer: Record<string, any>;
+        //   }
+
+        const contestCollection = db.collection('contest');
+        const contest = await contestCollection.findOne({ id: submission.contestID });
+        // console.log(submission.contestID);
+
+        if (!contest || (contest.accessUser !== "" && !contest.accessUser.split(',').includes(username))) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+    // result: Record<string,any>[],
+        const updatedResult = submission.result.map(item => {
+            const { audioData, ...rest } = item; // Destructure and remove 'audioData'
+            return rest; // Return the object without 'audioData'
+        });
+        let response = {
+                type: submission.type,
+                sid: submission.id,
+                cid: submission.contestID,
+                submit_time: submission.submit_time,
+                contest_title: contest.problemName,
+                task_id: submission.task_id,
+                submit_by: submission.submit_by,
+                questions: submission.questions,
+                result: updatedResult
+        };
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(200).json(response);
+        }
+    } catch (error) {
+        console.error("Error retrieving submissions:", error);
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Error retrieving submissions" });
+        }
+    }
+});
+
+
 module.exports = router;
