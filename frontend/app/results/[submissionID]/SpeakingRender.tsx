@@ -46,7 +46,17 @@ export default function SpeakingRender() {
     console.log(submission);
   return (
     <div className='flex flex-col min-h-screen p-4 ml-16 mr-16'>
-        
+        <div style={{
+        backgroundColor: '#fff8c4',  // Light blue background
+        color: '#333',
+        padding: '8px 20px',
+        fontSize: '14px',
+        textAlign: 'center',
+        width: '100%'
+        }}>
+                This site is under development. This is the raw data.
+        </div>
+        <br />
         {submission ? (
             <>
                 <div className='flex flex-col justify-between bg-white border border-gray-300 rounded-lg shadow-md p-8'>
