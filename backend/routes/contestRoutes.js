@@ -615,4 +615,39 @@ router.post('/getContestTitle', authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/get_contest_type', authenticateToken, async (req, res) => {
+    try {
+        const { username } = req.user;
+        const { submissionID } = req.body;
+
+        const db = await connectToDatabase();
+        const Collection = db.collection('user_answer');
+        const sub = await Collection.findOne({ id: submissionID });
+        
+        const contestCollection = db.collection('contest');
+        const contest = await contestCollection.findOne({ id: sub.contestID });
+        // console.log(submission.contestID);
+
+        if (!contest || (contest.accessUser !== "" && !contest.accessUser.split(',').includes(username))) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+        
+        let response = {
+            type: contest.type
+        };
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(200).json(response);
+        }
+    } catch (error) {
+        console.error("Error retrieving submissions:", error);
+
+        // Ensure only one response is sent
+        if (!res.headersSent) {
+            res.status(500).json({ message: "Error retrieving submissions" });
+        }
+    }
+});
+
 module.exports = router;
