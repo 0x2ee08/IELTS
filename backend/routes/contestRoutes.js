@@ -99,6 +99,44 @@ router.post('/createContestReading', authenticateToken, authorizeTeacher, async 
     }
 });
 
+router.post('/createContestWriting', authenticateToken, authorizeTeacher, async (req, res) => {
+    try {
+        const { type, accessUser, startTime, endTime, problemName, tasks } = req.body;
+        const { username } = req.user;
+
+        // Check for missing fields
+        if (!problemName || !startTime || !endTime || !tasks || tasks.length === 0) {
+            return res.status(400).json({ error: "Missing content." });
+        }
+
+        try {
+            const db = await connectToDatabase();
+            const contestCollection = db.collection('contest');
+
+            // Save the contest data to the database
+            const newContest = {
+                id: generateRandomString(8),
+                type,
+                accessUser,
+                startTime,
+                endTime,
+                problemName,
+                tasks,
+                created_by: username,
+            };
+            await contestCollection.insertOne(newContest);
+
+            res.json({ status: "Success" });
+        } catch (error) {
+            res.status(500).json({ error: 'Failed to process content.' });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error." });
+    }
+});
+
+
 
 router.get('/getAllContest', async (req, res) => {
     try {

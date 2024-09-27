@@ -1,6 +1,7 @@
 'use client';
 
 const WritingContest = ({ contest }: { contest: any }) => {
+    console.log(contest);
     return (
         <div>
             <h1>{contest.type} Contest</h1>

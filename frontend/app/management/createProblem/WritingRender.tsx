@@ -14,7 +14,7 @@ export interface Task {
 
 const taskTypes = [
     "Writing Task 1 General",
-    "Writing Task 1 Academic",
+    // "Writing Task 1 Academic",
     "Writing Task 2"
 ];
 
@@ -47,6 +47,38 @@ const WritingPage: React.FC = () => {
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    const createProblem = () => {
+        // console.log(problemName);
+        // console.log(paragraphs);
+
+        //add contest id
+        setIsLoading(true);
+
+        const token = localStorage.getItem('token');
+
+        axios.post(`${config.API_BASE_URL}api/createContestWriting`, {
+            problemName,
+            tasks,
+            accessUser,
+            startTime,
+            endTime,
+            "type" : "Writing"
+        }, 
+        { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            const data = response.data;
+            alert(data['status']);
+            console.log(data);
+            window.location.reload();
+        })
+        .catch(error => alert(error.response.data.error))
+        .finally(() => {
+            // console.log('Setting isLoading to false');
+            setIsLoading(false);
+        });
+    };
 
     const removeDuplicates = (value: string) => {
         // Split the string by comma and trim any extra spaces
@@ -260,7 +292,7 @@ const WritingPage: React.FC = () => {
                     Add Student
                 </button>
             </div>
-            
+
             <div className='flex space-x-4'>
                 <input 
                     type="datetime-local" 
@@ -389,6 +421,8 @@ const WritingPage: React.FC = () => {
 
             <button 
                 className="bg-green-500 text-white px-4 py-2 rounded-md mt-4"
+                onClick={createProblem} 
+                disabled={isLoading}
             >
                 Create Problem
             </button>

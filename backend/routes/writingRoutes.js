@@ -46,29 +46,29 @@ router.post('/generateWritingPrompt', authenticateToken, async(req, res)  => {
 
     var task = response.data.choices[0].message.content.trim();
 
-    console.log(task);
+    // console.log(task);
     //2 graph: Two pie chart & Multiple graphs
 
-    if(subtype.includes('Two') || subtype.includes('Multiple')){
+    // if(subtype.includes('Two') || subtype.includes('Multiple')){
 
-    }
-    else{
-        const response_2 = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-            model: model,
-            messages: [{ role: 'system', content: `Give me an data as a json to create a chart (graph/table) for IELTS ${type} problem. ${prp}. Prompt: ${task}. ${ntble}. Data must contain randomness, have significant fluctuations (increase, decrease,...) for participant to describe. Only output the data, print nothing else`}],
-        }, {
-            headers: {
-                'Authorization': `Bearer ${openRouterApiKey}`,
-                'Content-Type': 'application/json'
-            }
-        });
+    // }
+    // else{
+    //     const response_2 = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+    //         model: model,
+    //         messages: [{ role: 'system', content: `Give me an data as a json to create a chart (graph/table) for IELTS ${type} problem. ${prp}. Prompt: ${task}. ${ntble}. Data must contain randomness, have significant fluctuations (increase, decrease,...) for participant to describe. Only output the data, print nothing else`}],
+    //     }, {
+    //         headers: {
+    //             'Authorization': `Bearer ${openRouterApiKey}`,
+    //             'Content-Type': 'application/json'
+    //         }
+    //     });
 
-        var data = response_2.data.choices[0].message.content.trim();
-        res.json({content: data});
-    }
+    //     var data = response_2.data.choices[0].message.content.trim();
+    //     res.json({content: data});
+    // }
 
 
-    // res.json({content: task});
+    res.json({content: task});
 });
 // router.post('/get_class_list', async (req, res) => {
 //     const { school } = req.body;
