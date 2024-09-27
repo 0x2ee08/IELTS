@@ -73,18 +73,24 @@ const RankingPage: React.FC<RankingTableProps> = ({ questions, users }) => {
 
     // Handle sorting for scores and total score
     const sortedUsers = [...usersWithTotalScores].sort((a, b) => {
-        if (!sortConfig) return 0;
+        if (!sortConfig) {
+            // Default sorting by totalScore in descending order
+            return b.totalScore - a.totalScore;
+        }
+    
         const { key, direction } = sortConfig;
-
         const order = direction === 'asc' ? 1 : -1;
+    
         if (key === 'totalScore') {
-            return (a.totalScore - b.totalScore) * order;
+            return (b.totalScore - a.totalScore) * order;
         } else if (key.startsWith('score_')) {
             const index = parseInt(key.split('_')[1]);
-            return (a.score[index] - b.score[index]) * order;
+            return (b.score[index] - a.score[index]) * order;
         }
+    
         return 0;
     });
+    
 
     const getScoreClass = (score: number) => {
         if (score >= 8) return 'score-green';
