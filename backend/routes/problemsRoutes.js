@@ -290,7 +290,8 @@ router.post('/getSpeakingGrading', authenticateToken, async (req, res) => {
             $or: [
                 { status: true },
                 { status: { $exists: false } }
-            ]
+            ],
+            submit_by: username
         };
         // console.log(query)
         const result = await problemCollection.find(query).toArray();
