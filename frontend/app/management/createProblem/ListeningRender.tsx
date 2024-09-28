@@ -78,14 +78,26 @@ const ListeningPage = () => {
   const addPart = (index: number) => {
     setSections((prev) => {
       const newSections = [...prev];
-      newSections[index].parts.push({
+  
+      // Create a new part
+      const newPart: QuestionPart = {
         mcqs: [],
         tableFilling: [],
         shortAnswerQuestions: [],
         matchingExercise: null,
         customQuestions: [],
         selectedQuestionType: 'mcq',
-      });
+      };
+  
+      // Create a new parts array without mutating the existing one
+      const updatedParts = [...newSections[index].parts, newPart];
+  
+      // Update the specific section with the new parts array
+      newSections[index] = {
+        ...newSections[index],
+        parts: updatedParts,
+      };
+  
       return newSections;
     });
   };
@@ -320,16 +332,43 @@ const ListeningPage = () => {
   };
 
   const addCustomQuestion = (sectionIndex: number, partIndex: number) => {
-    setSections((prev) => {
-      const newSections = [...prev];
-      newSections[sectionIndex].parts[partIndex].customQuestions.push({
+    setSections((prevSections) => {
+      // Copy sections array
+      const newSections = [...prevSections];
+      
+      // Copy parts array within the section
+      const updatedParts = [...newSections[sectionIndex].parts];
+      
+      // Create a new custom question
+      const newCustomQuestion = {
         question: '',
         answer: '',
         explanation: '',
-      });
-      return newSections;
+      };
+  
+      // Add the new question to the specific part's customQuestions array
+      const updatedCustomQuestions = [
+        ...updatedParts[partIndex].customQuestions,
+        newCustomQuestion,
+      ];
+  
+      // Update the part with the new customQuestions array
+      updatedParts[partIndex] = {
+        ...updatedParts[partIndex],
+        customQuestions: updatedCustomQuestions,
+      };
+  
+      // Update the section with the new parts array
+      newSections[sectionIndex] = {
+        ...newSections[sectionIndex],
+        parts: updatedParts,
+      };
+  
+      return newSections; // Return the updated state
     });
   };
+  
+  
 
   const handleCustomQuestionChange = (
     sectionIndex: number,
@@ -340,12 +379,30 @@ const ListeningPage = () => {
   ) => {
     setSections((prev) => {
       const newSections = [...prev];
-      newSections[sectionIndex].parts[partIndex].customQuestions[
-        questionIndex
-      ][field] = event.target.value;
+  
+      // Copy the specific custom question array immutably
+      const updatedCustomQuestions = newSections[sectionIndex].parts[partIndex].customQuestions.map(
+        (question, idx) => {
+          if (idx === questionIndex) {
+            return {
+              ...question,
+              [field]: event.target.value,
+            };
+          }
+          return question;
+        }
+      );
+  
+      // Update the part with the new custom questions array
+      newSections[sectionIndex].parts[partIndex] = {
+        ...newSections[sectionIndex].parts[partIndex],
+        customQuestions: updatedCustomQuestions,
+      };
+  
       return newSections;
     });
   };
+  
 
   return (
     <div>
