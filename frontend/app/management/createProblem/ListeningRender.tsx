@@ -157,7 +157,7 @@ const ListeningPage = () => {
   const generateMCQs = async (index: number, partIndex: number) => {
     const script = sections[index].script;
     if (!script) return;
-
+  
     const token = localStorage.getItem('token');
     try {
       const response = await axios.post(
@@ -170,9 +170,21 @@ const ListeningPage = () => {
         }
       );
       const result: MCQ[] = response.data;
+  
       setSections((prev) => {
         const newSections = [...prev];
-        newSections[index].parts[partIndex].mcqs = result;
+        // Concatenate the answers with the question text (e.g., A. answer1, B. answer2, etc.)
+        const updatedCustomQuestions = result.map((mcq) => ({
+          question: `${mcq.question}\nA. ${mcq.answers[0]}\nB. ${mcq.answers[1]}\nC. ${mcq.answers[2]}\nD. ${mcq.answers[3]}`,
+          answer: '',  // Assuming there's a correct answer key in the API response
+          explanation: '',  // Adjust as needed
+        }));
+  
+        newSections[index].parts[partIndex] = {
+          ...newSections[index].parts[partIndex],
+          customQuestions: updatedCustomQuestions,
+          mcqs: result,
+        };
         newSections[index].error = '';
         return newSections;
       });
@@ -180,21 +192,18 @@ const ListeningPage = () => {
       console.error('Fetch error:', error);
       setSections((prev) => {
         const newSections = [...prev];
-        newSections[index].error =
-          'An error occurred while generating MCQs.';
+        newSections[index].error = 'An error occurred while generating MCQs.';
         newSections[index].parts[partIndex].mcqs = [];
         return newSections;
       });
     }
   };
+  
 
-  const generateTableFillingArray = async (
-    index: number,
-    partIndex: number
-  ) => {
+  const generateTableFillingArray = async (index: number, partIndex: number) => {
     const script = sections[index].script;
     if (!script) return;
-
+  
     const token = localStorage.getItem('token');
     try {
       const response = await axios.post(
@@ -207,9 +216,21 @@ const ListeningPage = () => {
         }
       );
       const result: TableFilling[] = response.data.tableFilling;
+  
       setSections((prev) => {
         const newSections = [...prev];
-        newSections[index].parts[partIndex].tableFilling = result;
+        // Map the table filling questions into custom questions
+        const updatedCustomQuestions = result.map((tf) => ({
+          question: tf.category,
+          answer: '',
+          explanation: '', // Modify this if needed
+        }));
+  
+        newSections[index].parts[partIndex] = {
+          ...newSections[index].parts[partIndex],
+          customQuestions: updatedCustomQuestions,
+          tableFilling: result,
+        };
         newSections[index].error = '';
         return newSections;
       });
@@ -217,21 +238,18 @@ const ListeningPage = () => {
       console.error('Fetch error:', error);
       setSections((prev) => {
         const newSections = [...prev];
-        newSections[index].error =
-          'An error occurred while generating Table Filling.';
+        newSections[index].error = 'An error occurred while generating Table Filling.';
         newSections[index].parts[partIndex].tableFilling = [];
         return newSections;
       });
     }
   };
+  
 
-  const generateShortAnswerQuestions = async (
-    index: number,
-    partIndex: number
-  ) => {
+  const generateShortAnswerQuestions = async (index: number, partIndex: number) => {
     const script = sections[index].script;
     if (!script) return;
-
+  
     const token = localStorage.getItem('token');
     try {
       const response = await axios.post(
@@ -243,10 +261,22 @@ const ListeningPage = () => {
           },
         }
       );
+      const result: ShortAnswerQuestion[] = response.data;
+  
       setSections((prev) => {
         const newSections = [...prev];
-        newSections[index].parts[partIndex].shortAnswerQuestions =
-          response.data;
+        // For Short Answer Questions, we just need question and answer (no multiple choices)
+        const updatedCustomQuestions = result.map((saq) => ({
+          question: saq.question,
+          answer: '', // Multiple answers can be comma-separated
+          explanation: '', // Adjust as needed
+        }));
+  
+        newSections[index].parts[partIndex] = {
+          ...newSections[index].parts[partIndex],
+          customQuestions: updatedCustomQuestions,
+          shortAnswerQuestions: result,
+        };
         newSections[index].error = '';
         return newSections;
       });
@@ -254,21 +284,19 @@ const ListeningPage = () => {
       console.error('Error generating short answer questions:', error);
       setSections((prev) => {
         const newSections = [...prev];
-        newSections[index].error =
-          'An error occurred while generating short answer questions.';
+        newSections[index].error = 'An error occurred while generating short answer questions.';
         newSections[index].parts[partIndex].shortAnswerQuestions = [];
         return newSections;
       });
     }
   };
+  
+  
 
-  const generateMatchingExercise = async (
-    index: number,
-    partIndex: number
-  ) => {
+  const generateMatchingExercise = async (index: number, partIndex: number) => {
     const script = sections[index].script;
     if (!script) return;
-
+  
     const token = localStorage.getItem('token');
     try {
       const response = await axios.post(
@@ -279,15 +307,23 @@ const ListeningPage = () => {
         }
       );
       const data = response.data;
-
+  
       const statements = data.matchings.map((item: any) => item.question);
       const features = data.matchings.map((item: any) => item.feature);
-
+  
       setSections((prev) => {
         const newSections = [...prev];
-        newSections[index].parts[partIndex].matchingExercise = {
-          statements,
-          features,
+        // Map matching exercise into custom questions
+        const updatedCustomQuestions = statements.map((statement: any) => ({
+          question: statement,  // Only the question should go here
+          answer: '',  // No need to include features in the answer field for matching
+          explanation: '', // Adjust as needed
+        }));
+  
+        newSections[index].parts[partIndex] = {
+          ...newSections[index].parts[partIndex],
+          customQuestions: updatedCustomQuestions,
+          matchingExercise: { statements, features },
         };
         newSections[index].error = '';
         return newSections;
@@ -296,13 +332,14 @@ const ListeningPage = () => {
       console.error('Error generating matching exercise:', error);
       setSections((prev) => {
         const newSections = [...prev];
-        newSections[index].error =
-          'An error occurred while generating the matching exercise.';
+        newSections[index].error = 'An error occurred while generating the matching exercise.';
         newSections[index].parts[partIndex].matchingExercise = null;
         return newSections;
       });
     }
   };
+  
+  
 
   const handleScriptChange = (
     index: number,
@@ -375,33 +412,36 @@ const ListeningPage = () => {
     partIndex: number,
     questionIndex: number,
     field: 'question' | 'answer' | 'explanation',
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setSections((prev) => {
-      const newSections = [...prev];
-  
-      // Copy the specific custom question array immutably
-      const updatedCustomQuestions = newSections[sectionIndex].parts[partIndex].customQuestions.map(
-        (question, idx) => {
-          if (idx === questionIndex) {
-            return {
-              ...question,
-              [field]: event.target.value,
-            };
-          }
-          return question;
-        }
-      );
-  
-      // Update the part with the new custom questions array
-      newSections[sectionIndex].parts[partIndex] = {
-        ...newSections[sectionIndex].parts[partIndex],
-        customQuestions: updatedCustomQuestions,
-      };
-  
-      return newSections;
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+) => {
+    setSections((prevSections) => {
+        // Create a deep copy of the sections array
+        const newSections = [...prevSections];
+
+        // Create a copy of the specific part's custom questions
+        const updatedCustomQuestions = newSections[sectionIndex].parts[partIndex].customQuestions.map(
+            (question, idx) => {
+                if (idx === questionIndex) {
+                    // Update the specific field (question/answer/explanation)
+                    return {
+                        ...question,
+                        [field]: event.target.value, // Update the field with the textarea's value
+                    };
+                }
+                return question;
+            }
+        );
+
+        // Update the part with the new custom questions array
+        newSections[sectionIndex].parts[partIndex] = {
+            ...newSections[sectionIndex].parts[partIndex],
+            customQuestions: updatedCustomQuestions,
+        };
+
+        return newSections; // Return the updated sections array
     });
-  };
+};
+
   
 
   return (
@@ -470,45 +510,46 @@ const ListeningPage = () => {
 
               {/* Custom Questions Section */}
               <div>
-                <button onClick={() => addCustomQuestion(sectionIndex, partIndex)}>
-                  Add Custom Question
-                </button>
                 {part.customQuestions.map((customQuestion, questionIndex) => (
                   <div key={questionIndex} style={{ marginTop: '10px' }}>
-                    <input
-                      type="text"
-                      placeholder="Custom Question"
-                      value={customQuestion.question}
-                      onChange={(e) =>
-                        handleCustomQuestionChange(
-                          sectionIndex,
-                          partIndex,
-                          questionIndex,
-                          'question',
-                          e
-                        )
-                      }
-                      style={{ width: '100%', marginBottom: '5px' }}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Answer"
-                      value={customQuestion.answer}
-                      onChange={(e) =>
-                        handleCustomQuestionChange(
-                          sectionIndex,
-                          partIndex,
-                          questionIndex,
-                          'answer',
-                          e
-                        )
-                      }
-                      style={{ width: '100%', marginBottom: '5px' }}
-                    />
-                    <input
-                      type="text"
+                    <div style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
+                      {/* Question Textarea */}
+                      <textarea
+                        placeholder="Question"
+                        value={customQuestion.question} // Display the question
+                        onChange={(e) =>
+                          handleCustomQuestionChange(
+                            sectionIndex,
+                            partIndex,
+                            questionIndex,
+                            'question',
+                            e
+                          )
+                        }
+                        style={{ width: '50%' }} // Adjust the width to fit on the same line
+                      />
+
+                      {/* Answer Textarea */}
+                      <textarea
+                        placeholder="Answer"
+                        value={customQuestion.answer} // Display the answer
+                        onChange={(e) =>
+                          handleCustomQuestionChange(
+                            sectionIndex,
+                            partIndex,
+                            questionIndex,
+                            'answer',
+                            e
+                          )
+                        }
+                        style={{ width: '50%' }} // Adjust the width to fit on the same line
+                      />
+                    </div>
+
+                    {/* Explanation Textarea on the second line */}
+                    <textarea
                       placeholder="Explanation"
-                      value={customQuestion.explanation}
+                      value={customQuestion.explanation} // Display the explanation
                       onChange={(e) =>
                         handleCustomQuestionChange(
                           sectionIndex,
@@ -518,11 +559,15 @@ const ListeningPage = () => {
                           e
                         )
                       }
-                      style={{ width: '100%', marginBottom: '5px' }}
+                      style={{ width: '100%', marginTop: '10px' }} // Full width for explanation
                     />
+
                   </div>
                 ))}
               </div>
+              <button onClick={() => addCustomQuestion(sectionIndex, partIndex)}>
+                Add Custom Question
+              </button>
             </div>
           ))}
 
