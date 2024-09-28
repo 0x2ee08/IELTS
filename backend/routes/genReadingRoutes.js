@@ -42,149 +42,131 @@ router.post('/generateReadingParagraph', authenticateToken, async (req, res) => 
 });
 
 function parseEvaluationType1(evaluation) {
+    const evaluationArray = JSON.parse(evaluation);
     const evaluationObject = {};
-    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
 
-    questionBlocks.forEach((block, index) => {
-        const questionMatch = block.match(/\[QUESTION (\d+)\]\s*(.*)/);
-        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
-        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
-
-        if (questionMatch && answerMatch && explanationMatch) {
-            const questionIndex = index + 1;
-            evaluationObject[questionIndex] = {
-                question: questionMatch[2].trim(),
-                answer: answerMatch[2].trim(),
-                explanation: explanationMatch[2].trim(),
-            };
-        }
-    });
-
-    return evaluationObject;
-}
-
-function parseEvaluationType3(evaluation) {
-    const evaluationObject = {
-        options: [],
-    };
-    
-    // Extract options
-    const optionMatches = [...evaluation.matchAll(/\[OPTION \d+\]\s*(.*)/g)];
-    optionMatches.forEach(option => {
-        evaluationObject.options.push(option[1].trim());
-    });
-
-    // Extract questions, answers, and explanations
-    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
-    questionBlocks.forEach((block, index) => {
-        const questionMatch = block.match(/\[QUESTION (\d+)\]\s*(.*)/);
-        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
-        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
-
-        if (questionMatch && answerMatch && explanationMatch) {
-            const questionIndex = index + 1;
-            evaluationObject[questionIndex] = {
-                question: questionMatch[2].trim(),
-                answer: answerMatch[2].trim(),
-                explanation: explanationMatch[2].trim(),
-            };
-        }
-    });
-
-    return evaluationObject;
-}
-
-function parseEvaluationType4(evaluation) {
-    const evaluationObject = {
-        options: [],
-    };
-    
-    // Extract options
-    const optionMatches = [...evaluation.matchAll(/\[OPTION \d+\]\s*(.*)/g)];
-    optionMatches.forEach(option => {
-        evaluationObject.options.push(option[1].trim());
-    });
-
-    // Extract questions, answers, and explanations
-    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
-    questionBlocks.forEach((block, index) => {
-        const questionMatch = block.match(/\[FEATURE (\d+)\]\s*(.*)/);
-        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
-        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
-
-        if (questionMatch && answerMatch && explanationMatch) {
-            const questionIndex = index + 1;
-            evaluationObject[questionIndex] = {
-                question: questionMatch[2].trim(),
-                answer: answerMatch[2].trim(),
-                explanation: explanationMatch[2].trim(),
-            };
-        }
-    });
-
-    return evaluationObject;
-}
-
-function parseEvaluationType5(evaluation) {
-    const evaluationObject = {
-        options: [],
-    };
-    
-    // Extract options
-    const optionMatches = [...evaluation.matchAll(/\[OPTION \d+\]\s*(.*)/g)];
-    optionMatches.forEach(option => {
-        evaluationObject.options.push(option[1].trim());
-    });
-
-    // Extract questions, answers, and explanations
-    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
-    questionBlocks.forEach((block, index) => {
-        const questionMatch = block.match(/\[SENTENCE (\d+)\]\s*(.*)/);
-        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
-        const explanationMatch = block.match(/\[EXPLANATION (\d+)\]\s*(.*)/);
-
-        if (questionMatch && answerMatch && explanationMatch) {
-            const questionIndex = index + 1;
-            evaluationObject[questionIndex] = {
-                question: questionMatch[2].trim(),
-                answer: answerMatch[2].trim(),
-                explanation: explanationMatch[2].trim(),
-            };
-        }
+    //evaluationArray.forEach((item, index) => {
+    Object.keys(evaluationArray).forEach(key => {
+        const item = evaluationArray[key];
+        const questionIndex = key;
+        evaluationObject[questionIndex] = {
+            question: item.question.trim(),
+            answer: item.answer.trim(),
+            explanation: item.explaination.trim(),
+        };
     });
 
     return evaluationObject;
 }
 
 function parseEvaluationType2(evaluation) {
+    const evaluationArray = JSON.parse(evaluation);
     const evaluationObject = {};
-    const questionBlocks = evaluation.split('<END>').filter(block => block.trim() !== '');
 
-    questionBlocks.forEach(block => {
-        const questionMatch = block.match(/\[QUESTION (\d+)\]\s*(.*)/);
-        const answerMatch = block.match(/\[ANSWER (\d+)\]\s*(.*)/);
-        const explanationMatch = block.match(/\[EXPLAINATION (\d+)\]\s*(.*)/);
+    // evaluationArray.forEach((item, index) => {
+        Object.keys(evaluationArray).forEach(key => {
+        // const questionIndex = index + 1;
+        const item = evaluationArray[key];
+        const questionIndex = key;
+        evaluationObject[questionIndex] = {
+            question: item.question.trim(),
+            options: item.options.map(option => option.trim()),
+            answer: item.answer.trim(),
+            explanation: item.explaination.trim(),
+        };
+    });
 
-        if (questionMatch && answerMatch && explanationMatch) {
-            const questionIndex = questionMatch[1].trim();
-            const options = [];
-            const optionMatches = [...block.matchAll(/\[OPTION \d+\]\s*(.*)/g)];
+    return evaluationObject;
+}
 
-            optionMatches.forEach(option => {
-                options.push(option[1].trim());
-            });
+function parseEvaluationType3(evaluationString) {
+    // First, parse the evaluation string into an object
+    const evaluation = JSON.parse(evaluationString);
 
-            evaluationObject[questionIndex] = {
-                question: questionMatch[2].trim(),  // Include the question text
-                options: options,
-                answer: answerMatch[2].trim(),
-                explanation: explanationMatch[2].trim(),
+    // Create the result object structure
+    const evaluationObject = {
+        options: [],
+    };
+
+    // Extract options
+    if (evaluation.options) {
+        evaluationObject.options = evaluation.options;
+    }
+
+    // Extract sections (e.g., "Section 1", "Section 2", etc.)
+    Object.keys(evaluation).forEach(key => {
+        if (key.startsWith("Section")) {
+            const sectionIndex = Number(key.split(" ")[1]); // Convert section number to a number
+            const section = evaluation[key];
+            evaluationObject[sectionIndex] = {
+                question: key,
+                answer: section.answer,
+                explanation: section.explaination // Note: Typo "explaination" is retained as per input
             };
         }
     });
 
     return evaluationObject;
 }
+
+function parseEvaluationType4(evaluationString) {
+    // First, parse the evaluation string into an object
+    const evaluation = JSON.parse(evaluationString);
+
+    // Create the result object structure
+    const evaluationObject = {
+        options: [],
+    };
+
+    // Extract options
+    if (evaluation.options) {
+        evaluationObject.options = evaluation.options;
+    }
+
+    Object.keys(evaluation).forEach(key => {
+        if (key.startsWith("Feature")) {
+            const sectionIndex = Number(key.split(" ")[1]); // Convert section number to a number
+            const section = evaluation[key];
+            evaluationObject[sectionIndex] = {
+                question: section.question,
+                answer: section.answer,
+                explanation: section.explaination // Note: Typo "explaination" is retained as per input
+            };
+        }
+    });
+
+    return evaluationObject;
+}
+
+function parseEvaluationType5(evaluationString) {
+    // First, parse the evaluation string into an object
+    const evaluation = JSON.parse(evaluationString);
+
+    // Create the result object structure
+    const evaluationObject = {
+        options: [],
+    };
+
+    // Extract options
+    if (evaluation.options) {
+        evaluationObject.options = evaluation.options;
+    }
+
+    Object.keys(evaluation).forEach(key => {
+        if (key.startsWith("Sentence")) {
+            const sectionIndex = Number(key.split(" ")[1]); // Convert section number to a number
+            const section = evaluation[key];
+            evaluationObject[sectionIndex] = {
+                question: section.question,
+                answer: section.answer,
+                explanation: section.explaination // Note: Typo "explaination" is retained as per input
+            };
+        }
+    });
+
+    return evaluationObject;
+}
+
 
 router.post('/generateReadingYNN', authenticateToken, async(req, res) => {
     const {title, content} = req.body;
@@ -193,19 +175,24 @@ router.post('/generateReadingYNN', authenticateToken, async(req, res) => {
         model: model,
         messages: [{ role: 'system', content: `Give me 6 questions (Yes/No/Not Given [Each type should appear on at least 1 questions]) [Answer should be "Yes", "No" or "Not Given". Write it in correct format ] IELTS Reading task (THE QUESTION SHOULD BE PARAPHASED) base on this paragraph : "${content}" with the title "${title}".
 OUTPUT FORMAT:
-[QUESTION 1]
-[ANSWER 1]
-[EXPLAINATION 1]
-<END>
-[QUESTION 2]
-[ANSWER 2]
-[EXPLAINATION 2]
-<END>
-....
-[QUESTION 6]
-[ANSWER 6]
-[EXPALINATION 6]
-<END>
+{
+    "1": {
+        "question": "question 1",
+        "answer": "answer 1",
+        "explaination": "explaination 1",
+    },
+    "2": {
+        "question": "question 2",
+        "answer": "answer 2",
+        "explaination": "explaination 2",
+    },
+    ...
+    "6": {
+        "question": "question 6",
+        "answer": "answer 6",
+        "explaination": "explaination 6",
+    }
+}
 
 The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
@@ -228,19 +215,24 @@ router.post('/generateReadingTFNG', authenticateToken, async(req, res) => {
         model: model,
         messages: [{ role: 'system', content: `Give me 6 questions (True/False/Not Given [Each type should appear on at least 1 questions]) [Answer should be "True", "False" or "Not Given". Write it in correct format ] IELTS Reading task (THE QUESTION SHOULD BE PARAPHASED) base on this paragraph : "${content}" with the title "${title}".
 OUTPUT FORMAT:
-[QUESTION 1]
-[ANSWER 1]
-[EXPLAINATION 1]
-<END>
-[QUESTION 2]
-[ANSWER 2]
-[EXPLAINATION 2]
-<END>
-....
-[QUESTION 6]
-[ANSWER 6]
-[EXPALINATION 6]
-<END>
+{
+    "1": {
+        "question": "question 1",
+        "answer": "answer 1",
+        "explaination": "explaination 1",
+    },
+    "2": {
+        "question": "question 2",
+        "answer": "answer 2",
+        "explaination": "explaination 2",
+    },
+    ...
+    "6": {
+        "question": "question 6",
+        "answer": "answer 6",
+        "explaination": "explaination 6",
+    }
+}
 
 The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
@@ -264,31 +256,27 @@ router.post('/generateReadingMCQOA', authenticateToken, async(req, res) => {
         model: model,
         messages: [{ role: 'system', content: `Give me 6 questions of Multiple Choice Question (One Answer only, 4 Options[there should be no comma]) and corresponding answer [MUST WRITE IN CORRECT FORMAT, MUST HAVE [QUESTION x], [OPTION x], [ANSWER x] and [EXPLAINATION x]] for IELTS Reading task (THE QUESTION AND OPTION SHOULD BE PARAPHASED) base on this paragraph : "${content}" with the title "${title}. MUST HAVE THE [OPTION] TAG".
 OUTPUT FORMAT:
-[QUESTION 1]
-[OPTION 1]
-[OPTION 2]
-[OPTION 3]
-[OPTION 4]
-[ANSWER 1]
-[EXPLAINATION 1]
-<END>
-[QUESTION 2]
-[OPTION 1]
-[OPTION 2]
-[OPTION 3]
-[OPTION 4]
-[ANSWER 2]
-[EXPLAINATION 2]
-<END>
-....
-[QUESTION 6]
-[OPTION 1]
-[OPTION 2]
-[OPTION 3]
-[OPTION 4]
-[ANSWER 6]
-[EXPLAINATION 6]
-<END>
+{
+    "1": {
+        "question": "question 1",
+        "options": ["option 1.1", "option 1.2", ..., "option 1.4"]
+        "answer": "answer 1",
+        "explaination": "explaination 1"
+    },
+    "2": {
+        "question": "question 2",
+        "options": ["option 2.1", "option 2.2", ..., "option 2.4"]
+        "answer": "answer 2",
+        "explaination": "explaination 2"
+    },
+    ...
+    "6": {
+        "question": "question 6",
+        "options": ["option 6.1", "option 6.2", ..., "option 6.4"]
+        "answer": "answer 6",
+        "explaination": "explaination 6"
+    }
+}
 
 The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
@@ -312,37 +300,27 @@ router.post('/generateReadingMCQMA', authenticateToken, async(req, res) => {
         model: model,
         messages: [{ role: 'system', content: `Give me 6 questions of Multiple Choice Question (AT LEAST TWO ANWER, FIVE or SIX Options[there should be no comma]) and corresponding answer [MUST WRITE IN CORRECT FORMAT, MUST HAVE [QUESTION x], [OPTION x], [ANSWER x] and [EXPLAINATION x]] for IELTS Reading task (THE QUESTION AND OPTION SHOULD BE PARAPHASED) base on this paragraph : "${content}" with the title "${title}. MUST HAVE THE [OPTION] TAG. MULTIPLE ANSWER, AT LEAST TWO ANSWER SEPERATED BY A COMMA, ANSWER SHOULD BE FULL TEXT FROM OPTIONS[]".
 OUTPUT FORMAT:
-[QUESTION 1]
-[OPTION 1]
-[OPTION 2]
-[OPTION 3]
-[OPTION 4]
-[OPTION 5]
-[OPTION 6]
-[ANSWER 1]
-[EXPLAINATION 1]
-<END>
-[QUESTION 2]
-[OPTION 1]
-[OPTION 2]
-[OPTION 3]
-[OPTION 4]
-[OPTION 5]
-[OPTION 6]
-[ANSWER 2]
-[EXPLAINATION 2]
-<END>
-....
-[QUESTION 6]
-[OPTION 1]
-[OPTION 2]
-[OPTION 3]
-[OPTION 4]
-[OPTION 5]
-[OPTION 6]
-[ANSWER 6]
-[EXPLAINATION 6]
-<END>
+{
+    "1": {
+        "question": "question 1",
+        "options": ["option 1.1", "option 1.2", ..., "option 1.6"]
+        "answer": "answer 1",
+        "explaination": "explaination 1"
+    },
+    "2": {
+        "question": "question 2",
+        "options": ["option 2.1", "option 2.2", ..., "option 2.6"]
+        "answer": "answer 2",
+        "explaination": "explaination 2"
+    },
+    ...
+    "6": {
+        "question": "question 6",
+        "options": ["option 6.1", "option 6.2", ..., "option 6.6"]
+        "answer": "answer 6",
+        "explaination": "explaination 6"
+    }
+}
 
 The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
@@ -367,19 +345,25 @@ router.post('/generateReadingFillOneWord', authenticateToken, async (req, res) =
         messages: [{
             role: 'system',
             content: `Generate 6 Fill in the Blanks (THE BLANK REPRESENT AS "........") question for IELTS READING TASK (ANSWER HAVE ONE WORD ONLY, 6 question SHOULD BE 6 OR MORE SENTENCE OF A PARAGRAPH) (question must be paraphased) (the given paragraph must contain answer word) with the following format: 
-            [QUESTION 1]
-            [ANSWER 1]
-            [EXPLANATION 1]
-            <END>
-            [QUESTION 2]
-            [ANSWER 2]
-            [EXPLANATION 2]
-            <END>
-            ...
-            [QUESTION 6]
-            [ANSWER 6]
-            [EXPLANATION 6]
-            <END>
+{
+    "1": {
+        "question": "question 1",
+        "answer": "answer 1",
+        "explaination": "explaination 1",
+    },
+    "2": {
+        "question": "question 2",
+        "answer": "answer 2",
+        "explaination": "explaination 2",
+    },
+    ...
+    "6": {
+        "question": "question 6",
+        "answer": "answer 6",
+        "explaination": "explaination 6",
+    }
+}
+
             based on the paragraph with title "${title}" and content "${content}
             
             The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
@@ -404,19 +388,25 @@ router.post('/generateReadingFillTwoWords', authenticateToken, async (req, res) 
         messages: [{
             role: 'system',
             content: `Generate 6 Fill in the Blanks (THE BLANK REPRESENT AS "........") question for IELTS READING TASK (ANSWER HAVE NO MORE THAN TWO WORD ,AT LEAST ONE QUESTION HAVE AN ANSWER CONTAIN TWO WORDS, 6 question SHOULD BE 6 OR MORE SENTENCE OF A PARAGRAPH) (question must be paraphased) (THE GIVEN PARAGRAPH MUST CONTAIN ANSWER WORDS) with the following format: 
-            [QUESTION 1]
-            [ANSWER 1]
-            [EXPLANATION 1]
-            <END>
-            [QUESTION 2]
-            [ANSWER 2]
-            [EXPLANATION 2]
-            <END>
-            ...
-            [QUESTION 6]
-            [ANSWER 6]
-            [EXPLANATION 6]
-            <END>
+            OUTPUT FORMAT:
+{
+    "1": {
+        "question": "question 1",
+        "answer": "answer 1",
+        "explaination": "explaination 1",
+    },
+    "2": {
+        "question": "question 2",
+        "answer": "answer 2",
+        "explaination": "explaination 2",
+    },
+    ...
+    "6": {
+        "question": "question 6",
+        "answer": "answer 6",
+        "explaination": "explaination 6",
+    }
+}
             based on the paragraph with title "${title}" and content "${content}
             
             The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
@@ -442,28 +432,22 @@ router.post('/generateReadingMatchingHeading', authenticateToken, async (req, re
         messages: [{
             role: 'system',
             content: `Generate a Matching Heading problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
-            [OPTION 1]
-            [OPTION 2]
-            [OPTION 3]
-            [OPTION 4]
-            ...
-            [OPTION 8]
-            [QUESTION 1]
-            Section 1
-            [ANSWER 1]
-            [EXPLANATION 1]
-            <END>
-            [QUESTION 2]
-            Section 2
-            [ANSWER 2]
-            [EXPLANATION 2]
-            <END>
-            ...
-            [QUESTION 6]
-            Section 6
-            [ANSWER 6]
-            [EXPLANATION 6]
-            <END>
+            {
+                "options": ["option 1", "option 2", "option 3", "option 4", ..., "option 8"],
+                "Section 1": {
+                    "answer": "answer 1",
+                    "explaination": "explaination 1"
+                },
+                "Section 2": {
+                    "answer": "answer 2",
+                    "explaination": "explaination 2"
+                },
+                ...
+                "Section 6": {
+                    "answer": "answer 6",
+                    "explaination": "explaination 6"
+                }
+            }
             based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 QUESTION and 8 OPTIONS
             
             The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
@@ -490,28 +474,22 @@ router.post('/generateReadingMatchingParagraphInfo', authenticateToken, async (r
         messages: [{
             role: 'system',
             content: `Generate a Matching Paragraph Information problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
-            [OPTION 1]
-            [OPTION 2]
-            [OPTION 3]
-            [OPTION 4]
-            ...
-            [OPTION 8]
-            [QUESTION 1]
-            Section 1
-            [ANSWER 1]
-            [EXPLANATION 1]
-            <END>
-            [QUESTION 2]
-            Section 2
-            [ANSWER 2]
-            [EXPLANATION 2]
-            <END>
-            ...
-            [QUESTION 6]
-            Section 6
-            [ANSWER 6]
-            [EXPLANATION 6]
-            <END>
+            {
+                "options": ["option 1", "option 2", "option 3", "option 4", ..., "option 8"],
+                "Section 1": {
+                    "answer": "answer 1",
+                    "explaination": "explaination 1"
+                },
+                "Section 2": {
+                    "answer": "answer 2",
+                    "explaination": "explaination 2"
+                },
+                ...
+                "Section 6": {
+                    "answer": "answer 6",
+                    "explaination": "explaination 6"
+                }
+            }
             based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 QUESTION and 8 OPTIONS
             
             The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
@@ -537,27 +515,27 @@ router.post('/generateReadingMatchingFeatures', authenticateToken, async (req, r
         messages: [{
             role: 'system',
             content: `Generate a Matching Features problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
-            [OPTION 1]
-            [OPTION 2]
-            [OPTION 3]
-            [OPTION 4]
-            ...
-            [OPTION 8]
-            [FEATURE 1]
-            [ANSWER 1]
-            [EXPLANATION 1]
-            <END>
-            [FEATURE 2]
-            [ANSWER 2]
-            [EXPLANATION 2]
-            <END>
-            ...
-            [FEATURE 6]
-            [ANSWER 6]
-            [EXPLANATION 6]
-            <END>
+            {
+                "options": ["option 1", "option 2", "option 3", "option 4", ..., "option 8"],
+                "Feature 1": {
+                    "question": "feature 1",
+                    "answer": "answer 1",
+                    "explaination": "explaination 1"
+                },
+                "Feature 2": {
+                    "question": "feature 2",
+                    "answer": "answer 2",
+                    "explaination": "explaination 2"
+                },
+                ...
+                "Feature 6": {
+                    "question": "feature 6",
+                    "answer": "answer 6",
+                    "explaination": "explaination 6"
+                }
+            }
             based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 FEATURE and 8 OPTIONS
-            
+            Option is a/an object/person... in the paragraph. Question is the action/apperance a/an object/person did/have in the paragraph
             The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
@@ -581,27 +559,27 @@ router.post('/generateReadingMatchingSentenceEnding', authenticateToken, async (
         messages: [{
             role: 'system',
             content: `Generate a Matching Sentence Ending problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
-            [OPTION 1]
-            [OPTION 2]
-            [OPTION 3]
-            [OPTION 4]
-            ...
-            [OPTION 8]
-            [SENTENCE 1]
-            [ANSWER 1]
-            [EXPLANATION 1]
-            <END>
-            [SENTENCE 2]
-            [ANSWER 2]
-            [EXPLANATION 2]
-            <END>
-            ...
-            [SENTENCE 6]
-            [ANSWER 6]
-            [EXPLANATION 6]
-            <END>
+            {
+                "options": ["option 1", "option 2", "option 3", "option 4", ..., "option 8"],
+                "Sentence 1": {
+                    "question": "opening sentence 1",
+                    "answer": "answer 1",
+                    "explaination": "explaination 1"
+                },
+                "Sentence 2": {
+                    "question": "opening sentence 2",
+                    "answer": "answer 2",
+                    "explaination": "explaination 2"
+                },
+                ...
+                "Sentence 6": {
+                    "question": "opening sentence 6",
+                    "answer": "answer 6",
+                    "explaination": "explaination 6"
+                }
+            }
             based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 SENTENCE and 8 OPTIONS (ENDING)
-            
+            Question is the first part of the sentence. Options contain possible choice for the last part of the sentence. If we combine the first part (question) and last part (options) correctly, we get a full, have meaning, grammar correct sentence.
             The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {

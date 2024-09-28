@@ -664,7 +664,7 @@ const ReadingRender: React.FC = () => {
         const content = selectedParagraph.content;
         // console.log(selectedSection.type);
         switch (selectedSection.type) {
-            case 'Yes/No/Not given':
+            case 'Yes/No/Not Given':
                 handleGenerateYNNQuestion(pIndex, sIndex, title, content);
                 break;
             case 'True/False/Not Given':
@@ -1084,7 +1084,7 @@ const ReadingRender: React.FC = () => {
                                             
                                             {section.questions.map((q, qIndex) => (
                                                 <div key={qIndex} className="my-2">
-                                                    {section.type === 'Yes/No/Not given' || section.type === 'True/False/Not Given' ? (
+                                                    {section.type === 'Yes/No/Not Given' || section.type === 'True/False/Not Given' ? (
                                                         <>
                                                         <div className="flex items-center">
                                                             <input 
@@ -1096,7 +1096,7 @@ const ReadingRender: React.FC = () => {
                                                             />
                                                     
                                                             <div className="flex justify-center items-center w-1/2 space-x-4">
-                                                                {section.type === 'Yes/No/Not given' ? (
+                                                                {section.type === 'Yes/No/Not Given' ? (
                                                                     <>
                                                                         <label className="flex items-center space-x-1">
                                                                             <input 
