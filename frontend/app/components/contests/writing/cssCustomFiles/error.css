@@ -1,0 +1,21 @@
+.highlight {
+    text-decoration: underline;
+    color: red;
+    cursor: pointer;
+    position: relative;
+}
+
+.highlight:hover::after {
+    content: attr(data-suggestion);
+    position: absolute;
+    background-color: #ffffff;
+    border: 2px solid #dcdcdc;
+    padding: 8px;
+    border-radius: 12px;
+    bottom: 100%;
+    right: 0%;
+    white-space: nowrap;
+    font-size: 1rem;
+    color: green;
+    z-index: 10;
+}
