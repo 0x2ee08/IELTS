@@ -151,6 +151,7 @@
 
 .reading-contest-page .disable-pointer-events * {
     pointer-events: none; /* Disable interaction for all elements */
+    user-select: none;
 }
 
 @media (max-width: 768px) {
