@@ -6,96 +6,8 @@ import axios from 'axios';
 import config from '../../config'; 
 import './submission.css';
 import Link from 'next/link';
+import PieChart from './reading/donut_chart';
 
-interface RingProps {
-  correct: number;
-  incorrect: number;
-  skipped: number;
-}
-const Ring: React.FC<RingProps> = ({ correct, incorrect, skipped }) => {
-  const total = correct + incorrect + skipped;
-  const correctPercentage = (correct / total) * 100 || 0;
-  const incorrectPercentage = (incorrect / total) * 100 || 0;
-  const skippedPercentage = (skipped / total) * 100 || 0;
-
-  const radius = 120; // Radius
-  const strokeWidth = 50; // Stroke width
-
-  const circumference = 2 * Math.PI * radius;
-  const correctStrokeDasharray = `${(correctPercentage / 100) * circumference} ${circumference}`;
-  const incorrectStrokeDasharray = `${(incorrectPercentage / 100) * circumference} ${circumference}`;
-  const skippedStrokeDasharray = `${(skippedPercentage / 100) * circumference} ${circumference}`;
-  const band = calculateBand(correct.toString(), total.toString());
-
-  return (
-    <div className="flex flex-col items-center">
-      <svg width="300" height="300">
-        <circle
-          cx="150" 
-          cy="150" 
-          r={radius}
-          stroke="#4CAF50" 
-          strokeWidth={strokeWidth}
-          fill="transparent"
-          strokeDasharray={correctStrokeDasharray}
-          strokeDashoffset={0}
-        />
-        <circle
-          cx="150" 
-          cy="150" 
-          r={radius}
-          stroke="#f00" 
-          strokeWidth={strokeWidth}
-          fill="transparent"
-          strokeDasharray={incorrectStrokeDasharray}
-          strokeDashoffset={-correctPercentage * circumference / 100}
-        />
-        <circle
-          cx="150" 
-          cy="150" 
-          r={radius}
-          stroke="#f0f0f0" 
-          strokeWidth={strokeWidth}
-          fill="transparent"
-          strokeDasharray={skippedStrokeDasharray}
-          strokeDashoffset={-(correctPercentage + incorrectPercentage) * circumference / 100}
-        />
-        <text
-          x="150" 
-          y="150" 
-          textAnchor="middle" 
-          dominantBaseline="middle" 
-          fontSize="40" 
-          fill="#000" 
-        >
-          {band.toFixed(1)}
-        </text>
-      </svg>
-
-      {/* Percentage Descriptions */}
-      <div className="flex justify-around mt-4">
-        <div className="flex items-center">
-          <svg width="20" height="20">
-            <rect width="20" height="20" fill="#4CAF50" />
-          </svg>
-          <span className="ml-2 mr-4"> Correct</span>
-        </div>
-        <div className="flex items-center">
-          <svg width="20" height="20">
-            <rect width="20" height="20" fill="#f00" />
-          </svg>
-          <span className="ml-2 mr-4"> Incorrect</span>
-        </div>
-        <div className="flex items-center">
-          <svg width="20" height="20">
-            <rect width="20" height="20" fill="#f0f0f0" />
-          </svg>
-          <span className="ml-2 mr-4"> Skipped</span>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 interface Submission {
   type: string;
@@ -112,20 +24,6 @@ interface Submission {
   correct_answer: Record<string, any>;
 }
 
-function calculateBand(correct: string, total: string) {
-  const correctNum = parseFloat(correct);
-  const totalNum = parseFloat(total);
-
-  if (isNaN(correctNum) || isNaN(totalNum) || totalNum === 0) {
-    return 0;
-  }
-
-  const ratio = correctNum / totalNum;
-  const base9Ratio = ratio * 9;
-  const roundedBand = Math.round(base9Ratio * 2) / 2;
-
-  return roundedBand;
-}
 
 function compareAnswers(
   userAnswer: Record<string, any>, 
@@ -255,31 +153,33 @@ export default function ReadingRender() {
 
             <div className="flex justify-center lg:justify-start">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                <div className="bg-[#F0F0F0] rounded-lg shadow-lg p-6 w-40 h-40 flex flex-col justify-center items-center">
-                  <p className="text-2xl text-[#4CAF50] font-bold">Correct</p>
-                  <p className="text-4xl mt-2 font-semibold">{correct}</p>
+                <div className="bg-white/70 backdrop-blur-md rounded-xl shadow-xl p-6 w-40 h-40 flex flex-col justify-center items-center hover:scale-105 transition-transform duration-300 border border-gray-300">
+                  <p className="text-lg text-[#4CAF50] font-semibold uppercase tracking-wide">Correct</p>
+                  <p className="text-5xl mt-2 font-bold text-gray-900">{correct}</p>
                 </div>
 
-                <div className="bg-[#F0F0F0] rounded-lg shadow-lg p-6 w-40 h-40 flex flex-col justify-center items-center">
-                  <p className="text-2xl text-[#f44336] font-bold">Incorrect</p>
-                  <p className="text-4xl mt-2 font-semibold">{wrong}</p>
+                <div className="bg-white/70 backdrop-blur-md rounded-xl shadow-xl p-6 w-40 h-40 flex flex-col justify-center items-center hover:scale-105 transition-transform duration-300 border border-gray-300">
+                  <p className="text-lg text-[#f44336] font-semibold uppercase tracking-wide">Incorrect</p>
+                  <p className="text-5xl mt-2 font-bold text-gray-900">{wrong}</p>
                 </div>
 
-                <div className="bg-[#F0F0F0] rounded-lg shadow-lg p-6 w-40 h-40 flex flex-col justify-center items-center">
-                  <p className="text-2xl text-[#6B7280] font-bold">Skipped</p>
-                  <p className="text-4xl mt-2 font-semibold">{skipped}</p>
+                <div className="bg-white/70 backdrop-blur-md rounded-xl shadow-xl p-6 w-40 h-40 flex flex-col justify-center items-center hover:scale-105 transition-transform duration-300 border border-gray-300">
+                  <p className="text-lg text-[#E0A806] font-semibold uppercase tracking-wide">Skipped</p>
+                  <p className="text-5xl mt-2 font-bold text-gray-900">{skipped}</p>
                 </div>
 
-                <div className="bg-[#F0F0F0] rounded-lg shadow-lg p-6 w-40 h-40 flex flex-col justify-center items-center">
-                  <p className="text-2xl text-black font-bold">Total</p>
-                  <p className="text-4xl mt-2 font-semibold">{total}</p>
+                <div className="bg-white/70 backdrop-blur-md rounded-xl shadow-xl p-6 w-40 h-40 flex flex-col justify-center items-center hover:scale-105 transition-transform duration-300 border border-gray-300">
+                  <p className="text-lg text-black font-semibold uppercase tracking-wide">Total</p>
+                  <p className="text-5xl mt-2 font-bold text-gray-900">{total}</p>
                 </div>
               </div>
             </div>
+
           </div>
 
           <div className="flex justify-center items-center w-full lg:w-1/3 lg:justify-end mt-8 lg:mt-0">
-            <Ring correct={correct} incorrect={wrong} skipped={skipped} />
+            {/* <Ring correct={correct} incorrect={wrong} skipped={skipped} /> */}
+            <PieChart correct={correct} incorrect={wrong} skipped={skipped}/>
           </div>
         </div>
 
@@ -298,7 +198,7 @@ export default function ReadingRender() {
                             ? 'border-green-500 text-green-500 hover:bg-green-100 active:bg-green-200'
                             : item.status === 'wrong'
                             ? 'border-red-500 text-red-500 hover:bg-red-100 active:bg-red-200'
-                            : 'border-gray-500 text-gray-500 hover:bg-gray-100 active:bg-gray-200'
+                            : 'border-[#E0A806] text-[#E0A806] hover:bg-gray-100 active:bg-gray-200'
                         } border-2 transition-colors duration-200 ease-in-out rounded-lg p-2`}
                       >
                         {index + 1}
@@ -315,7 +215,7 @@ export default function ReadingRender() {
                     >
                       <p>Your answer: 
                         {item.status === 'skipped' ? (
-                          <i className="ml-2 text-gray-500">Skipped</i>
+                          <i className="ml-2 text-[#FFC107]">Skipped</i>
                         ) : item.status === 'correct' ? (
                           <span className="ml-2 text-green-500">{item.userAns}</span>
                         ) : (
