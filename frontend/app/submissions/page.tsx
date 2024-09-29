@@ -62,6 +62,15 @@ function calculateBand(correct: string, total: string) {
     return {averageTotal, averageFluency, averageGrammar, averageLexcial, averagePronunciation, averageResponse}
   }
 
+  function calcualteWritingBand(result: any[]) {
+
+    const scores = result.map(r => Number(r.band) || 0); // Extract scores or default to 0
+    const totalScore = scores.reduce((sum: any, score: any) => sum + score, 0); // Sum of scores
+    const averageScore = totalScore / scores.length; // Calculate average score
+
+    return Number(averageScore);
+}
+
   
 const ResultPage: React.FC = () => {
     const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -130,7 +139,8 @@ const ResultPage: React.FC = () => {
                                 bandColor = "text-gray-600";
                             }
                             else{
-                                if(submission.type != "Speaking") bandScore = calculateBand(submission.result.correct, submission.result.total);
+                                if(submission.type === "Reading") bandScore = calculateBand(submission.result.correct, submission.result.total);
+                                else if(submission.type === "Writing") bandScore = calcualteWritingBand(submission.result);
                                 else{
                                     var results = calculateSpeakingBand(submission.result);
                                     bandScore = results.averageTotal;
@@ -247,6 +257,42 @@ const ResultPage: React.FC = () => {
                                                     <span className="text-gray-500 mr-4">Lexical Resource: {lexicalScore}</span>
                                                     <span className="text-gray-500 mr-4">Pronunciation: {pronunciationScore}</span>
                                                     <span className="text-gray-500 mr-4">Response: {responseScore}</span>
+                                                </div>
+                                            </Link>
+                                        </>
+                                    )}
+                                    {submission.type === 'Writing' && (
+                                        <>
+                                            <Link href={`/results/${submission.sid}`}>
+                                                <div className="flex items-center">
+                                                    {/* Band Score */}
+                                                    <span className={`text-4xl font-bold ${bandColor} mr-6`}>
+                                                        {bandScore}
+                                                    </span>
+            
+                                                    {/* Contest Info */}
+                                                    <div className="text-lg space-y-1">
+                                                        <p className="font-semibold">
+                                                            {titles[submission.cid] || 'Loading...'}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Contest type: {submission.type}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Submit by: {submission.submit_by || 'Unknown'}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            Submit time: {new Date(submission.submit_time).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+            
+                                                {/* Answer Stats */}
+                                                <div className="mt-4 text-base">
+                                                    <span className="text-gray-500 mr-4">TR: {submission.result[0].band}</span>
+                                                    <span className="text-gray-500 mr-4">CC: {submission.result[1].band}</span>
+                                                    <span className="text-gray-500 mr-4">LR: {submission.result[2].band}</span>
+                                                    <span className="text-gray-500 mr-4">GR: {submission.result[3].band}</span>
                                                 </div>
                                             </Link>
                                         </>
