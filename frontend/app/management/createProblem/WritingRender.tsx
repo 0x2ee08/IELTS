@@ -9,12 +9,13 @@ export interface Task {
     content: string;
     isOpen: boolean;
     subtype: string;
+    data?: string;
     image?: File | null; // Add image to store the uploaded file for specific subtypes
 }
 
 const taskTypes = [
     "Writing Task 1 General",
-    // "Writing Task 1 Academic",
+    "Writing Task 1 Academic",
     "Writing Task 2"
 ];
 
@@ -184,7 +185,7 @@ const WritingPage: React.FC = () => {
         setAccessUser(value);
     };
 
-    const handleInputChange = (pIndex: number, field: 'type' | 'content' | 'subtype', value: string) => {
+    const handleInputChange = (pIndex: number, field: 'type' | 'content' | 'subtype' | 'data', value: string) => {
         const newTasks = [...tasks];
         
         // Reset subtype when the main type changes
@@ -397,7 +398,13 @@ const WritingPage: React.FC = () => {
                                 </div>
                             )}
 
-
+                            <textarea 
+                                placeholder='Data Description' 
+                                className="border border-gray-300 px-4 py-2 rounded-md w-full h-32 my-2" 
+                                value={task.data} 
+                                onChange={(e) => handleInputChange(pIndex, 'data', e.target.value)}
+                                disabled={isLoading}
+                            ></textarea>
                             <textarea 
                                 placeholder='Prompt' 
                                 className="border border-gray-300 px-4 py-2 rounded-md w-full h-64 my-2" 
