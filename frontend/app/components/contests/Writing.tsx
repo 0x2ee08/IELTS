@@ -16,6 +16,9 @@ const WritingContest = ({ contest }: { contest: any }) => {
     const [currentPage, setCurrentPage] = useState(0);
     const [users, setUsers] = useState<UserInfo[]>([]);
     const [userWriting, setUserWriting] = useState<string[]>(Array(contest.tasks.length).fill(""));
+    const [submissions, setSubmissions] = useState<any[]>([]);
+
+    
 
     const fetchUsersScore = async () => {
         const indexToLetter = (index: number) => String.fromCharCode(65 + index);
@@ -36,12 +39,29 @@ const WritingContest = ({ contest }: { contest: any }) => {
         console.log(result.users);
     };
 
+    const fetchSubmission = async () => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${config.API_BASE_URL}api/getWritingUserSubmissions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ id: contest.id }),
+        });
+
+        const result = await response.json();
+        setSubmissions(result.data); // Update users in state
+        // console.log(result.users);
+    };
+
     useEffect(() => {
         const cookieData = Cookies.get('userWriting-'+contest.id);
         if (cookieData) {
             const parsedData = JSON.parse(cookieData);
             setUserWriting(parsedData);
         }
+        fetchSubmission();
     }, []);
 
     useEffect(() => {
@@ -70,6 +90,7 @@ const WritingContest = ({ contest }: { contest: any }) => {
                 },
                 body: JSON.stringify({ id: contest.id, content: userWriting[taskId] }),
             });
+            const result = await response.json();
 
             // Remove text from the current variable
             const newUserWriting = [...userWriting];
