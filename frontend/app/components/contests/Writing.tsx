@@ -135,12 +135,16 @@ const WritingContest = ({ contest }: { contest: any }) => {
                     />
                     <div className="flex justify-center mt-2">
                     <button
-                        className="bg-[#0077B6] hover:bg-[#3d5a80] text-white font-bold py-2 px-4 rounded-lg"
+                        className={`font-bold py-2 px-4 rounded-lg ${
+                            isLoading
+                                ? 'bg-gray-400 cursor-not-allowed' // Styling when the button is disabled
+                                : 'bg-[#0077B6] hover:bg-[#3d5a80] text-white' // Normal styling
+                        }`}
                         onClick={() => {handleSubmit(task_id)}}
 
                         disabled = {isLoading}
                     >
-                        Submit Task
+                        {isLoading ? 'Loading...' : 'Submit Task'} {/* Show 'Loading...' when loading */}
                     </button>
                     </div>
                 </div>
