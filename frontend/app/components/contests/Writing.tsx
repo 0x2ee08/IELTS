@@ -37,7 +37,7 @@ const WritingContest = ({ contest }: { contest: any }) => {
     };
 
     useEffect(() => {
-        const cookieData = Cookies.get('userWriting');
+        const cookieData = Cookies.get('userWriting-'+contest.id);
         if (cookieData) {
             const parsedData = JSON.parse(cookieData);
             setUserWriting(parsedData);
@@ -54,7 +54,7 @@ const WritingContest = ({ contest }: { contest: any }) => {
         const newUserWriting = [...userWriting];
         newUserWriting[taskId] = value;
         setUserWriting(newUserWriting);
-        Cookies.set('userWriting', JSON.stringify(newUserWriting), { expires: 7 }); // Expires in 7 days
+        Cookies.set('userWriting-'+contest.id, JSON.stringify(newUserWriting), { expires: 7 }); // Expires in 7 days
     };
 
 
@@ -115,6 +115,10 @@ const WritingContest = ({ contest }: { contest: any }) => {
         }
     };
 
+    const renderUserSubmission = () => {
+        return null;
+    };
+
     const renderRankingPage = () => {
         const indexToLetter = (index: number) => String.fromCharCode(65 + index);
         const questions = contest.tasks.map((_: any, index: any) => `Task ${indexToLetter(index)}`);
@@ -144,6 +148,8 @@ const WritingContest = ({ contest }: { contest: any }) => {
                 ? renderTaskPage(contest.tasks[currentPage]?.type, currentPage, contest.tasks[currentPage])
                 : (renderRankingPage())
             }
+            <br />
+            {currentPage < contest.tasks.length && renderUserSubmission()}
         </div>
     );
 };
