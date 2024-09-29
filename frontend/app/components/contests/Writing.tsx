@@ -113,26 +113,30 @@ const WritingContest = ({ contest }: { contest: any }) => {
         if (!type) return null;
         if(type === 'Writing Task 2' || type === 'Writing Task 1 General'){
             return (
-                <>
-                    {task.content}
-
+                <div>  
+                    <p className="font-black text-xl"> Question: </p>
+                    <p className='mt-4'> {task.content} </p>
+                    <p className="font-black text-xl mt-4"> Essay Drafting Section</p>
                     <textarea
                         id={`essay-${task_id}`} // Unique ID for each textarea
                         value={userWriting[task_id]} // Set value based on userWriting state
                         onChange={(e) => handleTextareaChange(task_id, e.target.value)} // Update state on change
-                        className="w-full p-3 border rounded-lg"
+                        className="w-full h-80 p-4 border border-black rounded-lg mt-2 resize-none overflow-y-auto focus:border-black focus:outline-black"
+
+
+
                         placeholder="Write your essay here..."
-                        style={{ overflow: 'hidden' }} // Disable manual resizing
                         rows={6} // Initial height for essay
                     />
-
+                    <div className="flex justify-center mt-2">
                     <button
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        className="bg-[#0077B6] hover:bg-[#3d5a80] text-white font-bold py-2 px-4 rounded-lg"
                         onClick={() => {handleSubmit(task_id)}}
                     >
                         Submit Task
                     </button>
-                </>
+                    </div>
+                </div>
             );
         }
         else{
@@ -153,29 +157,73 @@ const WritingContest = ({ contest }: { contest: any }) => {
                 <RankingPage questions={questions} users={users} />
             </div>
         );
+    }; 
+    const [timeLeft, setTimeLeft] = useState<number>(0);
+
+    useEffect(() => {
+        const calculateTimeLeft = () => {
+        const endTime = new Date(contest.endTime).getTime();
+        const now = Date.now();
+        const difference = endTime - now;
+        setTimeLeft(difference > 0 ? difference : 0);
+        };
+
+        // Calculate the time left initially
+        calculateTimeLeft();
+
+        const interval = setInterval(() => {
+        calculateTimeLeft();
+        }, 1000);
+
+        return () => clearInterval(interval); // Cleanup the interval on unmount
+    }, [contest.endTime]);
+
+    // Helper function to format time left
+    const formatTimeLeft = (milliseconds: number): string => {
+        const totalSeconds = Math.floor(milliseconds / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        const parts: string[] = [];
+        if (days > 0) parts.push(`${days}d`);
+        if (hours > 0 || days > 0) parts.push(`${String(hours).padStart(2, '0')}h`); // Show hours only if days > 0
+        if (minutes > 0 || hours > 0 || days > 0) parts.push(`${String(minutes).padStart(2, '0')}m`); // Show minutes if days or hours > 0
+        parts.push(`${String(seconds).padStart(2, '0')}s`); // Always show seconds
+
+        return parts.join(' ');
     };
 
 
     return (
-        <div>
-            <h1>{contest.problemName}</h1>
-            <p>Start Time: {contest.startTime}</p>
-            <p>End Time: {contest.endTime}</p>
-            
-            <div className='flex justify-center m-4 ml-20 mr-20 mb-10'>
-                <CustomPagination
-                    total={contest.tasks.length}
-                    currentPage={currentPage}
-                    onPageChange={(page) => {
-                        setCurrentPage(page);
-                        Cookies.set('Writing_Current_Page-'+contest.id, page.toString());
-                    }}
-                />
+        <div className="flex flex-col min-h-screen">
+            <div className="flex justify-between">
+                <div className=" w-4/5 bg-white  ml-16 mt-2 p-8">
+                    <div className='flex justify-center m-4 ml-20 mb-10'>
+                        <CustomPagination
+                            total={contest.tasks.length}
+                            currentPage={currentPage}
+                            onPageChange={(page) => {
+                                setCurrentPage(page);
+                                Cookies.set('Writing_Current_Page-'+contest.id, page.toString());
+                            }}
+                        />
+                    </div>
+                    {currentPage < contest.tasks.length 
+                        ? renderTaskPage(contest.tasks[currentPage]?.type, currentPage, contest.tasks[currentPage])
+                        : (renderRankingPage())
+                    }
+                </div>
+                <div className="w-1/5 bg white mr-20 mt-16">
+                    <div className='border border-black rounded p-4 mb-2'>
+                        <p className="text-2xl font-bold text-center">{contest.problemName}</p>
+                    </div>
+                    <div className='border border-black rounded p-4'>
+                        <p className='text-center text-xl'> {timeLeft > 0 ? `Time: ${formatTimeLeft(timeLeft)}` : "Finished"} </p>
+                    </div>
+                </div>
             </div>
-            {currentPage < contest.tasks.length 
-                ? renderTaskPage(contest.tasks[currentPage]?.type, currentPage, contest.tasks[currentPage])
-                : (renderRankingPage())
-            }
             <br />
             {currentPage < contest.tasks.length && renderUserSubmission()}
         </div>
