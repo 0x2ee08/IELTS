@@ -360,4 +360,31 @@ router.post("/getWritingUserSubmissions", authenticateToken, async(req, res) => 
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+//getWritingSubmissionsInfo
+
+router.post("/getWritingSubmissionsInfo", authenticateToken, async(req, res) => {
+    const { id } = req.body;
+    const { username } = req.user;
+
+    try {
+        const db = await connectToDatabase();
+        const problemsCollection = db.collection('user_answer');
+
+        let query = {
+            submit_by: username,
+            id
+        };
+
+        const result = await problemsCollection.findOne(query);
+
+        // setEvaluation(result.evaluation);
+        // setPrompt(result.prompt);
+        // setEssay(result.essay);
+        res.json({evaluation: result.result, prompt: result.questions, essay: result.answer});
+    } catch (error) {
+        console.error('Error fetching writing submission list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 module.exports = router;

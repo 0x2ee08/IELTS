@@ -245,6 +245,7 @@ router.post("/submitWritingContest", authenticateToken, async (req, res) => {
             contestID: id,
             task_id: taskId,
             result: evaluation,
+            answer: content,
             questions: prompt,
             submit_by: username,
             
