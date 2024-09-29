@@ -140,7 +140,7 @@ router.post('/getSpeakingAnswer', authenticateToken, async (req, res) => {
 
         res.json({ answer: {username, "result": extractedResults} });
     } catch (error) {
-        console.error('Error fetching blog list:', error);
+        console.error('Error fetching speaking submission list:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
@@ -320,5 +320,44 @@ router.post('/getSpeakingGrading', authenticateToken, async (req, res) => {
     }
 });
 
+function calWritingBand(result) {
 
+    const scores = result.map(r => Number(r.band) || 0); // Extract scores or default to 0
+    const totalScore = scores.reduce((sum, score) => sum + score, 0); // Sum of scores
+    const averageScore = totalScore / scores.length; // Calculate average score
+
+    return Number(averageScore);
+}
+
+router.post("/getWritingUserSubmissions", authenticateToken, async(req, res) => {
+    const { id } = req.body;
+    const { username } = req.user;
+
+    try {
+        const db = await connectToDatabase();
+        const problemsCollection = db.collection('user_answer');
+
+        let query = {
+            submit_by: username,
+            contestID: id,
+        };
+
+        const result = await problemsCollection.find(query).toArray();
+        // console.log("--------");
+        // console.log(result);
+        const extractedResults = result.map((item, index) => ({
+            sid: item.id,
+            task_id: item.task_id,
+            band: calWritingBand(item.result),
+            time_created: item.submit_time
+        }));
+        // console.log(extractedResults)
+        // const userAnswer = result.userAnswer.find(answer => answer.username === username);
+
+        res.json(extractedResults);
+    } catch (error) {
+        console.error('Error fetching writing submission list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 module.exports = router;

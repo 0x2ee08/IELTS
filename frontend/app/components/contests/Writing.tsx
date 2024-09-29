@@ -5,6 +5,8 @@ import CustomPagination from './writing/dataDisplayers/customPagination';
 import RankingPage from '../ranking/ranking';
 import config from '../../config';
 import Cookies from 'js-cookie';
+// import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 interface UserInfo {
     username: string;
@@ -50,8 +52,8 @@ const WritingContest = ({ contest }: { contest: any }) => {
         });
 
         const result = await response.json();
-        setSubmissions(result.data); // Update users in state
-        // console.log(result.users);
+        setSubmissions(result); // Update users in state
+        // console.log(result);
     };
 
     useEffect(() => {
@@ -150,7 +152,24 @@ const WritingContest = ({ contest }: { contest: any }) => {
     };
 
     const renderUserSubmission = () => {
-        return null;
+        return (
+            <div>
+                {submissions &&
+                    submissions
+                        .filter((submission) => submission.task_id === currentPage) // Filter by matching taskID
+                        .map((submission, index) => (
+                            <Link href={`/results/${submission.sid}`}>
+                                <div key={index} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px' }}>
+                                <p><strong>Submission ID:</strong> {submission.sid}</p>
+                                <p><strong>Task ID:</strong> {submission.task_id}</p>
+                                <p><strong>Band:</strong> {submission.band}</p>
+                                <p><strong>Time Created:</strong> {new Date(submission.time_created).toLocaleString()}</p>
+                            </div>
+                            </Link>
+                            // <Link href = "/results/{submission.sid}"> </Link>
+                        ))}
+            </div>
+        );
     };
 
     const renderRankingPage = () => {
