@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import axios from 'axios';
 import config from '../../config'; 
 import './submission.css';
@@ -12,6 +12,23 @@ import { Button, CircularProgress, Card, CardBody, CardFooter, Chip } from "@nex
 
 export default function WritingRender() {
     const { submissionID } = useParams();
+
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const promptRef = useRef<HTMLTextAreaElement | null>(null);
+
+    // Function to auto-resize the textarea
+    const autoResizeTextarea = () => {
+        var textarea = textareaRef.current;
+        if (textarea) {
+            textarea.style.height = 'auto'; // Reset the height to auto
+            textarea.style.height = `${textarea.scrollHeight}px`; // Set the height based on scrollHeight
+        }
+        textarea = promptRef.current;
+        if (textarea) {
+            textarea.style.height = 'auto'; // Reset the height to auto
+            textarea.style.height = `${textarea.scrollHeight}px`; // Set the height based on scrollHeight
+        }
+    };
 
     const cardColors = ['bg-gradient-to-br from-red-500 to-fuchsia-400', 'bg-gradient-to-br from-cyan-500 to-teal-400', 'bg-gradient-to-br from-yellow-300 to-amber-300', 'bg-gradient-to-br from-indigo-500 to-violet-400'];
 
@@ -53,6 +70,8 @@ export default function WritingRender() {
         setPrompt(result.prompt);
         setEssay(result.essay);
         // console.log(result);
+
+        autoResizeTextarea();
     };
 
     // useEffect
@@ -85,11 +104,12 @@ export default function WritingRender() {
                         <textarea
                             id="prompt"
                             value={prompt}
+                            ref = {promptRef}
                             onChange={(e) => handleTextareaChange(e, setPrompt)}
                             className="w-full p-3 border rounded-lg"
                             placeholder="Enter the prompt here"
                             style={{ overflow: 'hidden', resize: 'none' }} // Disable manual resizing
-                            rows={4} // Initial height for prompt
+                            rows={1} // Initial height for prompt
                             disabled = {true}
                         />
                     </div>
@@ -99,11 +119,12 @@ export default function WritingRender() {
                         <textarea
                             id="essay"
                             value={essay}
+                            ref={textareaRef}
                             onChange={(e) => handleTextareaChange(e, setEssay)}
                             className="w-full p-3 border rounded-lg"
                             placeholder="Write your essay here..."
                             style={{ overflow: 'hidden', resize: 'none' }} // Disable manual resizing
-                            rows={6} // Initial height for essay
+                            rows={1} // Initial height for essay
                             disabled = {true}
                         />
                     </div>

@@ -372,8 +372,9 @@ router.post("/getWritingSubmissionsInfo", authenticateToken, async(req, res) => 
         const problemsCollection = db.collection('user_answer');
 
         let query = {
-            submit_by: username,
-            id
+            // submit_by: username,
+            id,
+            visibility: "public"
         };
 
         const result = await problemsCollection.findOne(query);
@@ -381,7 +382,7 @@ router.post("/getWritingSubmissionsInfo", authenticateToken, async(req, res) => 
         // setEvaluation(result.evaluation);
         // setPrompt(result.prompt);
         // setEssay(result.essay);
-        res.json({evaluation: result.result, prompt: result.questions, essay: result.answer});
+        res.json({evaluation: result.result, prompt: result.questions, essay: result.answer, data: result});
     } catch (error) {
         console.error('Error fetching writing submission list:', error);
         res.status(500).json({ error: 'Internal Server Error' });
