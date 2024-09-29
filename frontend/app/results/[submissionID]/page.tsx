@@ -4,6 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import ReadingRender from './ReadingRender';
 import SpeakingRender from './SpeakingRender';
+import WritingRender from './WritingRender';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import axios from 'axios';
@@ -39,6 +40,8 @@ const SubmissionDetail: React.FC = () => {
                 return <ReadingRender />;
             case 'Speaking':
                 return <SpeakingRender />;
+            case 'Writing':
+                return <WritingRender />;
             default:
                 return "Fetching contest...";
         }
