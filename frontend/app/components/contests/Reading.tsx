@@ -22,40 +22,51 @@ const ReadingContest = ({ contest }: { contest: any }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      setWindowHeight(window.innerHeight);
+        // Update your component state if needed
+        // setWindowHeight(window.innerHeight); // You might want to keep this if you use window height
     };
 
     window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+        window.removeEventListener('resize', handleResize);
     };
-  }, []);
+}, []);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+const handleMouseDown = (e: React.MouseEvent) => {
     const startX = e.clientX;
     const initialLeftWidth = leftWidth; // Initial width in percentage
 
-    const handleMouseMove = (event: MouseEvent) => {
-      if (containerRef.current) {
-        const containerWidth = containerRef.current.offsetWidth;
-        const newLeftWidth = (event.clientX / window.innerWidth) * 100; // Calculate new width in percentage
+    // Disable pointer events on the container
+    if (containerRef.current) {
+        containerRef.current.classList.add('disable-pointer-events');
+    }
 
-        // Restrict the new width between 20% and 80%
-        if (newLeftWidth >= 20 && newLeftWidth <= 80) {
-          setLeftWidth(newLeftWidth);
+    const handleMouseMove = (event: MouseEvent) => {
+        if (containerRef.current) {
+            const containerWidth = containerRef.current.offsetWidth;
+            const newLeftWidth = (event.clientX / window.innerWidth) * 100; // Calculate new width in percentage
+
+            // Restrict the new width between 20% and 80%
+            if (newLeftWidth >= 20 && newLeftWidth <= 80) {
+                setLeftWidth(newLeftWidth);
+            }
         }
-      }
     };
 
     const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+        // Enable pointer events again
+        if (containerRef.current) {
+            containerRef.current.classList.remove('disable-pointer-events');
+        }
+
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  };
+};
 
     const [activeParagraph, setActiveParagraph] = useState(0);
     const [initialState, setInitialState] = useState(true);
