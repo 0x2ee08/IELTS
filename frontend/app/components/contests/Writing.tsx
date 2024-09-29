@@ -57,9 +57,13 @@ const WritingContest = ({ contest }: { contest: any }) => {
 
     useEffect(() => {
         const cookieData = Cookies.get('userWriting-'+contest.id);
+        const cPage = Cookies.get('Writing_Current_Page-'+contest.id);
         if (cookieData) {
             const parsedData = JSON.parse(cookieData);
             setUserWriting(parsedData);
+        }
+        if(cPage){
+            setCurrentPage(Number(cPage));
         }
         fetchSubmission();
     }, []);
@@ -96,7 +100,7 @@ const WritingContest = ({ contest }: { contest: any }) => {
             const newUserWriting = [...userWriting];
             newUserWriting[taskId] = ""; // Clear the text for the specific task
             setUserWriting(newUserWriting);
-            Cookies.set('userWriting', JSON.stringify(newUserWriting), { expires: 7 }); // Update cookie
+            Cookies.set('userWriting-'+contest.id, JSON.stringify(newUserWriting), { expires: 7 }); // Update cookie
 
             window.location.reload();
         } catch (error) {
@@ -162,7 +166,10 @@ const WritingContest = ({ contest }: { contest: any }) => {
                 <CustomPagination
                     total={contest.tasks.length}
                     currentPage={currentPage}
-                    onPageChange={(page) => setCurrentPage(page)}
+                    onPageChange={(page) => {
+                        setCurrentPage(page);
+                        Cookies.set('Writing_Current_Page-'+contest.id, page.toString());
+                    }}
                 />
             </div>
             {currentPage < contest.tasks.length 
