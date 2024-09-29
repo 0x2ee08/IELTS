@@ -17,8 +17,7 @@ const WritingContest = ({ contest }: { contest: any }) => {
     const [users, setUsers] = useState<UserInfo[]>([]);
     const [userWriting, setUserWriting] = useState<string[]>(Array(contest.tasks.length).fill(""));
     const [submissions, setSubmissions] = useState<any[]>([]);
-
-    
+    const [isLoading, setIsLoading] = useState(false);
 
     const fetchUsersScore = async () => {
         const indexToLetter = (index: number) => String.fromCharCode(65 + index);
@@ -83,6 +82,8 @@ const WritingContest = ({ contest }: { contest: any }) => {
 
 
     const handleSubmit = async (taskId: number) => {
+        setIsLoading(true);
+
         try {
             // Call your API to submit the task
             const token = localStorage.getItem('token');
@@ -92,7 +93,7 @@ const WritingContest = ({ contest }: { contest: any }) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ id: contest.id, content: userWriting[taskId] }),
+                body: JSON.stringify({ id: contest.id, taskId,  prompt: contest.tasks[taskId].content, content: userWriting[taskId] }),
             });
             const result = await response.json();
 
@@ -106,6 +107,8 @@ const WritingContest = ({ contest }: { contest: any }) => {
         } catch (error) {
             console.error('Error submitting task:', error);
             // Optionally, handle error (e.g., show a notification)
+        } finally{
+            setIsLoading(false);
         }
     };
 
@@ -123,7 +126,7 @@ const WritingContest = ({ contest }: { contest: any }) => {
                         onChange={(e) => handleTextareaChange(task_id, e.target.value)} // Update state on change
                         className="w-full h-80 p-4 border border-black rounded-lg mt-2 resize-none overflow-y-auto focus:border-black focus:outline-black"
 
-
+                        disabled = {isLoading}
 
                         placeholder="Write your essay here..."
                         rows={6} // Initial height for essay
@@ -132,6 +135,8 @@ const WritingContest = ({ contest }: { contest: any }) => {
                     <button
                         className="bg-[#0077B6] hover:bg-[#3d5a80] text-white font-bold py-2 px-4 rounded-lg"
                         onClick={() => {handleSubmit(task_id)}}
+
+                        disabled = {isLoading}
                     >
                         Submit Task
                     </button>

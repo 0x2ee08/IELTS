@@ -9,6 +9,16 @@ const { OPENROUTER_API_KEY } = require('../config/config');
 
 const router = express.Router();
 
+function generateRandomString(length) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
 // the main part of the code, asks ai to evaluate the response
 // -------------------------------------------------------------------------------------------------------
 let contextTaskResponse = `
@@ -176,6 +186,7 @@ async function askAiTaskResponse(prompt, response, type) {
 
         let apiResponse = await verdict.json();
         let response = apiResponse.choices[0].message.content
+        // console.log(response);
         criterion.response = getFeedback(response);
         criterion.band = getBand(response);
     } catch (error) {
@@ -200,7 +211,53 @@ router.post("/writing", authenticateToken, async (req, res) => {
         return res.status(200).json(evaluation);
     } catch (error) {
         // Handle any errors
-        return res.status(500).json({ error: "An error occurred" });
+        return res.status(500).json({ error });
+    }
+});
+
+router.post("/submitWritingContest", authenticateToken, async (req, res) => {
+    try {
+        // id: contest.id, taskId,  prompt: contest.tasks[taskId].content, content: 
+        const { id, taskId, prompt, content } = req.body;
+        const { username } = req.user;
+
+        if (!prompt || !content) {
+            return res.status(400).json({ error: "Both 'prompt' and 'response' are required." });
+        }
+        let evaluation = await grader(prompt, content);
+        // console.log(evaluation)
+        
+        const db = await connectToDatabase();
+
+        const contestCollection = db.collection('contest');
+        const contest = await contestCollection.findOne({ id: id });
+
+        // console.log(contest);
+
+        if (contest.accessUser !== "" && !contest.accessUser.split(',').includes(username)) {
+            return res.status(403).json({ message: "Access denied" });
+        }
+
+        const submissionCollection = db.collection('user_answer');
+        const newSubmission = {
+            type: 'Writing',
+            id: generateRandomString(20),
+            contestID: id,
+            task_id: taskId,
+            result: evaluation,
+            questions: prompt,
+            submit_by: username,
+            
+            visibility: (contest.accessUser === '' ? 'public':'private'),
+            submit_time: new Date().toISOString()
+        };
+        await submissionCollection.insertOne(newSubmission);
+
+        return res.status(200).json({status: 'Success'});
+
+    } catch (error) {
+        // Handle any errors
+        return res.status(500).json({ error });
     }
 });
 

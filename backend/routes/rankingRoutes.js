@@ -56,26 +56,56 @@ router.post('/getUsersScore', async (req, res) => {
         console.error('Error fetching ranking data:', error);
         res.status(500).json({ error: 'Failed to fetch ranking data' });
     }
+});
 
-    // try {
-    //     const db = await connectToDatabase();
-    //     const rankingCollection = db.collection('ranking');
+router.post('/getWritingUsersScore', async (req, res) => {
+    const { id } = req.body;
 
-    //     const ranking = await rankingCollection.findOne({ id });
+    try {
+        const db = await connectToDatabase();
+        const userAnswerCollection = db.collection('user_answer');
 
-    //     if (!ranking) {
-    //         await rankingCollection.insertOne({
-    //             id: id,
-    //             data: []
-    //         });
-    //         ranking = await rankingCollection.findOne({ id: id });
-    //     }
+        const contestCollection = db.collection('contest');
+        const cts = await contestCollection.find({id}).toArray();
 
-    //     res.json({users: ranking.data});
-    // } catch (error) {
-    //     console.error('Error fetching ranking data:', error);
-    //     res.status(500).json({ error: 'Failed to fetch ranking data' });
-    // }
+        const totalTask = cts[0].tasks.length;
+        const userScores = {};
+
+        for (let task_id = 0; task_id < totalTask; task_id++) {
+            const submissions = await userAnswerCollection.find({ contestID: id, task_id: task_id, $or: [
+                { status: true },
+                { status: { $exists: false } }
+            ]}).toArray();
+            // console.log(submissions);
+            submissions.forEach(submission => {
+                const username = submission.submit_by; 
+                if (submission.result && submission.result.length > 0) {
+                    const scores = submission.result.map(r => Number(r.band) || 0); // Extract scores or default to 0
+                    const totalScore = scores.reduce((sum, score) => sum + score, 0); // Sum of scores
+                    const averageScore = totalScore / scores.length; // Calculate average score
+    
+                    // Aggregate scores in the userScores object
+                    if (!userScores[username]) {
+                        userScores[username] = { username, score: Array(totalTask).fill(0) }; // Set initial scores to an array of zeros
+                    }
+                    // userScores[username].score.push(averageScore); // Add average score to the user's score array
+                    userScores[username].score[task_id] = Math.max(userScores[username].score[task_id], averageScore);
+                }
+            });
+        }
+    
+        const scoresArray = Object.values(userScores);
+    
+        const rankingResponse = {
+            id: id,
+            users: scoresArray
+        };
+    
+        res.json(rankingResponse);
+    } catch (error) {
+        console.error('Error fetching ranking data:', error);
+        res.status(500).json({ error: 'Failed to fetch ranking data' });
+    }
 });
 
 router.post('/getUserRankingDetail', async (req, res) => {
