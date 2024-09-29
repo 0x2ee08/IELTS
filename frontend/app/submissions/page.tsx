@@ -181,7 +181,7 @@ const ResultPage: React.FC = () => {
                                                 <div className="mt-4 text-base">
                                                     <span className="text-green-500 mr-4">Correct: {submission.result.correct}</span>
                                                     <span className="text-red-500 mr-4">Wrong: {submission.result.wrong}</span>
-                                                    <span className="text-gray-500">Empty: {submission.result.empty}</span>
+                                                    <span className="text-[#E0A806]">Empty: {submission.result.empty}</span>
                                                 </div>
                                             </Link>
                                         </>
