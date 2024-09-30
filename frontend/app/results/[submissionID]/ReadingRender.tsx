@@ -220,10 +220,10 @@ export default function ReadingRender() {
                           <span className="ml-2 text-green-500">{item.userAns}</span>
                         ) : (
                           <s className='ml-2 text-red-500'><i>{item.userAns}</i></s>
-                        )}
+                        )} 
                       </p>
                       {item.status !== 'correct' && (
-                        <div>
+                        <div> 
                           <span>Correct answer:</span>
                           <span className='ml-2 font-black'>{item.correctAns.answer}</span>
                         </div>                          

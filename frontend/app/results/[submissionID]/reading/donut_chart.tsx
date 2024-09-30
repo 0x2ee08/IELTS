@@ -133,9 +133,14 @@ const PieChart: React.FC<PieChartProps> = ({ correct, incorrect, skipped }) => {
                             marginRight: '8px',
                         }}
                         />
-                        <span style={{ fontSize: '14px', color: '#333' }}>
-                        {segment.label} ({percentage}%)
-                        </span>
+                        <div className='flex flex-col'>
+                            <p style={{ fontSize: '14px', color: '#333', margin: 0 }}>
+                                {segment.label}
+                            </p>
+                            <p style={{ fontSize: '14px', color: '#333', margin: 0 }}>
+                                ({percentage}%)
+                            </p>
+                        </div>
                     </div>
                     );
                 })}
