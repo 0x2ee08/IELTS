@@ -19,10 +19,8 @@ def lambda_handler(event, context):
         audio_data = audio_file.read()
         audio_base64 = base64.b64encode(audio_data).decode('utf-8')
 
-    # Add the data URI prefix for audio/wav
     audio_base64_with_prefix = f"data:audio/wav;base64,{audio_base64}"
 
-    # Prepare the response
     res = {'audioBase64': audio_base64_with_prefix}
     
     os.remove(file_path)

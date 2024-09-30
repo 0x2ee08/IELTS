@@ -2,14 +2,28 @@ const express = require('express');
 const axios = require('axios');
 
 const { authenticateToken } = require('../middleware/authMiddleware');
-const { MODEL_NAME, OPENROUTER_API_KEY } = require('../config/config');
+const { MODEL_NAME, OPENROUTER_API_KEY, LISTENING_GENERATE_MODEL_NAME } = require('../config/config');
+
+const { conversation } = require('./listening/message.js');
 
 const model = MODEL_NAME;
+const generateModel = LISTENING_GENERATE_MODEL_NAME;
 const openRouterApiKey = OPENROUTER_API_KEY;
 const router = express.Router();
 
-router.post('/generate_listening_script', authenticateToken, async (req, res) => {
-    const message = 'Generate a random script for the IELTS Listening Multiple Choice section without any bold text, special characters, questions or additional text. Provide the script only.';
+router.post('/generateListeningTask1', authenticateToken, async (req, res) => {
+    const {task} = req.body;
+
+    let message = ``;
+    if(task.topic !== "") {
+        message = message + `Given the following topic: ${task.topic}\n`;
+    }
+    message = message + `Use the language tone: ${task.languageTone}\n`;
+    message = message + `Set the difficulty is ${task.difficulty}\n`;
+
+    if(task.typeOfAudio === "conversation") message = message + `${conversation}`;
+
+    console.log(message);
 
     try {
         const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
@@ -25,13 +39,9 @@ router.post('/generate_listening_script', authenticateToken, async (req, res) =>
             }
         });
 
-        const evaluation = response.data.choices[0].message.content.trim();
-        const lines = evaluation.split('\n').map(line => line.trim()).filter(line => line); // Remove empty lines and trim
+        const content = response.data.choices[0].message.content.trim();
 
-        const title_ = lines[0] || '';
-        const content_ = lines.slice(1).join('\n') || '';
-
-        res.json({ title: title_, content: content_ });
+        res.json({ content: content });
 
     } catch (error) {
         console.error('Error generating listening script:', error);
@@ -40,7 +50,7 @@ router.post('/generate_listening_script', authenticateToken, async (req, res) =>
 });
 
 router.post('/generate_listening_multiple_choice', authenticateToken, async (req, res) => {
-    const { script } = req.body; // Destructure script from the request body
+    const { script } = req.body;
     const message = `Create 4 multiple choice questions for IELTS Listening based on the following script, without special characters or additional text. Provide questions with four options labeled A, B, C, and D:\n\n${script.content}`;
 
     try {

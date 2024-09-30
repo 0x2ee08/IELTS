@@ -1,607 +1,373 @@
-import React, { useState } from 'react';
-import config from '../../config';
+'use client'
+
+import React, { useState, useRef, useEffect } from 'react';
+import {Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure} from "@nextui-org/react";
 import axios from 'axios';
+import config from '../../config';
+import Task1Page from './listening/task1';
+// import Task2Page from './listening/task2';
+// import Task3Page from './listening/task3';
+// import Task4Page from './listening/task4';
 
-interface Script {
-  title: string;
-  content: string;
-}
-
-interface MCQ {
-  question: string;
-  answers: string[];
-}
-
-interface TableFilling {
-  category: string;
-  information: string;
-}
-
-interface ShortAnswerQuestion {
-  question: string;
-  answers: string[];
-}
-
-interface MatchingExercise {
-  statements: string[];
-  features: string[];
-}
-
-interface CustomQuestion {
-  question: string;
-  answer: string;
-  explanation: string;
-}
-
-interface QuestionPart {
-  mcqs: MCQ[];
-  tableFilling: TableFilling[];
-  shortAnswerQuestions: ShortAnswerQuestion[];
-  matchingExercise: MatchingExercise | null;
-  customQuestions: CustomQuestion[];
-  selectedQuestionType: string;
-}
-
-const questionTypes = [
-  { label: 'Multiple Choice Questions', value: 'mcq' },
-  { label: 'Table Filling', value: 'tableFilling' },
-  { label: 'Short Answer Questions', value: 'shortAnswer' },
-  { label: 'Matching Exercise', value: 'matching' },
-];
-
-const ListeningPage = () => {
-  const [sections, setSections] = useState<{
-    script: Script | null;
-    parts: QuestionPart[];
-    error: string;
-  }[]>([
-    {
-      script: null,
-      parts: [
-        {
-          mcqs: [],
-          tableFilling: [],
-          shortAnswerQuestions: [],
-          matchingExercise: null,
-          customQuestions: [],
-          selectedQuestionType: 'mcq',
-        },
-      ],
-      error: '',
-    },
-  ]);
-
-  const deleteSection = (index: number) => {
-    setSections((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const addPart = (index: number) => {
-    setSections((prev) => {
-      const newSections = [...prev];
-  
-      // Create a new part
-      const newPart: QuestionPart = {
-        mcqs: [],
-        tableFilling: [],
-        shortAnswerQuestions: [],
-        matchingExercise: null,
-        customQuestions: [],
-        selectedQuestionType: 'mcq',
-      };
-  
-      // Create a new parts array without mutating the existing one
-      const updatedParts = [...newSections[index].parts, newPart];
-  
-      // Update the specific section with the new parts array
-      newSections[index] = {
-        ...newSections[index],
-        parts: updatedParts,
-      };
-  
-      return newSections;
-    });
-  };
-
-  const generateRandomScript = async (index: number) => {
-    const token = localStorage.getItem('token');
-    try {
-      const response = await axios.post(
-        `${config.API_BASE_URL}api/generate_listening_script`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const result = response.data;
-      setSections((prev) => {
-        const newSections = [...prev];
-        newSections[index].script = result;
-        newSections[index].error = '';
-        return newSections;
-      });
-    } catch (error) {
-      console.error('Error generating script:', error);
-      setSections((prev) => {
-        const newSections = [...prev];
-        newSections[index].script = null;
-        newSections[index].error =
-          'An error occurred while generating the script.';
-        return newSections;
-      });
+const generateRandomString = (length: number): string => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
-  };
-
-  const generateQuestions = async (index: number, partIndex: number) => {
-    const selectedQuestionType =
-      sections[index].parts[partIndex].selectedQuestionType;
-    switch (selectedQuestionType) {
-      case 'mcq':
-        await generateMCQs(index, partIndex);
-        break;
-      case 'tableFilling':
-        await generateTableFillingArray(index, partIndex);
-        break;
-      case 'shortAnswer':
-        await generateShortAnswerQuestions(index, partIndex);
-        break;
-      case 'matching':
-        await generateMatchingExercise(index, partIndex);
-        break;
-      default:
-        break;
-    }
-  };
-
-  const generateMCQs = async (index: number, partIndex: number) => {
-    const script = sections[index].script;
-    if (!script) return;
-  
-    const token = localStorage.getItem('token');
-    try {
-      const response = await axios.post(
-        `${config.API_BASE_URL}api/generate_listening_multiple_choice`,
-        { script },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const result: MCQ[] = response.data;
-  
-      setSections((prev) => {
-        const newSections = [...prev];
-        // Concatenate the answers with the question text (e.g., A. answer1, B. answer2, etc.)
-        const updatedCustomQuestions = result.map((mcq) => ({
-          question: `${mcq.question}\nA. ${mcq.answers[0]}\nB. ${mcq.answers[1]}\nC. ${mcq.answers[2]}\nD. ${mcq.answers[3]}`,
-          answer: '',  // Assuming there's a correct answer key in the API response
-          explanation: '',  // Adjust as needed
-        }));
-  
-        newSections[index].parts[partIndex] = {
-          ...newSections[index].parts[partIndex],
-          customQuestions: updatedCustomQuestions,
-          mcqs: result,
-        };
-        newSections[index].error = '';
-        return newSections;
-      });
-    } catch (error) {
-      console.error('Fetch error:', error);
-      setSections((prev) => {
-        const newSections = [...prev];
-        newSections[index].error = 'An error occurred while generating MCQs.';
-        newSections[index].parts[partIndex].mcqs = [];
-        return newSections;
-      });
-    }
-  };
-  
-
-  const generateTableFillingArray = async (index: number, partIndex: number) => {
-    const script = sections[index].script;
-    if (!script) return;
-  
-    const token = localStorage.getItem('token');
-    try {
-      const response = await axios.post(
-        `${config.API_BASE_URL}api/generate_listening_table_filling`,
-        { script },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const result: TableFilling[] = response.data.tableFilling;
-  
-      setSections((prev) => {
-        const newSections = [...prev];
-        // Map the table filling questions into custom questions
-        const updatedCustomQuestions = result.map((tf) => ({
-          question: tf.category,
-          answer: '',
-          explanation: '', // Modify this if needed
-        }));
-  
-        newSections[index].parts[partIndex] = {
-          ...newSections[index].parts[partIndex],
-          customQuestions: updatedCustomQuestions,
-          tableFilling: result,
-        };
-        newSections[index].error = '';
-        return newSections;
-      });
-    } catch (error) {
-      console.error('Fetch error:', error);
-      setSections((prev) => {
-        const newSections = [...prev];
-        newSections[index].error = 'An error occurred while generating Table Filling.';
-        newSections[index].parts[partIndex].tableFilling = [];
-        return newSections;
-      });
-    }
-  };
-  
-
-  const generateShortAnswerQuestions = async (index: number, partIndex: number) => {
-    const script = sections[index].script;
-    if (!script) return;
-  
-    const token = localStorage.getItem('token');
-    try {
-      const response = await axios.post(
-        `${config.API_BASE_URL}api/generate_listening_short_answer_question`,
-        { script },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const result: ShortAnswerQuestion[] = response.data;
-  
-      setSections((prev) => {
-        const newSections = [...prev];
-        // For Short Answer Questions, we just need question and answer (no multiple choices)
-        const updatedCustomQuestions = result.map((saq) => ({
-          question: saq.question,
-          answer: '', // Multiple answers can be comma-separated
-          explanation: '', // Adjust as needed
-        }));
-  
-        newSections[index].parts[partIndex] = {
-          ...newSections[index].parts[partIndex],
-          customQuestions: updatedCustomQuestions,
-          shortAnswerQuestions: result,
-        };
-        newSections[index].error = '';
-        return newSections;
-      });
-    } catch (error) {
-      console.error('Error generating short answer questions:', error);
-      setSections((prev) => {
-        const newSections = [...prev];
-        newSections[index].error = 'An error occurred while generating short answer questions.';
-        newSections[index].parts[partIndex].shortAnswerQuestions = [];
-        return newSections;
-      });
-    }
-  };
-  
-  
-
-  const generateMatchingExercise = async (index: number, partIndex: number) => {
-    const script = sections[index].script;
-    if (!script) return;
-  
-    const token = localStorage.getItem('token');
-    try {
-      const response = await axios.post(
-        `${config.API_BASE_URL}api/generate_listening_matchings`,
-        { script },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = response.data;
-  
-      const statements = data.matchings.map((item: any) => item.question);
-      const features = data.matchings.map((item: any) => item.feature);
-  
-      setSections((prev) => {
-        const newSections = [...prev];
-        // Map matching exercise into custom questions
-        const updatedCustomQuestions = statements.map((statement: any) => ({
-          question: statement,  // Only the question should go here
-          answer: '',  // No need to include features in the answer field for matching
-          explanation: '', // Adjust as needed
-        }));
-  
-        newSections[index].parts[partIndex] = {
-          ...newSections[index].parts[partIndex],
-          customQuestions: updatedCustomQuestions,
-          matchingExercise: { statements, features },
-        };
-        newSections[index].error = '';
-        return newSections;
-      });
-    } catch (error) {
-      console.error('Error generating matching exercise:', error);
-      setSections((prev) => {
-        const newSections = [...prev];
-        newSections[index].error = 'An error occurred while generating the matching exercise.';
-        newSections[index].parts[partIndex].matchingExercise = null;
-        return newSections;
-      });
-    }
-  };
-  
-  
-
-  const handleScriptChange = (
-    index: number,
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setSections((prev) => {
-      const newSections = [...prev];
-      newSections[index].script = {
-        title: 'Custom Script',
-        content: e.target.value,
-      };
-      return newSections;
-    });
-  };
-
-  const handleQuestionTypeChange = (
-    sectionIndex: number,
-    partIndex: number,
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setSections((prev) => {
-      const newSections = [...prev];
-      newSections[sectionIndex].parts[partIndex].selectedQuestionType =
-        event.target.value;
-      return newSections;
-    });
-  };
-
-  const addCustomQuestion = (sectionIndex: number, partIndex: number) => {
-    setSections((prevSections) => {
-      // Copy sections array
-      const newSections = [...prevSections];
-      
-      // Copy parts array within the section
-      const updatedParts = [...newSections[sectionIndex].parts];
-      
-      // Create a new custom question
-      const newCustomQuestion = {
-        question: '',
-        answer: '',
-        explanation: '',
-      };
-  
-      // Add the new question to the specific part's customQuestions array
-      const updatedCustomQuestions = [
-        ...updatedParts[partIndex].customQuestions,
-        newCustomQuestion,
-      ];
-  
-      // Update the part with the new customQuestions array
-      updatedParts[partIndex] = {
-        ...updatedParts[partIndex],
-        customQuestions: updatedCustomQuestions,
-      };
-  
-      // Update the section with the new parts array
-      newSections[sectionIndex] = {
-        ...newSections[sectionIndex],
-        parts: updatedParts,
-      };
-  
-      return newSections; // Return the updated state
-    });
-  };
-  
-  
-
-  const handleCustomQuestionChange = (
-    sectionIndex: number,
-    partIndex: number,
-    questionIndex: number,
-    field: 'question' | 'answer' | 'explanation',
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-) => {
-    setSections((prevSections) => {
-        // Create a deep copy of the sections array
-        const newSections = [...prevSections];
-
-        // Create a copy of the specific part's custom questions
-        const updatedCustomQuestions = newSections[sectionIndex].parts[partIndex].customQuestions.map(
-            (question, idx) => {
-                if (idx === questionIndex) {
-                    // Update the specific field (question/answer/explanation)
-                    return {
-                        ...question,
-                        [field]: event.target.value, // Update the field with the textarea's value
-                    };
-                }
-                return question;
-            }
-        );
-
-        // Update the part with the new custom questions array
-        newSections[sectionIndex].parts[partIndex] = {
-            ...newSections[sectionIndex].parts[partIndex],
-            customQuestions: updatedCustomQuestions,
-        };
-
-        return newSections; // Return the updated sections array
-    });
+    return result;
 };
 
-  
+const SpeakingPage: React.FC = () => {
+    const [generatedTask, setGeneratedTask] = useState('');
+    const [taskArray, setTaskArray] = useState<any[]>([]);
+    const [idList, setIdList] = useState<{ id: string, listening_id: string }[]>([]);
+    const [selectedTask, setSelectedTask] = useState<string>('Task 1');
+    const [problemName, setProblemName] = useState('');
+    const [accessUser, setAccessUser] = useState('');
+    const [startTime, setStartTime] = useState('');
+    const [endTime, setEndTime] = useState('');
+    const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb';
+    const [isLoading, setIsLoading] = useState(false);
+    const {isOpen, onOpen, onOpenChange} = useDisclosure();
 
-  return (
-    <div>
-      {sections.map((section, sectionIndex) => (
-        <div
-          key={sectionIndex}
-          style={{
-            marginBottom: '20px',
-            border: '1px solid #ccc',
-            padding: '10px',
-          }}
-        >
-          <div>
-            <textarea
-              placeholder="Type your custom script here..."
-              onChange={(e) => handleScriptChange(sectionIndex, e)}
-              style={{
-                width: '100%',
-                height: 'auto',
-                minHeight: '100px',
-                resize: 'none',
-              }}
-              value={section.script ? section.script.content : ''}
+    const hasInitialize = useRef(false);
+
+    useEffect(() => {
+        if (!hasInitialize.current) {
+            generateSpeakingTask1(5);
+            hasInitialize.current = true;
+        }
+    }, []);
+
+    const generateSpeakingTask1 = async (number_of_task: number) => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${config.API_BASE_URL}api/generateSpeakingTask1`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ number_of_task }),
+        });
+        const result = await response.json();
+        setGeneratedTask(result.content);
+    };
+
+    const handleTaskUpdate = (task: any, idx: number) => {
+        setTaskArray(prevArray => {
+            const updatedArray = [...prevArray];
+            updatedArray[idx] = task;
+            return updatedArray;
+        });
+    };
+
+    const handleAddTask = () => {
+        if (selectedTask) {
+            const listening_id = generateRandomString(8);
+            setIdList(prevIdList => {
+                const newIdList = [...prevIdList, { id: selectedTask, listening_id }];
+                return newIdList;
+            });
+            setTaskArray(prevArray => {
+                const updatedArray = [...prevArray];
+                updatedArray.push({});
+                return updatedArray;
+            });
+        }
+    };
+
+    const handleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedTask(e.target.value);
+    };
+
+    const handleDeleteTask = (idx: number) => {
+        setIdList(prevIdList => {
+            const newIdList = prevIdList.filter((_, index) => index !== idx);
+            return newIdList;
+        });
+        setTaskArray(prevArray => {
+            const updatedArray = prevArray.filter((_, index) => index !== idx);
+            return updatedArray;
+        });
+    };
+
+
+    const renderTaskPage = (id: string, idx: number) => {
+        switch (id) {
+            case 'Task 1':
+                return <Task1Page onTaskUpdate={(task: any) => handleTaskUpdate(task, idx)} />;
+            // case 'Task 2':
+            //     return <Task2Page onTaskUpdate={(task: any) => handleTaskUpdate(task, idx)} />;
+            // case 'Task 3':
+            //     return <Task3Page onTaskUpdate={(task: any) => handleTaskUpdate(task, idx)} />;
+            default:
+                return null;
+        }
+    };
+
+    const create_speaking_problem = async () => {
+        for(let i=0; i<taskArray.length; i++) {
+            console.log(taskArray[i]);
+            if(taskArray[i].type !== "Task 2") {
+                for(let j=0; j<taskArray[i].number_of_task; j++) {
+                    await fetch(`${config.API_PRONOUNCE_BASE_URL}api_pronounce/getAudioFromText`, {
+                        method: "post",
+                        body: JSON.stringify({ "text": taskArray[i].questions[j] }),
+                        headers: { "X-Api-Key": STScoreAPIKey }
+                    }).then(res => res.json())
+                        .then(data => {
+                            taskArray[i].audioData[j] = data['audioBase64'];
+                        });
+                    await fetch(`${config.API_PRONOUNCE_BASE_URL}api_pronounce/saveToGGDrive`, {
+                        method: "post",
+                        body: JSON.stringify({ "audioBase64": taskArray[i].audioData[j] }),
+                        headers: { "X-Api-Key": STScoreAPIKey }
+                    }).then(res => res.json())
+                        .then(data => {
+                            console.log(data['audioData']);
+                            taskArray[i].audioData[j] = data['audioData'];
+                        });
+                }
+            }
+        }
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${config.API_BASE_URL}api/create_speaking_problem`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ problemName, accessUser, startTime, endTime, taskArray }),
+        });
+        const result = await response.json();
+        if(result.success) {
+            alert('Create problem successfully')
+            setIdList([]);
+            setTaskArray([]);
+        }
+        else {
+            alert('Failed to create problem')
+        }
+    }
+
+    const handleAccessUserChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let value = e.target.value;
+        
+        // Automatically add a space after each comma if not already present
+        value = value.replace(/,\s*/g, ', ');
+
+        setAccessUser(value);
+    };
+
+    const removeDuplicates = (value: string) => {
+        // Split the string by comma and trim any extra spaces
+        const usersArray = value.split(',').map(user => user.trim());
+      
+        // Create a Set to remove duplicates
+        const uniqueUsers = [...new Set(usersArray)];
+      
+        // Join the unique values back into a string
+        return uniqueUsers.join(', ');
+    };
+
+    const addStudent =() =>{
+        let value = accessUser;
+        if(value !== '') value = value + ',' + studentClass;
+        else value = studentClass;
+        // console.log(value);
+        value = value.replace(/,\s*/g, ', ');
+        value = removeDuplicates(value);
+        setAccessUser(value);
+    };
+
+    const [schoollist, setSchoollist] = useState<any[]>([]);
+    const [classlist, setClasslist] = useState<any[]>([]);
+    const [school, setSchool] = useState('');
+    const [class_, setClass_] = useState('');
+    const [studentClass, setStudentClass] = useState('');
+
+    const getSchoolList = async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_school_list`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setSchoollist(response.data.result);
+        } catch (error) {
+            console.error('Error fetching school list:', error);
+        }
+    };
+
+    const getClassList = async (selectedSchool: string) => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_class_list`, { school: selectedSchool }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setClasslist(response.data.classlist || []);
+        } catch (error) {
+            console.error('Error fetching class list:', error);
+        }
+    };
+
+    const getStudentList = async (selectedSchool: string, selectedClass: string) => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/getAllStudent`, { school: selectedSchool, _class: selectedClass }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setStudentClass(response.data.students);
+        } catch (error) {
+            console.error('Error fetching class list:', error);
+        }
+    };
+
+    const handleSchoolChange = (newschool: string) => {
+        setSchool(newschool);
+        setClass_(''); // Reset class selection when school changes
+        setStudentClass('');
+        getClassList(newschool); // Fetch classes for the selected school
+    };
+
+    const handleClassChange = (selectSchool: string, newclass: string) => {
+        setClass_(newclass); // Reset class selection when school changes
+        setStudentClass('');
+        getStudentList(selectSchool, newclass);
+    };
+
+    useEffect(() => {
+        getSchoolList();
+    }, []);
+
+    return (
+        <div>
+            <input
+                key={"name"}
+                type="text"
+                placeholder={`Name`}
+                className="border border-gray-300 px-4 py-2 rounded-md w-full h-10 my-2"
+                value={problemName}
+                onChange={(e) => setProblemName(e.target.value)}
             />
-            <button onClick={() => generateRandomScript(sectionIndex)}>
-              Generate Script
-            </button>
-          </div>
+            <div  className="border border-gray-300 rounded-md p-4 mb-4">
+                Access user
+                <input 
+                    type="text" 
+                    placeholder='Access User (comma separated, blank for public access)' 
+                    className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
+                    value={accessUser}
+                    onChange={handleAccessUserChange}
+                />
 
-          <button onClick={() => deleteSection(sectionIndex)}>
-            Delete Section
-          </button>
+                Or choose classes:
 
-          {section.parts.map((part, partIndex) => (
-            <div
-              key={partIndex}
-              style={{
-                marginTop: '15px',
-                padding: '10px',
-                border: '1px solid #aaa',
-              }}
-            >
-              <h4>Part {partIndex + 1}</h4>
+                <div className='flex space-x-4'>
+                    <select
+                        value={school}
+                        onChange={(e) => handleSchoolChange(e.target.value)}
+                        className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                    >
+                        <option value="">Select a school</option>
+                        {schoollist.map((schoolOption) => (
+                            <option key={schoolOption.id} value={schoolOption.id}>
+                                {schoolOption.name}
+                            </option>
+                        ))}
+                    </select>
 
-              <div>
-                <label>Select Question Type:</label>
-                <select
-                  value={part.selectedQuestionType}
-                  onChange={(event) =>
-                    handleQuestionTypeChange(sectionIndex, partIndex, event)
-                  }
+                    <select
+                        value={class_}
+                        onChange={(e) => handleClassChange(school, e.target.value)}
+                        className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                    >
+                        <option value="">Select a class</option>
+                        {classlist.map((schoolOption) => (
+                            <option key={schoolOption} value={schoolOption.id}>
+                                {schoolOption}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <br />
+                <textarea
+                    value={studentClass}
+                    className="border border-gray-300 px-3 py-2 rounded-md w-full h-32"
+                    disabled={true}
+                />
+
+                <button 
+                    onClick={addStudent} 
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
+                    disabled={isLoading}
                 >
-                  {questionTypes.map((type, idx) => (
-                    <option key={idx} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
+                    Add Student
+                </button>
+            </div>
+
+            <div className='flex space-x-4'>
+                <input 
+                    type="datetime-local" 
+                    className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
+                    onChange={(e) => setStartTime(e.target.value)}
+                />
+                <input 
+                    type="datetime-local" 
+                    className="border border-gray-300 px-4 py-2 rounded-md w-full my-2" 
+                    onChange={(e) => setEndTime(e.target.value)}
+                />
+            </div>
+            <div className='mt-4'>
+                {idList.map((item, idx) => (
+                    <div key={item.listening_id} className="border border-gray-300 rounded-md p-4 mb-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-semibold">{`Listening #${idx + 1} (${item.id})`}</h3>
+                            <div>
+                              <Button
+                                  onClick={() => handleDeleteTask(idx)}
+                                  className="mr-2 text-medium"
+                                  color='danger'
+                              >
+                                  Delete
+                              </Button>
+                            </div>
+                        </div>
+                        {renderTaskPage(item.id, idx)}
+                    </div>
+                ))}
+            </div>
+            <div className="flex items-center mb-4 mt-4">
+                <select
+                    className="border border-gray-300 px-4 py-2 rounded-md"
+                    value={selectedTask}
+                    onChange={handleDropdownChange}
+                >
+                    <option value="Task 1">Task 1</option>
+                    <option value="Task 2">Task 2</option>
+                    <option value="Task 3">Task 3</option>
                 </select>
                 <button
-                  onClick={() => generateQuestions(sectionIndex, partIndex)}
+                    onClick={handleAddTask}
+                    className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md"
                 >
-                  Generate Questions
+                    Add
                 </button>
-              </div>
-
-              {/* Custom Questions Section */}
-              <div>
-                {part.customQuestions.map((customQuestion, questionIndex) => (
-                  <div key={questionIndex} style={{ marginTop: '10px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
-                      {/* Question Textarea */}
-                      <textarea
-                        placeholder="Question"
-                        value={customQuestion.question} // Display the question
-                        onChange={(e) =>
-                          handleCustomQuestionChange(
-                            sectionIndex,
-                            partIndex,
-                            questionIndex,
-                            'question',
-                            e
-                          )
-                        }
-                        style={{ width: '50%' }} // Adjust the width to fit on the same line
-                      />
-
-                      {/* Answer Textarea */}
-                      <textarea
-                        placeholder="Answer"
-                        value={customQuestion.answer} // Display the answer
-                        onChange={(e) =>
-                          handleCustomQuestionChange(
-                            sectionIndex,
-                            partIndex,
-                            questionIndex,
-                            'answer',
-                            e
-                          )
-                        }
-                        style={{ width: '50%' }} // Adjust the width to fit on the same line
-                      />
-                    </div>
-
-                    {/* Explanation Textarea on the second line */}
-                    <textarea
-                      placeholder="Explanation"
-                      value={customQuestion.explanation} // Display the explanation
-                      onChange={(e) =>
-                        handleCustomQuestionChange(
-                          sectionIndex,
-                          partIndex,
-                          questionIndex,
-                          'explanation',
-                          e
-                        )
-                      }
-                      style={{ width: '100%', marginTop: '10px' }} // Full width for explanation
-                    />
-
-                  </div>
-                ))}
-              </div>
-              <button onClick={() => addCustomQuestion(sectionIndex, partIndex)}>
-                Add Custom Question
-              </button>
             </div>
-          ))}
-
-          <button onClick={() => addPart(sectionIndex)}>Add Part</button>
-
-          {section.error && <p style={{ color: 'red' }}>{section.error}</p>}
+            <button
+                onClick={create_speaking_problem}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+            >
+                Create Problem
+            </button>
         </div>
-      ))}
-
-      <button
-        onClick={() =>
-          setSections((prev) => [
-            ...prev,
-            {
-              script: null,
-              parts: [
-                {
-                  mcqs: [],
-                  tableFilling: [],
-                  shortAnswerQuestions: [],
-                  matchingExercise: null,
-                  customQuestions: [],
-                  selectedQuestionType: 'mcq',
-                },
-              ],
-              error: '',
-            },
-          ])
-        }
-      >
-        Add Section
-      </button>
-    </div>
-  );
+    );
 };
 
-export default ListeningPage;
+export default SpeakingPage;
