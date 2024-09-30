@@ -412,7 +412,11 @@ router.post('/getContest', async (req, res) => {
 
         // Check if the contest has ended
         const contestEndTime = new Date(contest.endTime);
-        if (isNaN(contestEndTime.getTime()) || contestEndTime >= new Date()) {
+        const contestStartTime = new Date(contest.startTime);
+        if (isNaN(contestEndTime.getTime()) || contestStartTime >= new Date()) {
+            return res.status(403).json({ message: "Contest is still ongoing or endTime is invalid" });
+        }
+        if(contestEndTime >= new Date() && contest.registerUser.includes(username) === 0){
             return res.status(403).json({ message: "Contest is still ongoing or endTime is invalid" });
         }
 
