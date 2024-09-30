@@ -180,33 +180,32 @@ const WritingContest = ({ contest }: { contest: any }) => {
       return sid.length > 8 ? `${sid.substring(0, 8)}...` : sid;
     };
     return (
-      <div className="w-[20vw] border border-black rounded-lg overflow-hidden">
-        <table className="w-full table-fixed border-collapse bg-white text-left text-sm">
-          <thead className="bg-white text-xs uppercase">
-            <tr>
-              <th className="p-2 border-b border-black">Submission</th>
-              <th className="p-2 border-b border-black">Time</th>
-              <th className="p-2 border-b border-black">Band</th>
-            </tr>
-          </thead>
-          <tbody>
-            {submissions &&
-              submissions
+      <>
+      {submissions.filter((submission) => submission.task_id === currentPage).length > 0 ? (
+        <div className="w-[20vw] border border-black rounded-lg overflow-hidden">
+          <table className="w-full table-fixed border-collapse bg-white text-left text-sm">
+            <thead className="bg-white text-xs uppercase">
+              <tr>
+                <th className="p-2 border-b border-black">Submission</th>
+                <th className="p-2 border-b border-black">Time</th>
+                <th className="p-2 border-b border-black">Band</th>
+              </tr>
+            </thead>
+            <tbody>
+              {submissions
                 .filter((submission) => submission.task_id === currentPage)
-                .map((submission, index, array) => {
+                .map((submission) => {
                   let bandColor = 'text-red-600';
                   const bandScore = submission.band;
-
+      
                   if (bandScore >= 7.0) {
                     bandColor = 'text-green-600';
                   } else if (bandScore >= 5.0) {
                     bandColor = 'text-yellow-600';
                   }
-
+      
                   return (
-                    <tr
-                      key={submission.sid}
-                    >
+                    <tr key={submission.sid}>
                       <td className="p-2 border border-black border-b-0 border-l-0">
                         <Link
                           href={`/results/${submission.sid}`}
@@ -215,22 +214,26 @@ const WritingContest = ({ contest }: { contest: any }) => {
                           {truncateSid(submission.sid)}
                         </Link>
                       </td>
-                      <td className="p-2 border border-black ">
+                      <td className="p-2 border border-black">
                         {new Date(submission.time_created).toLocaleString()}
                       </td>
-                      <td className="p-2 text-center border border-black">
-                        <span className={bandColor}>{bandScore}</span>
+                      <td className="p-2 text-center border border-black text-lg">
+                        <span className={bandColor}>{bandScore.toFixed(1)}</span>
                       </td>
                     </tr>
                   );
                 })}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
       </div>
+      ) : null }
+    </>
+
 
     );
   };
-
+  console.log(submissions);
+  console.log(currentPage);
   const renderRankingPage = () => {
     const indexToLetter = (index: number) => String.fromCharCode(65 + index);
     const questions = contest.tasks.map((_: any, index: any) => `Task ${indexToLetter(index)}`);
