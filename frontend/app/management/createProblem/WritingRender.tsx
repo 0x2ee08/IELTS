@@ -364,6 +364,7 @@ const WritingPage: React.FC = () => {
 
                             {/* File upload for "Writing Task 1 Academic" */}
                             {(task.type === "Writing Task 1 Academic") && (
+                                <>
                                 <div className="border border-gray-200 rounded-md p-4 flex items-center space-x-4">
                                     <div className="flex-1">
                                         {/* Fancy File Upload Button */}
@@ -396,15 +397,16 @@ const WritingPage: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
+                                <textarea 
+                                    placeholder='Data Description' 
+                                    className="border border-gray-300 px-4 py-2 rounded-md w-full h-32 my-2" 
+                                    value={task.data} 
+                                    onChange={(e) => handleInputChange(pIndex, 'data', e.target.value)}
+                                    disabled={isLoading}
+                                ></textarea>
+                                </>
                             )}
 
-                            <textarea 
-                                placeholder='Data Description' 
-                                className="border border-gray-300 px-4 py-2 rounded-md w-full h-32 my-2" 
-                                value={task.data} 
-                                onChange={(e) => handleInputChange(pIndex, 'data', e.target.value)}
-                                disabled={isLoading}
-                            ></textarea>
                             <textarea 
                                 placeholder='Prompt' 
                                 className="border border-gray-300 px-4 py-2 rounded-md w-full h-64 my-2" 
