@@ -194,7 +194,7 @@ OUTPUT FORMAT:
     }
 }
 
-The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
+OUTPUT MUST BE CORRECT JSON FORMAT. The question, answer, (options) MUST be STRONGLY paraphased from paragraph and can (MUST) cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -235,7 +235,7 @@ OUTPUT FORMAT:
     }
 }
 
-The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
+OUTPUT MUST BE CORRECT JSON FORMAT. The question, answer, (options) MUST be STRONGLY paraphased from paragraph and can (MUST) cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -280,7 +280,7 @@ OUTPUT FORMAT:
     }
 }
 
-The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
+OUTPUT MUST BE CORRECT JSON FORMAT. The question, answer, (options) MUST be STRONGLY paraphased from paragraph and can (MUST) cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -325,7 +325,7 @@ OUTPUT FORMAT:
     }
 }
 
-The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
+OUTPUT MUST BE CORRECT JSON FORMAT. The question, answer, (options) MUST be STRONGLY paraphased from paragraph and can (MUST) cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections.`}],
     }, {
         headers: {
             'Authorization': `Bearer ${openRouterApiKey}`,
@@ -348,21 +348,21 @@ router.post('/generateReadingFillOneWord', authenticateToken, async (req, res) =
         model: model,
         messages: [{
             role: 'system',
-            content: `Generate 6 Fill in the Blanks (THE BLANK REPRESENT AS "........") question for IELTS READING TASK (ANSWER HAVE ONE WORD ONLY, 6 question SHOULD BE 6 OR MORE SENTENCE OF A PARAGRAPH) (question must be paraphased) (the given paragraph must contain answer word) with the following format: 
+            content: `[LEVEL: HARD/INSANE] Generate 6 Fill in the Blanks (THE BLANK REPRESENT AS "........") question for IELTS READING TASK (ANSWER HAVE ONE WORD ONLY, 6 question SHOULD BE 6 OR MORE SENTENCE OF A PARAGRAPH) (question must be paraphased) (the given paragraph must contain answer word) with the following format: 
 {
     "1": {
-        "question": "question 1",
-        "answer": "answer 1",
+        "question": "sentence 1, with the missing word replaced with ........ Note: exactly EIGHT dots",
+        "answer": "answer 1 [WORD MUST OCCUR IN THE PARAGRAPH]",
         "explaination": "explaination 1",
     },
     "2": {
-        "question": "question 2",
+        "question": "sentence 2",
         "answer": "answer 2",
         "explaination": "explaination 2",
     },
     ...
     "6": {
-        "question": "question 6",
+        "question": "sentence 6",
         "answer": "answer 6",
         "explaination": "explaination 6",
     }
@@ -370,7 +370,7 @@ router.post('/generateReadingFillOneWord', authenticateToken, async (req, res) =
 
             based on the paragraph with title "${title}" and content "${content}
             
-            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
+            OUTPUT MUST BE CORRECT JSON FORMAT. The question, answer, (options) MUST be STRONGLY paraphased from paragraph and can (MUST) cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
@@ -392,29 +392,29 @@ router.post('/generateReadingFillTwoWords', authenticateToken, async (req, res) 
         model: model,
         messages: [{
             role: 'system',
-            content: `Generate 6 Fill in the Blanks (THE BLANK REPRESENT AS "........") question for IELTS READING TASK (ANSWER HAVE NO MORE THAN TWO WORD ,AT LEAST ONE QUESTION HAVE AN ANSWER CONTAIN TWO WORDS, 6 question SHOULD BE 6 OR MORE SENTENCE OF A PARAGRAPH) (question must be paraphased) (THE GIVEN PARAGRAPH MUST CONTAIN ANSWER WORDS) with the following format: 
+            content: `[LEVEL: HARD/INSANE] Generate 6 Fill in the Blanks (THE BLANK REPRESENT AS "........") question for IELTS READING TASK (ANSWER HAVE NO MORE THAN TWO WORD ,AT LEAST ONE QUESTION HAVE AN ANSWER CONTAIN TWO WORDS, 6 question SHOULD BE 6 OR MORE SENTENCE OF A PARAGRAPH) (question must be paraphased) (THE GIVEN PARAGRAPH MUST CONTAIN ANSWER WORDS) with the following format: 
             OUTPUT FORMAT:
 {
     "1": {
-        "question": "question 1",
-        "answer": "answer 1",
+        "question": "sentence 1, with the missing word(s) replaced with ........ Note: exactly EIGHT dots",
+        "answer": "answer 1 Note: [WORD(s) MUST OCCUR IN THE PARAGRAPH]",
         "explaination": "explaination 1",
     },
     "2": {
-        "question": "question 2",
+        "question": "sentence 2",
         "answer": "answer 2",
         "explaination": "explaination 2",
     },
     ...
     "6": {
-        "question": "question 6",
+        "question": "sentence 6",
         "answer": "answer 6",
         "explaination": "explaination 6",
     }
 }
             based on the paragraph with title "${title}" and content "${content}
             
-            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
+            OUTPUT MUST BE CORRECT JSON FORMAT. The question, answer, (options) MUST be STRONGLY paraphased from paragraph and can (MUST) cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
@@ -437,7 +437,7 @@ router.post('/generateReadingMatchingHeading', authenticateToken, async (req, re
         model: model,
         messages: [{
             role: 'system',
-            content: `Generate a Matching Heading problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
+            content: `[LEVEL: HARD/INSANE] Generate a Matching Heading problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
             {
                 "options": ["option 1", "option 2", "option 3", "option 4", ..., "option 8"],
                 "Section 1": {
@@ -456,7 +456,7 @@ router.post('/generateReadingMatchingHeading', authenticateToken, async (req, re
             }
             based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 QUESTION and 8 OPTIONS
             
-            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
+            OUTPUT MUST BE CORRECT JSON FORMAT. The question, answer, (options) MUST be STRONGLY paraphased from paragraph and can (MUST) cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
@@ -480,7 +480,7 @@ router.post('/generateReadingMatchingParagraphInfo', authenticateToken, async (r
         model: model,
         messages: [{
             role: 'system',
-            content: `Generate a Matching Paragraph Information problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
+            content: `[LEVEL: HARD/INSANE] Generate a Matching Paragraph Information problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
             {
                 "options": ["option 1", "option 2", "option 3", "option 4", ..., "option 8"],
                 "Section 1": {
@@ -499,7 +499,7 @@ router.post('/generateReadingMatchingParagraphInfo', authenticateToken, async (r
             }
             based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 QUESTION and 8 OPTIONS
             
-            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
+            OUTPUT MUST BE CORRECT JSON FORMAT. The question, answer, (options) MUST be STRONGLY paraphased from paragraph and can (MUST) cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
@@ -522,7 +522,7 @@ router.post('/generateReadingMatchingFeatures', authenticateToken, async (req, r
         model: model,
         messages: [{
             role: 'system',
-            content: `Generate a Matching Features problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
+            content: `[LEVEL: HARD/INSANE] Generate a Matching Features problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
             {
                 "options": ["option 1", "option 2", "option 3", "option 4", ..., "option 8"],
                 "Feature 1": {
@@ -544,7 +544,7 @@ router.post('/generateReadingMatchingFeatures', authenticateToken, async (req, r
             }
             based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 FEATURE and 8 OPTIONS
             Option is a/an object/person... in the paragraph. Question is the action/apperance a/an object/person did/have in the paragraph
-            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
+            OUTPUT MUST BE CORRECT JSON FORMAT. The question, answer, (options) MUST be STRONGLY paraphased from paragraph and can (MUST) cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
@@ -567,7 +567,7 @@ router.post('/generateReadingMatchingSentenceEnding', authenticateToken, async (
         model: model,
         messages: [{
             role: 'system',
-            content: `Generate a Matching Sentence Ending problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
+            content: `[LEVEL: HARD/INSANE] Generate a Matching Sentence Ending problem for IELTS READING TASK (Answer should be exactly the same as what in the options)  [OPTION SHOULD BE IN RANDOM ORDER, EVERYTHING MUST BE PARAPHASED] (MUST OUTPUT THE CORRECT FORMAT, HAVE [OPTION], [QUESTION] and [ANSWER] tag) with the following format: 
             {
                 "options": ["option 1", "option 2", "option 3", "option 4", ..., "option 8"],
                 "Sentence 1": {
@@ -589,7 +589,7 @@ router.post('/generateReadingMatchingSentenceEnding', authenticateToken, async (
             }
             based on the paragraph with title "${title}" and content "${content}. THERE SHOULD BE 6 SENTENCE and 8 OPTIONS (ENDING)
             Question is the first part of the sentence. Options contain possible choice for the last part of the sentence. If we combine the first part (question) and last part (options) correctly, we get a full, have meaning, grammar correct sentence.
-            The question should be strongly paraphased from paragraph and can cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
+            OUTPUT MUST BE CORRECT JSON FORMAT. The question, answer, (options) MUST be STRONGLY paraphased from paragraph and can (MUST) cause mistake for participant if not reading carefully. question can ask about the data in the middle of each sections, not neccessary the whole sections."`
         }],
     }, {
         headers: {
