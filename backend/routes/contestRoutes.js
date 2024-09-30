@@ -168,8 +168,15 @@ router.get('/getAllContest', async (req, res) => {
 
         const availableContests = await contestCollection.find(query).toArray();
 
-        // console.log(availableContests);
+        // var registerUser = 0;
+        // var registered = 0;
+        // if(availableContests.registerUser){
+        //     registerUser = availableContests.registerUser.length;
+        //     registered = availableContests.registerUser.includes(username);
+        // }
 
+        // console.log(availableContests);
+        // console.log(registered)
         let response = {};
         availableContests.forEach((contest, index) => {
             response[index + 1] = {
@@ -180,7 +187,9 @@ router.get('/getAllContest', async (req, res) => {
                 endTime: contest.endTime,
                 created_by: contest.created_by,
                 access: contest.accessUser ? "Private" : "Public",
-                registerUser: contest.accessUser ? 1 : 0
+                registerUser: contest.registerUser ? contest.registerUser.length : 0,
+                registered: contest.registerUser ? contest.registerUser.includes(username) : false,
+                // registerUser: contest.registerUser.length ? 1 : 0
             };
         });
 
@@ -196,6 +205,54 @@ router.get('/getAllContest', async (req, res) => {
             res.status(500).json({ message: "Error retrieving contests" });
         }
     }
+});
+
+router.post('/registerContest', authenticateToken, async(req, res) => {
+    try {
+        const { contestID } = req.body;
+        const { username } = req.user;
+
+        // console.log(contestID, username);
+
+        const db = await connectToDatabase();
+        const contestCollection = db.collection('contest');
+
+        // Find the contest by its ID
+        const contest = await contestCollection.findOne({ id: contestID });
+        // console.log(contest);
+        // If contest doesn't exist, return 404
+        if (!contest) {
+            return res.status(500).json({ message: "Contest not found" });
+        }
+
+        // Check if registerUser array exists, if not initialize it
+        if (!contest.registerUser) {
+            contest.registerUser = [];
+        }
+        
+        // Check if the user is already registered
+        if (contest.registerUser.includes(username)) {
+            return res.status(500).json({ message: "User already registered" });
+        }
+
+        // console.log(1);
+
+        // Add user to the registerUser array
+        const updatedContest = await contestCollection.updateOne(
+            { id: contestID },
+            { $push: { registerUser: username } }
+        );
+
+        if (updatedContest.modifiedCount > 0) {
+            return res.status(200).json({ message: "User successfully registered" });
+        } else {
+            return res.status(500).json({ message: "Error updating the contest" });
+        }
+
+    } catch (error) {
+        console.error("Error register contest:", error);
+        res.status(500).json({ message: "Error while register. Try again!" });
+    } 
 });
 
 router.get('/getAllParagraph', async (req, res) => {

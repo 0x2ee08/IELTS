@@ -20,6 +20,7 @@ interface Contest {
     created_by: string;
     access: string;
     registerUser: number;
+    registered: boolean;
 }
 
 const ContestPage: React.FC = () => {
@@ -57,7 +58,17 @@ const ContestPage: React.FC = () => {
     }, []);    
 
     const handleRegister = (contestId: string) => {
-        console.log(`Registering for contest with ID: ${contestId}`);
+        // console.log(`Registering for contest with ID: ${contestId}`);
+        const token = localStorage.getItem('token');
+        axios.post(`${config.API_BASE_URL}api/registerContest`, {contestID: contestId}, { headers: { 'Authorization': `Bearer ${token}` } })
+            .then(response => {
+                console.log(response);
+            })
+            .catch(error => {
+                console.error('Error fetching contests:', error);
+            }).finally(() => {
+                window.location.reload();
+            });
     };
 
     dayjs.extend(utc);
@@ -106,7 +117,8 @@ const ContestPage: React.FC = () => {
                                         <td style={{padding:'10px',textAlign:"center",width:'15%',border:'1px solid #e1e1e1'}}>{formatDate(contest.endTime)}</td>
                                         <td style={{padding:'10px',textAlign:"center",width:'10%',border:'1px solid #e1e1e1'}}>{contest.registerUser}</td>
                                         <td style={{padding:'10px',textAlign:"center",width:'10%',border:'1px solid #e1e1e1'}}>
-                                            <button className="text-blue-600 hover:underline cursor-pointer">Register</button></td>
+                                        {contest.registered === true ? <Link href={`/contests/${contest.id}`}><button className="text-blue-600 hover:underline cursor-pointer">Join</button></Link> : <button onClick={() => handleRegister(contest.id)} className="text-blue-600 hover:underline cursor-pointer">Register</button>}
+                                        </td>
                                     </tr>
                                 )}
                             </table>
@@ -140,7 +152,8 @@ const ContestPage: React.FC = () => {
                                         <td style={{padding:'10px',textAlign:"center",width:'15%',border:'1px solid #e1e1e1'}}>{formatDate(contest.endTime)}</td>
                                         <td style={{padding:'10px',textAlign:"center",width:'10%',border:'1px solid #e1e1e1'}}>{contest.registerUser}</td>
                                         <td style={{padding:'10px',textAlign:"center",width:'10%',border:'1px solid #e1e1e1'}}>
-                                            <button className="text-blue-600 hover:underline cursor-pointer">Register</button></td>
+                                            {contest.registered === true ? <>Already register</> : <button onClick={() => handleRegister(contest.id)} className="text-blue-600 hover:underline cursor-pointer">Register</button>}
+                                        </td>
                                     </tr>
                                 )}
                             </table>
@@ -174,8 +187,8 @@ const ContestPage: React.FC = () => {
                                             <td style={{padding:'10px',textAlign:"center",width:'15%',border:'1px solid #e1e1e1'}}>{formatDate(contest.startTime)}</td>
                                         <td style={{padding:'10px',textAlign:"center",width:'15%',border:'1px solid #e1e1e1'}}>{formatDate(contest.endTime)}</td>
                                         <td style={{padding:'10px',textAlign:"center",width:'10%',border:'1px solid #e1e1e1'}}>{contest.registerUser}</td>
-                                        <td style={{padding:'10px',textAlign:"center",width:'10%',border:'1px solid #e1e1e1'}}><Link href={`/contests/${contest.id}`}>
-                                            <button className="text-blue-600 hover:underline cursor-pointer">Join</button></Link></td>
+                                        <td style={{padding:'10px',textAlign:"center",width:'10%',border:'1px solid #e1e1e1'}}>
+                                            <Link href={`/contests/${contest.id}`}><button className="text-blue-600 hover:underline cursor-pointer">Join</button></Link></td>
                                     </tr>
                                 )}
                             </table>
