@@ -176,47 +176,50 @@ const WritingContest = ({ contest }: { contest: any }) => {
   };
 
   const renderUserSubmission = () => {
+    const truncateSid = (sid: string) => {
+      return sid.length > 8 ? `${sid.substring(0, 8)}...` : sid;
+    };
     return (
-      <div style={{ marginTop: '20px' }}>
-        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#fff' }}>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Submission ID</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Task ID</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Band</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Time Created</th>
+      <div className="w-[20vw] border border-black rounded-lg overflow-hidden">
+        <table className="w-full table-fixed border-collapse bg-white text-left text-sm">
+          <thead className="bg-white text-xs uppercase">
+            <tr>
+              <th className="p-2 border-b border-black">Submission</th>
+              <th className="p-2 border-b border-black">Time</th>
+              <th className="p-2 border-b border-black">Band</th>
             </tr>
           </thead>
           <tbody>
             {submissions &&
               submissions
                 .filter((submission) => submission.task_id === currentPage)
-                .map((submission, index) => {
-                  let bandColor = "text-red-600";
+                .map((submission, index, array) => {
+                  let bandColor = 'text-red-600';
                   const bandScore = submission.band;
 
                   if (bandScore >= 7.0) {
-                    bandColor = "text-green-600";
+                    bandColor = 'text-green-600';
                   } else if (bandScore >= 5.0) {
-                    bandColor = "text-yellow-600";
+                    bandColor = 'text-yellow-600';
                   }
 
                   return (
                     <tr
                       key={submission.sid}
-                      style={{
-                        backgroundColor: index % 2 === 0 ? '#fff' : '#f2f2f2',
-                      }}
                     >
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                        <Link href={`/results/${submission.sid}`}>{submission.sid}</Link>
+                      <td className="p-2 border border-black border-b-0 border-l-0">
+                        <Link
+                          href={`/results/${submission.sid}`}
+                          className="text-blue-500 hover:text-blue-700"
+                        >
+                          {truncateSid(submission.sid)}
+                        </Link>
                       </td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{submission.task_id}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                        <span className={bandColor}>{bandScore}</span>
-                      </td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                      <td className="p-2 border border-black ">
                         {new Date(submission.time_created).toLocaleString()}
+                      </td>
+                      <td className="p-2 text-center border border-black">
+                        <span className={bandColor}>{bandScore}</span>
                       </td>
                     </tr>
                   );
@@ -224,6 +227,7 @@ const WritingContest = ({ contest }: { contest: any }) => {
           </tbody>
         </table>
       </div>
+
     );
   };
 
@@ -272,9 +276,6 @@ const WritingContest = ({ contest }: { contest: any }) => {
       <div className="flex flex-col min-h-screen">
         <div className="flex justify-between">
           <div className="w-4/5 bg-white ml-16 mt-2 p-8">
-            <div className="border border-black rounded p-4 mb-4">
-              <p className="text-2xl font-bold text-center">{contest.problemName}</p>
-            </div>
             <div className="flex justify-center m-4 mb-10">
               <CustomPagination
                 total={contest.tasks.length}
@@ -291,9 +292,19 @@ const WritingContest = ({ contest }: { contest: any }) => {
           </div>
 
           <div className="w-1/5 bg-white mr-20 mt-16 flex flex-col">
-            <div className="border border-black rounded p-4 mb-4">
+            <div className="border border-black rounded-lg p-4 mb-4">
+              <p className="text-2xl font-bold text-center">{contest.problemName}</p>
+            </div>
+            <div className="border border-black rounded-lg p-4 mb-4">
               <p className="text-center text-xl">
-                {timeLeft > 0 ? `Time: ${formatTimeLeft(timeLeft)}` : 'Finished'}
+                {timeLeft > 0 ? (
+                  <>
+                    <div className="text-blue-800 font-bold">Contest is running</div>
+                    <div>{formatTimeLeft(timeLeft)}</div>
+                  </>
+                ) : (
+                  <div className="font-bold">Finished</div>
+                )}
               </p>
             </div>
             {currentPage < contest.tasks.length && renderUserSubmission()}

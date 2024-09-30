@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import ReadingRender from './ReadingRender';
-import SpeakingRender from './SpeakingRender';
+// import SpeakingRender from './SpeakingRender';
 import WritingRender from './WritingRender';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -39,7 +39,7 @@ const SubmissionDetail: React.FC = () => {
             case 'Reading':
                 return <ReadingRender />;
             case 'Speaking':
-                return <SpeakingRender />;
+                // return <SpeakingRender />;
             case 'Writing':
                 return <WritingRender />;
             default:
