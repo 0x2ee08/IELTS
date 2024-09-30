@@ -203,6 +203,7 @@ The question should be strongly paraphased from paragraph and can cause mistake 
     });
 
     var evaluation = response.data.choices[0].message.content.trim();
+    evaluation = evaluation.replace("```json", "").replace("```", ""); 
 
     const parsedEvaluation = parseEvaluationType1(evaluation);
     res.json(parsedEvaluation);
@@ -243,6 +244,7 @@ The question should be strongly paraphased from paragraph and can cause mistake 
     });
 
     var evaluation = response.data.choices[0].message.content.trim();
+    evaluation = evaluation.replace("```json", "").replace("```", "");
     console.log(evaluation);
     const parsedEvaluation = parseEvaluationType1(evaluation);
     res.json(parsedEvaluation);
@@ -287,6 +289,7 @@ The question should be strongly paraphased from paragraph and can cause mistake 
     });
 
     var evaluation = response.data.choices[0].message.content.trim();
+    evaluation = evaluation.replace("```json", "").replace("```", "");
     console.log(evaluation)
     const parsedEvaluation = parseEvaluationType2(evaluation);
     res.json(parsedEvaluation);
@@ -331,6 +334,7 @@ The question should be strongly paraphased from paragraph and can cause mistake 
     });
 
     var evaluation = response.data.choices[0].message.content.trim();
+    evaluation = evaluation.replace("```json", "").replace("```", "");
     console.log(evaluation)
     const parsedEvaluation = parseEvaluationType2(evaluation);
     res.json(parsedEvaluation);
@@ -376,6 +380,7 @@ router.post('/generateReadingFillOneWord', authenticateToken, async (req, res) =
     });
 
     var evaluation = response.data.choices[0].message.content.trim();
+    evaluation = evaluation.replace("```json", "").replace("```", "");
     const parsedEvaluation = parseEvaluationType1(evaluation);
     res.json(parsedEvaluation);
 });
@@ -419,6 +424,7 @@ router.post('/generateReadingFillTwoWords', authenticateToken, async (req, res) 
     });
 
     var evaluation = response.data.choices[0].message.content.trim();
+    evaluation = evaluation.replace("```json", "").replace("```", "");
     const parsedEvaluation = parseEvaluationType1(evaluation);
     res.json(parsedEvaluation);
 });
@@ -460,6 +466,7 @@ router.post('/generateReadingMatchingHeading', authenticateToken, async (req, re
     });
 
     var evaluation = response.data.choices[0].message.content.trim();
+    evaluation = evaluation.replace("```json", "").replace("```", "");
     // console.log(evaluation)
     const parsedEvaluation = parseEvaluationType3(evaluation);
     res.json(parsedEvaluation);
@@ -502,6 +509,7 @@ router.post('/generateReadingMatchingParagraphInfo', authenticateToken, async (r
     });
 
     var evaluation = response.data.choices[0].message.content.trim();
+    evaluation = evaluation.replace("```json", "").replace("```", "");
     // console.log(evaluation)
     const parsedEvaluation = parseEvaluationType3(evaluation);
     res.json(parsedEvaluation);
@@ -546,6 +554,7 @@ router.post('/generateReadingMatchingFeatures', authenticateToken, async (req, r
     });
 
     var evaluation = response.data.choices[0].message.content.trim();
+    evaluation = evaluation.replace("```json", "").replace("```", "");
     console.log(evaluation)
     const parsedEvaluation = parseEvaluationType4(evaluation);
     res.json(parsedEvaluation);
@@ -590,6 +599,7 @@ router.post('/generateReadingMatchingSentenceEnding', authenticateToken, async (
     });
 
     var evaluation = response.data.choices[0].message.content.trim();
+    evaluation = evaluation.replace("```json", "").replace("```", "");
     console.log(evaluation)
     const parsedEvaluation = parseEvaluationType5(evaluation);
     res.json(parsedEvaluation);
