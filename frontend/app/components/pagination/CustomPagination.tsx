@@ -1,4 +1,5 @@
 import React from 'react';
+import '../contests/speaking/cssCustomFiles/customPagination.css'; // Import your custom CSS
 
 interface PaginationProps {
   total: number;
@@ -34,26 +35,19 @@ const CustomPagination: React.FC<PaginationProps> = ({ total, currentPage, onPag
   }
 
   return (
-    <div className="pagination flex justify-center space-x-2">
-      <button
-        className="px-2 py-1 rounded border bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100"
-        disabled={currentPage === 0}
-        onClick={() => onPageChange(Math.max(0, currentPage - 1))}
-      >
-        Prev
-      </button>
+    <div className="pagination-container">
       {startPage > 0 && (
         <>
-          <button className="px-2 py-1 border rounded bg-gray-200 hover:bg-gray-300" onClick={() => onPageChange(0)}>
+          <button className="pagination-button" onClick={() => onPageChange(0)}>
             A
           </button>
-          <span className="px-2 py-1">...</span>
+          <span className="pagination-button">...</span>
         </>
       )}
       {pageLetters.map((pageIndex) => (
         <button
           key={pageIndex}
-          className={`px-2 py-1 rounded border ${pageIndex === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+          className={`pagination-button ${pageIndex === currentPage ? 'current-page' : ''}`}
           onClick={() => onPageChange(pageIndex)}
         >
           {indexToLetter(pageIndex)}
@@ -61,19 +55,12 @@ const CustomPagination: React.FC<PaginationProps> = ({ total, currentPage, onPag
       ))}
       {endPage < total - 1 && (
         <>
-          <span className="px-2 py-1">...</span>
-          <button className="px-2 py-1 border rounded bg-gray-200 hover:bg-gray-300" onClick={() => onPageChange(total - 1)}>
+          <span className="pagination-button">...</span>
+          <button className="pagination-button" onClick={() => onPageChange(total - 1)}>
             {indexToLetter(total - 1)}
           </button>
         </>
       )}
-      <button
-        className="px-2 py-1 rounded border bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100"
-        disabled={currentPage === total - 1}
-        onClick={() => onPageChange(Math.min(total - 1, currentPage + 1))}
-      >
-        Next
-      </button>
     </div>
   );
 };
