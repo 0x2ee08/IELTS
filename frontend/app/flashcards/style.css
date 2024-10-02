@@ -1,0 +1,98 @@
+.flashcards-section, .paragraphs-section {
+    width: 100%;
+    max-width: 800px; /* Ensure both sections have the same width */
+    margin: 0 auto;
+  }
+
+  /* Card Styling */
+  .card {
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-bottom: 16px; /* Consistent margin between all cards */
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Section Header Styling */
+  .section-header {
+    text-align: center;
+    position: relative;
+    margin-bottom: 24px; /* Increased margin to separate underline from content */
+  }
+
+  .section-header::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -12px; /* Slightly reduce distance */
+    transform: translateX(-50%);
+    width: 160px; /* Increase width for a bolder look */
+    height: 3px; /* Reduce height for a sleeker underline */
+    background-color: #0077b6;
+  }
+
+  /* Ripple Effect for Buttons */
+  .ripple-effect {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ripple-effect::after {
+    content: "";
+    position: absolute;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    width: 300%;
+    height: 300%;
+    top: 50%;
+    left: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0);
+    animation: ripple 0.6s linear;
+  }
+
+  .ripple-effect:active::after {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  @keyframes ripple {
+    to {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0;
+    }
+  }
+
+  /* Load More Button Animation */
+  .load-more-btn {
+    transition: all 0.3s ease;
+  }
+
+  .load-more-btn:hover {
+    color: #0096db;
+    transform: scale(1.05);
+  }
+
+  .create-flashcard-btn {
+    background-color: #0077b6; /* Primary color */
+    color: white;
+    font-weight: bold;
+    padding: 10px 17px; /* Increased padding for a more spacious look */
+    border-radius: 8px; /* Softer rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s ease-in-out;
+  }
+  
+  .create-flashcard-btn:hover {
+    background-color: #0096db; /* Lighter blue on hover */
+    transform: translateY(-3px); /* Lift effect on hover */
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+  }
+  
+  .create-flashcard-btn:active {
+    transform: scale(0.95); /* Press effect */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Reset shadow */
+  }
