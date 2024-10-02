@@ -2,12 +2,13 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const { authenticateToken } = require('../middleware/authMiddleware');
+const { connectToDatabase } = require('../utils/mongodb');
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' }); // Multer setup for file upload
 
 // POST /upload - Upload a text file and extract statements into a string array
-router.post('/upload_file_writing_statements', authenticateToken, upload.single('file'), async (req, res) => {
+router.post('/import_file_writing_statements', authenticateToken, upload.single('file'), async (req, res) => {
     try {
         const filePath = req.file.path;
         const data = fs.readFileSync(filePath, 'utf8'); // Read file content
@@ -28,5 +29,22 @@ router.post('/upload_file_writing_statements', authenticateToken, upload.single(
         if (req.file) fs.unlinkSync(req.file.path);
     }
 });
+
+router.post('/upload_file_writing_statements', authenticateToken, async(req,res) => {
+    const { statements } = req.body
+
+    const db = await connectToDatabase()
+    const problemsetCollection = db.collection(`problemset`)
+
+    try{
+        for (let i = 0; i < statements.length; i++) {
+            const result = problemsetCollection.insertOne({statement: statements[i]})
+        }
+        res.json({ success: true, message: 'Uploaded!' });
+    } catch(error) {
+        console.error('An error occurred:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+})
 
 module.exports = router;

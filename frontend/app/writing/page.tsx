@@ -31,7 +31,7 @@ const App: React.FC = () => {
       setError('');
 
       const response = await axios.post(
-        `${config.API_BASE_URL}api/upload_file_writing_statements`, formData, {
+        `${config.API_BASE_URL}api/import_file_writing_statements`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
@@ -52,12 +52,46 @@ const App: React.FC = () => {
     console.log(statements)
   };
 
+  const uploadStatements = async () => {
+    const token = localStorage.getItem('token');
+  
+    // Explicitly type the function parameters and return value
+    const chunkArray = (array: string[], chunkSize: number): string[][] => {
+      const chunks: string[][] = [];
+      for (let i = 0; i < array.length; i += chunkSize) {
+        chunks.push(array.slice(i, i + chunkSize));
+      }
+      return chunks;
+    };
+  
+    const statementChunks = chunkArray(statements, 10);  // Split statements into chunks of 10
+  
+    try {
+      // Send each chunk in a separate request sequentially
+      for (const chunk of statementChunks) {
+        await axios.post(`${config.API_BASE_URL}api/upload_file_writing_statements`, { statements: chunk }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+      console.log('All statements uploaded successfully.');
+    } catch (error) {
+      console.error('Error uploading statements:', error);
+    }
+  };
+  
+  
+  const uploadingProblems = async() => {
+    extractStatements()
+    uploadStatements()
+  }
   return (
     <div className="App">
       <h1>Upload a Text File to Extract Statements</h1>
 
       <input type="file" onChange={handleFileChange} />
-      <button onClick={extractStatements} disabled={!file || loading}>
+      <button onClick={uploadingProblems} disabled={!file || loading}>
         {loading ? 'Uploading...' : 'Upload'}
       </button>
 
