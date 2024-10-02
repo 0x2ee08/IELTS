@@ -74,10 +74,26 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
 
     const generateExercise = async (idx: number) => {
         let script = ``;
-        for(let i=0; i<task.script.scripts.length; i++) {
-            let message = task.script.scripts[i];
-            if(message.name === "spliter") break;
-            script = script + message.name.toString() + ": " + message.message.toString() + "\n";
+        if(idx === 0) {
+            for(let i=0; i<task.script.scripts.length; i++) {
+                let message = task.script.scripts[i];
+                if(message.name === "spliter") break;
+                script = script + message.name.toString() + ": " + message.message.toString() + "\n";
+            }
+        }
+        else {
+            let startPosition = 0;
+            for(let i=0; i<task.script.scripts.length; i++) {
+                let message = task.script.scripts[i];
+                if(message.name === "spliter") {
+                    startPosition = i + 1;
+                    break;
+                }
+            }
+            for(let i=startPosition; i<task.script.scripts.length; i++) {
+                let message = task.script.scripts[i];
+                script = script + message.name.toString() + ": " + message.message.toString() + "\n";
+            }
         }
 
         const token = localStorage.getItem('token');
@@ -90,9 +106,9 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
             body: JSON.stringify({ task, idx, script }),
         });
         const result = await response.json();
+        let convertedData = null;
 
-        const convertedData = await mcqConverter(result.content);
-
+        if(task.exercise[idx].typeOfQuestion === "Multiple choice") convertedData = await mcqConverter(result.content);
 
         setTask((prevTask) => {
             const updatedExercise = prevTask.exercise;
