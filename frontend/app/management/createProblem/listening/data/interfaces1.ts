@@ -4,30 +4,43 @@ export interface task1QuestionGeneral {
     languageTone: string;
     difficulty: string;
     topic: string;
-    number_of_task: string;
-    questions: string[];
     audioData: string;
     script: Discussion;
+    exercise: Exercise[];
+}
+
+export interface Exercise {
+    typeOfQuestion: string;
+    numbefOfQuestion: number;
+    difficulty: string;
+    data: any; 
 }
 
 export interface Character {
-    NAME: string;
-    GENDER: string;
+    name: string;
+    gender: string;
 }
 
 export interface Script {
-    NAME: string;
-    MESSAGE: string;
+    name: string;
+    message: string;
 }
 
 export interface Discussion {
-    TITLE: string;
-    DESCRIPTION: string;
-    CHARACTER1: Character;
-    CHARACTER2: Character;
-    SCRIPTS: Script[];
+    title: string;
+    description: string;
+    character1: Character;
+    character2: Character;
+    scripts: Script[];
 }
 
 export interface Task1PageProps {
     onTaskUpdate: (task: task1QuestionGeneral) => void;
+}
+
+export interface mcq {
+    statement: string[];
+    choices: string[];
+    answers: string[];
+    explanation: string[];
 }

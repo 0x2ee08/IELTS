@@ -4,7 +4,7 @@ const axios = require('axios');
 const { authenticateToken } = require('../middleware/authMiddleware');
 const { MODEL_NAME, OPENROUTER_API_KEY, LISTENING_GENERATE_MODEL_NAME } = require('../config/config');
 
-const { conversation } = require('./listening/message.js');
+const { conversation, mcq, saq } = require('./listening/message.js');
 
 const model = MODEL_NAME;
 const generateModel = LISTENING_GENERATE_MODEL_NAME;
@@ -18,6 +18,10 @@ router.post('/generateListeningTask1', authenticateToken, async (req, res) => {
     if(task.topic !== "") {
         message = message + `Given the following topic: ${task.topic}\n`;
     }
+    else {
+        message = message + `Given the following topic: typical social topics\n`;
+    }
+
     message = message + `Use the language tone: ${task.languageTone}\n`;
     message = message + `Set the difficulty is ${task.difficulty}\n`;
 
@@ -49,9 +53,15 @@ router.post('/generateListeningTask1', authenticateToken, async (req, res) => {
     }
 });
 
-router.post('/generate_listening_multiple_choice', authenticateToken, async (req, res) => {
-    const { script } = req.body;
-    const message = `Create 4 multiple choice questions for IELTS Listening based on the following script, without special characters or additional text. Provide questions with four options labeled A, B, C, and D:\n\n${script.content}`;
+router.post('/generateExercise', authenticateToken, async (req, res) => {
+    const {task, idx, script} = req.body;
+
+    let message = `Here is the script of the audio: ${script}\n`;
+    if(task.exercise[idx].typeOfQuestion === "Multiple choice") {
+        message = message + "Generate " + `${task.exercise[idx].numbefOfQuestion}` + `${mcq}`
+    }
+
+    console.log(message);
 
     try {
         const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
@@ -63,25 +73,17 @@ router.post('/generate_listening_multiple_choice', authenticateToken, async (req
         }, {
             headers: {
                 'Authorization': `Bearer ${openRouterApiKey}`,
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             }
         });
 
-        const evaluation = response.data.choices[0].message.content.trim();
+        const content = response.data.choices[0].message.content.trim();
 
-        // Format the response into MCQs
-        const mcqs = evaluation.split('\n\n').map(mcq => {
-            const lines = mcq.split('\n').map(line => line.trim()).filter(line => line);
-            const question = lines[0] || ''; // First line is the question
-            const answers = lines.slice(1); // Rest are answer options
-            return { question, answers };
-        }).filter(mcq => mcq.question); // Remove MCQs with no question
-
-        res.json(mcqs); // Send back the formatted MCQs
+        res.json({ content: content });
 
     } catch (error) {
-        console.error('Error generating listening questions:', error);
-        res.status(500).json({ message: 'Error generating listening questions', error });
+        console.error('Error generating listening script:', error);
+        res.status(500).json({ message: 'Error generating listening script', error });
     }
 });
 
