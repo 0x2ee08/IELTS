@@ -3,6 +3,7 @@ import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, ModalProps, u
 import { Divider, Tooltip } from "@nextui-org/react";
 import { Input, Textarea } from "@nextui-org/react";
 import {Checkbox} from "@nextui-org/react";
+import {Accordion, AccordionItem} from "@nextui-org/react";
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 
@@ -16,23 +17,25 @@ const mcqPage: React.FC<mcqPageProps> = ({ exercise }) => {
 
     return (
         <div>
-            {exercise?.statement?.map((question, index) => (
-                <div key={index}>
-                    <Textarea
-                        label={<span className="custom-label"><strong>Question #{index + 1}</strong></span>}
-                        labelPlacement={"outside-left"}
-                        variant="bordered" fullWidth={true} className="mb-4" maxRows={1}
-                        value={question}
-                    />
-                    {exercise.choices[index]?.split(',').map((choice, idx) => (
-                        (choice === exercise.answers[index]
-                            ? <Checkbox className="mr-4" defaultSelected color="success">{choice}</Checkbox>
-                            : <Checkbox className="mr-4" isSelected={false}>{choice}</Checkbox>
-                        )
-                    ))}
-                    <p className="mt-2 mb-4">Explanation: {exercise.explanation[index]}</p>
-                </div>
-            ))}
+            <Accordion variant="bordered">
+                {exercise?.statement?.map((question, index) => (
+                    <AccordionItem key={index} aria-label={`Question ${index + 1}`} title={`Question ${index + 1}`}>
+                        <Textarea
+                            variant="bordered" fullWidth={true} className="mb-4" maxRows={1}
+                            value={question}
+                        />
+                        <div className="flex flex-col mb-2">
+                            {exercise.choices[index]?.split(',').map((choice, idx) => (
+                                (choice === exercise.answers[index]
+                                    ? <Checkbox className="mb-1" isSelected={true} color="success">{choice}</Checkbox>
+                                    : <Checkbox className="mb-1" isSelected={false}>{choice}</Checkbox>
+                                )
+                            ))}
+                        </div>
+                        <p className="mb-4"><strong>Explanation:</strong> {exercise.explanation[index]}</p>
+                    </AccordionItem>
+                ))}
+            </Accordion>
         </div>
     );
 };

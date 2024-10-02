@@ -341,53 +341,60 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
             </Modal>
 
             {/* Answer section :sob: */}
-            <Divider className="mb-4"/>
-            <div className="flex flex-row items-center justify-center mb-4">
-                <span className="mr-2 font-bold">
-                    Exercise 1:
-                </span>
-                <Input className="mr-2 max-w-[12rem]" variant="bordered"
-                        label="Enter number of questions" onChange={handleChangeNumberOfQuestion(0)} />
-                <Select
-                    label="Select type of question"
-                    className="max-w-xs text-xl mr-2"
-                    variant="bordered"
-                    value={task.exercise[0].typeOfQuestion}
-                    onChange={handleChangeTypeOfQuestion(0)}
-                >
-                    {typeOfQuestion.map((data) => (
-                        <SelectItem key={data.key}>
-                            {data.label}
-                        </SelectItem>
-                    ))}
-                </Select>
-                <Select
-                    label="Select difficulty"
-                    className="max-w-xs text-xl mr-2"
-                    variant="bordered"
-                    value={task.exercise[0].difficulty}
-                    onChange={handleChangeDifficultyOfQuestion(0)}
-                >
-                    {difficulty.map((data) => (
-                        <SelectItem key={data.key}>
-                            {data.label}
-                        </SelectItem>
-                    ))}
-                </Select>
-                <Button
-                    onClick={() => generateExercise(0)}
-                    className="mr-2 text-medium"
-                    color="primary"
-                >
-                    Generate
-                </Button>
-            </div>
-            <div>
-                {task.exercise[0].typeOfQuestion === "Multiple choice" && task.exercise[0]
-                    ? mcqPage({exercise: task.exercise[0].data})
-                    : null
-                }
-            </div>
+            {[0, 1].map((_, idx) => (
+                <div key={idx}>
+                    <div className="flex flex-row items-center justify-center mb-4">
+                        <span className="mr-2 font-bold">
+                            Exercise {idx + 1}:
+                        </span>
+                        <Input 
+                            className="mr-2 max-w-[12rem]" 
+                            variant="bordered"
+                            label="Enter number of questions" 
+                            onChange={handleChangeNumberOfQuestion(idx)} // Use idx here
+                        />
+                        <Select
+                            label="Select type of question"
+                            className="max-w-xs text-xl mr-2"
+                            variant="bordered"
+                            value={task.exercise[idx]?.typeOfQuestion}
+                            onChange={handleChangeTypeOfQuestion(idx)}
+                        >
+                            {typeOfQuestion.map((data) => (
+                                <SelectItem key={data.key}>
+                                    {data.label}
+                                </SelectItem>
+                            ))}
+                        </Select>
+                        <Select
+                            label="Select difficulty"
+                            className="max-w-xs text-xl mr-2"
+                            variant="bordered"
+                            value={task.exercise[idx]?.difficulty} 
+                            onChange={handleChangeDifficultyOfQuestion(idx)} 
+                        >
+                            {difficulty.map((data) => (
+                                <SelectItem key={data.key}>
+                                    {data.label}
+                                </SelectItem>
+                            ))}
+                        </Select>
+                        <Button
+                            onClick={() => generateExercise(idx)}
+                            className="mr-2 text-medium"
+                            color="primary"
+                        >
+                            Generate
+                        </Button>
+                    </div>
+                    <div className="mb-6">
+                        {task.exercise[idx]?.typeOfQuestion === "Multiple choice" && task.exercise[idx]
+                            ? mcqPage({ exercise: task.exercise[idx].data })
+                            : null
+                        }
+                    </div>
+                </div>
+            ))}
         </div>
     );
 };
