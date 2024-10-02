@@ -9,12 +9,14 @@ interface PaginationProps {
 
 const CustomPagination: React.FC<PaginationProps> = ({ total, currentPage, onPageChange }) => {
   const pageLetters = [];
-  const maxPageLettersToShow = 8;
+  const maxPageLettersToShow = 5;
 
   const indexToLetter = (index: number) => String.fromCharCode(65 + index); // Get letter equivalent
 
+  if(total<25) total=total-1;
   let startPage = 0;
   let endPage = total;
+
 
   if (total > maxPageLettersToShow) {
     const halfRange = Math.floor(maxPageLettersToShow / 2);

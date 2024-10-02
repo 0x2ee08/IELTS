@@ -1,10 +1,8 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import config from '../../config';
-import RankingPage from '../ranking/RankingPage';
+import RankingPage from '../ranking/ranking';
 import CustomPagination from '../pagination/CustomPagination';
 
 interface UserInfo {
@@ -13,7 +11,7 @@ interface UserInfo {
 }
 
 const WritingContest = ({ contest }: { contest: any }) => {
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState<number | null>(0); // null when ranking is selected
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [userWriting, setUserWriting] = useState<string[]>(Array(contest.tasks.length).fill(""));
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -34,10 +32,8 @@ const WritingContest = ({ contest }: { contest: any }) => {
   }, []);
 
   useEffect(() => {
-    if (currentPage >= contest.tasks.length) {
-      fetchUsersScore();
-    }
-  }, [currentPage, contest.tasks]);
+    fetchUsersScore();
+  }, [contest.tasks]);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -197,13 +193,13 @@ const WritingContest = ({ contest }: { contest: any }) => {
                 .map((submission) => {
                   let bandColor = 'text-red-600';
                   const bandScore = submission.band;
-      
+                  
                   if (bandScore >= 7.0) {
                     bandColor = 'text-green-600';
                   } else if (bandScore >= 5.0) {
                     bandColor = 'text-yellow-600';
                   }
-      
+                  
                   return (
                     <tr key={submission.sid}>
                       <td className="p-2 border border-black border-b-0 border-l-0">
@@ -225,19 +221,16 @@ const WritingContest = ({ contest }: { contest: any }) => {
                 })}
             </tbody>
           </table>
-      </div>
+        </div>
       ) : null }
     </>
-
-
     );
   };
-  console.log(submissions);
-  console.log(currentPage);
+
   const renderRankingPage = () => {
     const indexToLetter = (index: number) => String.fromCharCode(65 + index);
     const questions = contest.tasks.map((_: any, index: any) => `Task ${indexToLetter(index)}`);
-
+    
     return (
       <div>
         <RankingPage questions={questions} users={users} />
@@ -251,13 +244,13 @@ const WritingContest = ({ contest }: { contest: any }) => {
     const hours = Math.floor((totalSeconds % 86400) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-
+    
     const parts: string[] = [];
     if (days > 0) parts.push(`${days}d`);
     if (hours > 0 || days > 0) parts.push(`${String(hours).padStart(2, '0')}h`);
     if (minutes > 0 || hours > 0 || days > 0) parts.push(`${String(minutes).padStart(2, '0')}m`);
     parts.push(`${String(seconds).padStart(2, '0')}s`);
-
+    
     return parts.join(' ');
   };
 
@@ -275,25 +268,30 @@ const WritingContest = ({ contest }: { contest: any }) => {
       >
         This site is under development. This is the raw page.
       </div>
-
+      
       <div className="flex flex-col min-h-screen">
         <div className="flex justify-between">
           <div className="w-4/5 bg-white ml-16 mt-2 p-8">
             <div className="flex justify-center m-4 mb-10">
               <CustomPagination
                 total={contest.tasks.length}
-                currentPage={currentPage}
+                currentPage={currentPage !== null ? currentPage : -1} // Pass -1 if ranking is active
                 onPageChange={(page) => {
                   setCurrentPage(page);
                   Cookies.set('Writing_Current_Page-' + contest.id, page.toString());
                 }}
               />
+              {/* Add a button for toggling the ranking page */}
+              <button
+                className={`pagination-button ${currentPage === null ? 'current-page' : ''}`} // Only active when currentPage is null
+                onClick={() => setCurrentPage(prevPage => prevPage !== null ? null : prevPage)}
+              >
+                Ranking
+              </button>
             </div>
-            {currentPage < contest.tasks.length
-              ? renderTaskPage(contest.tasks[currentPage]?.type, currentPage, contest.tasks[currentPage])
-              : renderRankingPage()}
+            {currentPage === null ? renderRankingPage() : renderTaskPage(contest.tasks[currentPage]?.type, currentPage, contest.tasks[currentPage])}
           </div>
-
+          
           <div className="w-1/5 bg-white mr-20 mt-16 flex flex-col">
             <div className="border border-black rounded-lg p-4 mb-4">
               <p className="text-2xl font-bold text-center">{contest.problemName}</p>
@@ -310,7 +308,7 @@ const WritingContest = ({ contest }: { contest: any }) => {
                 )}
               </p>
             </div>
-            {currentPage < contest.tasks.length && renderUserSubmission()}
+            {currentPage !== null && renderUserSubmission()}
           </div>
         </div>
       </div>

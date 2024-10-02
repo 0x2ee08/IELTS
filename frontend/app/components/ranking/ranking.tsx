@@ -145,28 +145,29 @@ const RankingPage: React.FC<RankingTableProps> = ({ questions, users }) => {
     return (
         <div className="p-8">
             <div className="mb-4">
-                <label className="mr-4">
-                    Filter by School:
-                    <select value={selectedSchool || ''} onChange={(e) => setSelectedSchool(e.target.value || null)}>
-                        <option value="">All</option>
-                        {Array.from(new Set(Array.from(userDetails.values()).map((d) => d.school))).map((school) => (
-                            <option key={school} value={school}>
-                                {school}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                <label>
-                    Filter by Class:
-                    <select value={selectedClass || ''} onChange={(e) => setSelectedClass(e.target.value || null)}>
-                        <option value="">All</option>
-                        {Array.from(new Set(Array.from(userDetails.values()).map((d) => d.class_))).map((class_) => (
-                            <option key={class_} value={class_}>
-                                {class_}
-                            </option>
-                        ))}
-                    </select>
-                </label>
+            <label className="mr-4" style={{ marginRight: '20px' }}>
+                Filter by School:
+                <select value={selectedSchool || ''} onChange={(e) => setSelectedSchool(e.target.value || null)}>
+                    <option value="">All</option>
+                    {Array.from(new Set(Array.from(userDetails.values()).map((d) => d.school))).map((school) => (
+                        <option key={school} value={school}>
+                            {school}
+                        </option>
+                    ))}
+                </select>
+            </label>
+            <label style={{ marginLeft: '50px' }}>
+                Filter by Class:
+                <select value={selectedClass || ''} onChange={(e) => setSelectedClass(e.target.value || null)}>
+                    <option value="">All</option>
+                    {Array.from(new Set(Array.from(userDetails.values()).map((d) => d.class_))).map((class_) => (
+                        <option key={class_} value={class_}>
+                            {class_}
+                        </option>
+                    ))}
+                </select>
+            </label>
+
             </div>
 
             <div className="mb-4">
