@@ -292,24 +292,26 @@ const WritingContest = ({ contest }: { contest: any }) => {
             {currentPage === null ? renderRankingPage() : renderTaskPage(contest.tasks[currentPage]?.type, currentPage, contest.tasks[currentPage])}
           </div>
           
-          <div className="w-1/5 bg-white mr-20 mt-16 flex flex-col">
-            <div className="border border-black rounded-lg p-4 mb-4">
-              <p className="text-2xl font-bold text-center">{contest.problemName}</p>
+          {currentPage !== null && (
+            <div className="w-1/5 bg-white mr-20 mt-16 flex flex-col">
+              <div className="border border-black rounded-lg p-4 mb-4">
+                <p className="text-2xl font-bold text-center">{contest.problemName}</p>
+              </div>
+              <div className="border border-black rounded-lg p-4 mb-4">
+                <p className="text-center text-xl">
+                  {timeLeft > 0 ? (
+                    <>
+                      <div className="text-blue-800 font-bold">Contest is running</div>
+                      <div>{formatTimeLeft(timeLeft)}</div>
+                    </>
+                  ) : (
+                    <div className="font-bold">Finished</div>
+                  )}
+                </p>
+              </div>
+              {renderUserSubmission()}
             </div>
-            <div className="border border-black rounded-lg p-4 mb-4">
-              <p className="text-center text-xl">
-                {timeLeft > 0 ? (
-                  <>
-                    <div className="text-blue-800 font-bold">Contest is running</div>
-                    <div>{formatTimeLeft(timeLeft)}</div>
-                  </>
-                ) : (
-                  <div className="font-bold">Finished</div>
-                )}
-              </p>
-            </div>
-            {currentPage !== null && renderUserSubmission()}
-          </div>
+          )}
         </div>
       </div>
     </>

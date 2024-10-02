@@ -1,6 +1,6 @@
 table {
     border-collapse: collapse;
-    width: 100%; /* Ensures the table takes full width */
+    width: 100%; /* Full-width table */
 }
 
 th, td {
@@ -9,8 +9,8 @@ th, td {
 }
 
 thead th {
-    background-color: #f4f4f5; /* Gray background for the header */
-    border-bottom: 1px solid #d1d5db; /* Only bottom border */
+    background-color: #f4f4f5; /* Gray background for header */
+    border-bottom: 1px solid #d1d5db; /* Bottom border */
 }
 
 tbody td {
@@ -21,7 +21,7 @@ tbody td, thead th {
     border-right: 1px solid #d1d5db; /* Vertical border */
 }
 
-/* Remove the right border for the last column in the body */
+/* Remove the right border for the last column */
 tbody td:last-child,
 thead th:last-child {
     border-right: none;
@@ -31,22 +31,36 @@ thead th:last-child {
     width: 125px;
     padding: 0.5rem;
     text-align: center;
+    font-weight: bold; /* Makes the score text bold */
 }
 
+/* Text color only for score */
 .score-green {
-    background-color: rgb(1, 181, 1); /* Light green */
-    border-radius: 0.25rem;
-    padding: 0.5rem;
+    color: rgb(1, 181, 1); /* Green text for high scores */
 }
 
 .score-orange {
-    background-color: rgb(252, 186, 65); /* Light orange */
-    border-radius: 0.25rem;
-    padding: 0.5rem;
+    color: rgb(252, 186, 65); /* Orange text for mid-level scores */
 }
 
 .score-red {
-    background-color: red; /* Light red */
-    border-radius: 0.25rem;
-    padding: 0.5rem;
+    color: red; /* Red text for low scores */
+}
+
+/* Optional: Add a subtle hover effect */
+tbody tr:hover {
+    background-color: #f0f0f0; /* Light gray hover effect */
+}
+
+/* Optional: Styling the rank column differently */
+tbody td:first-child {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Optional: Styling the username column */
+.username-column {
+    font-weight: bold;
+    color: #1a202c;
+    text-transform: capitalize; /* Capitalize usernames for readability */
 }
