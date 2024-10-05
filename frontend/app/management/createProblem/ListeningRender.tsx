@@ -118,6 +118,29 @@ const ListeningPage: React.FC = () => {
         }
     }
 
+    const getAudioDurationFromBase64 = async (audioBase64: string) => {
+        try {
+            const base64String = audioBase64.split(',')[1];
+    
+            const binaryString = atob(base64String);
+            const binaryLen = binaryString.length;
+            const bytes = new Uint8Array(binaryLen);
+            for (let i = 0; i < binaryLen; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const arrayBuffer = bytes.buffer;
+    
+            const audioContext = new AudioContext();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            console.log(audioBuffer.duration);
+            return Math.round(audioBuffer.duration);
+        } catch (error) {
+            console.error('Error decoding audio base64:', error);
+            return 0;
+        }
+    };
+    
+
     const createListeningContest = async () => {
         console.log(taskArray);
         setIsCreating(true);
@@ -171,6 +194,8 @@ const ListeningPage: React.FC = () => {
                     console.log(data['audioData']);
                     taskArray[i].audioData = data['audioData'];
                 });
+
+            taskArray[i].audioLength = await getAudioDurationFromBase64(audioBase64);
         }
 
         const token = localStorage.getItem('token');

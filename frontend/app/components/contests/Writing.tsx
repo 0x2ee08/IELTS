@@ -280,6 +280,7 @@ const WritingContest = ({ contest }: { contest: any }) => {
                   setCurrentPage(page);
                   Cookies.set('Writing_Current_Page-' + contest.id, page.toString());
                 }}
+                queuePage={false}
               />
               {/* Add a button for toggling the ranking page */}
               <button

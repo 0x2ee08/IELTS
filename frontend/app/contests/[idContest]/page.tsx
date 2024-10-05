@@ -47,7 +47,7 @@ const ContestDetailPage = () => {
         case 'Writing':
             return (<><Header/><WritingContest contest={contest} /><Footer /></>);
         case 'Speaking':
-            return (<><Header/><SpeakingContest id={contest} /><Footer /></>);
+            return (<><Header/><SpeakingContest id={contest.id} /><Footer /></>);
         default:
             return (<><Header/><p>Unknown contest type.</p><Footer /></>);
     }

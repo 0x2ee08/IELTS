@@ -7,6 +7,7 @@ export interface task1QuestionGeneral {
     audioData: string;
     script: Discussion;
     exercise: Exercise[];
+    audioLength: number;
 }
 
 export interface Exercise {

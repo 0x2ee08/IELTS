@@ -4,10 +4,11 @@ import './customPagination.css';
 interface CustomPaginationProps {
     total: number;
     currentPage: number;
+    queuePage: boolean;
     onPageChange: (page: number) => void;
 }
 
-const CustomPagination: React.FC<CustomPaginationProps> = ({ total, currentPage, onPageChange }) => {
+const CustomPagination: React.FC<CustomPaginationProps> = ({ total, currentPage, onPageChange, queuePage }) => {
     const [prevPage, setPrevPage] = useState<number>(currentPage);
     const labels = Array.from({ length: total }, (_, idx) => `${String.fromCharCode(65 + idx)}`);
 
@@ -35,13 +36,17 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({ total, currentPage,
             >
                 Ranking
             </button>
-            {/* <button
-                onClick={() => onPageChange(total + 1)} // Assuming the "Ranking" is treated as the next page
-                className={`pagination-button ${currentPage === total + 1 ? 'current-page' : ''} ${prevPage === total + 1 ? 'fade-in fade-in-active' : ''}`}
-                style={{ animation: prevPage === total + 1 ? 'fadeIn 0.3s ease' : 'none' }}
-            >
-                Queue
-            </button> */}
+            {queuePage
+                ? <button
+                    onClick={() => onPageChange(total + 1)} // Assuming the "Ranking" is treated as the next page
+                    className={`pagination-button ${currentPage === total + 1 ? 'current-page' : ''} ${prevPage === total + 1 ? 'fade-in fade-in-active' : ''}`}
+                    style={{ animation: prevPage === total + 1 ? 'fadeIn 0.3s ease' : 'none' }}
+                >
+                    Queue
+                </button>
+                : null
+            }
+            
         </div>
     );
 };

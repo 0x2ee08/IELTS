@@ -39,6 +39,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
             {typeOfQuestion: "", numbefOfQuestion: 0, difficulty: "", data: null},
             {typeOfQuestion: "", numbefOfQuestion: 0, difficulty: "", data: null},
         ],
+        audioLength: 0,
     });
 
     const { isOpen, onOpen, onOpenChange } = useDisclosure();

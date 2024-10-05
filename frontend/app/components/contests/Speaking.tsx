@@ -176,6 +176,7 @@ const SpeakingPage: React.FC<SpeakingPageProps> = ({ id }) => {
                             total={taskArray.length}
                             currentPage={currentPage}
                             onPageChange={(page) => setCurrentPage(page)}
+                            queuePage={true}
                         />
                     </div>
                     {currentPage < taskArray.length 
