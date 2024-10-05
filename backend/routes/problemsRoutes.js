@@ -107,7 +107,6 @@ router.post('/getSpeakingProblem', authenticateToken, async (req, res) => {
     }
 });
 
-
 router.post('/getSpeakingAnswer', authenticateToken, async (req, res) => {
     const { id } = req.body;
     const { username } = req.user;

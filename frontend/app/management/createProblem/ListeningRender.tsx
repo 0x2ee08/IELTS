@@ -2,12 +2,15 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import {Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure} from "@nextui-org/react";
+import { Progress } from "@nextui-org/react";
 import axios from 'axios';
 import config from '../../config';
 import Task1Page from './listening/task1';
 // import Task2Page from './listening/task2';
 // import Task3Page from './listening/task3';
 // import Task4Page from './listening/task4';
+
+import { mergeBase64 } from './listening/mergeBase64';
 
 const generateRandomString = (length: number): string => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -19,7 +22,7 @@ const generateRandomString = (length: number): string => {
     return result;
 };
 
-const SpeakingPage: React.FC = () => {
+const ListeningPage: React.FC = () => {
     const [generatedTask, setGeneratedTask] = useState('');
     const [taskArray, setTaskArray] = useState<any[]>([]);
     const [idList, setIdList] = useState<{ id: string, listening_id: string }[]>([]);
@@ -31,29 +34,15 @@ const SpeakingPage: React.FC = () => {
     const STScoreAPIKey = 'rll5QsTiv83nti99BW6uCmvs9BDVxSB39SVFceYb';
     const [isLoading, setIsLoading] = useState(false);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const [isCreating, setIsCreating] = useState(false);
 
     const hasInitialize = useRef(false);
 
     useEffect(() => {
         if (!hasInitialize.current) {
-            generateSpeakingTask1(5);
             hasInitialize.current = true;
         }
     }, []);
-
-    const generateSpeakingTask1 = async (number_of_task: number) => {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${config.API_BASE_URL}api/generateSpeakingTask1`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ number_of_task }),
-        });
-        const result = await response.json();
-        setGeneratedTask(result.content);
-    };
 
     const handleTaskUpdate = (task: any, idx: number) => {
         setTaskArray(prevArray => {
@@ -107,33 +96,85 @@ const SpeakingPage: React.FC = () => {
         }
     };
 
-    const create_speaking_problem = async () => {
-        for(let i=0; i<taskArray.length; i++) {
-            console.log(taskArray[i]);
-            if(taskArray[i].type !== "Task 2") {
-                for(let j=0; j<taskArray[i].number_of_task; j++) {
-                    await fetch(`${config.API_PRONOUNCE_BASE_URL}api_pronounce/getAudioFromText`, {
-                        method: "post",
-                        body: JSON.stringify({ "text": taskArray[i].questions[j] }),
-                        headers: { "X-Api-Key": STScoreAPIKey }
-                    }).then(res => res.json())
-                        .then(data => {
-                            taskArray[i].audioData[j] = data['audioBase64'];
-                        });
-                    await fetch(`${config.API_PRONOUNCE_BASE_URL}api_pronounce/saveToGGDrive`, {
-                        method: "post",
-                        body: JSON.stringify({ "audioBase64": taskArray[i].audioData[j] }),
-                        headers: { "X-Api-Key": STScoreAPIKey }
-                    }).then(res => res.json())
-                        .then(data => {
-                            console.log(data['audioData']);
-                            taskArray[i].audioData[j] = data['audioData'];
-                        });
+    const getAudioFromText = async (text: string, speaker: string): Promise<string> => {
+        try {
+            const response = await fetch(`${config.API_PRONOUNCE_BASE_URL}api_pronounce/getAudioFromTextWithCustomVoice`, {
+                method: "POST",
+                body: JSON.stringify({ "text": text, "speaker": speaker }),
+                headers: { 
+                    "X-Api-Key": STScoreAPIKey,
+                    "Content-Type": "application/json" 
                 }
+            });
+            if (!response.ok) {
+                console.error("Failed to fetch audio:", response.statusText);
+                return "";
             }
+            const data = await response.json();
+            return data.audioBase64 ?? "";
+        } catch (error) {
+            console.error("Error fetching audio:", error);
+            return "";
         }
+    }
+
+    const createListeningContest = async () => {
+        console.log(taskArray);
+        setIsCreating(true);
+
+        let audioBase64 = "";
+        for(let i=0; i<taskArray.length; i++) {
+            let message = "This is the IELTS listening " + taskArray[i].type;
+            audioBase64 = await getAudioFromText(message, "p231");
+
+            message = "First, you will have some time to look at questions";
+            audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(message, "p231"), 0.5);
+            audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(`one`, "p231"), 0.2);
+            audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(`to`, "p231"), 0.2);
+            message = taskArray[i].exercise[0].numbefOfQuestion.toString();
+            audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(message, "p231"), 0.2);
+
+            let pos = 0;
+            for(let j=0; j<taskArray[i].script.scripts.length; j++) {
+                let name = taskArray[i].script.scripts[j].name;
+                let sentence = taskArray[i].script.scripts[j].message;
+                let currentSpeaker = taskArray[i].script.character1.speaker;
+                if(name === "spliter") {
+                    pos = j + 1;
+                    break;
+                }
+                if(name === taskArray[i].script.character2.name) currentSpeaker = taskArray[i].script.character2.speaker;
+                audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(sentence, currentSpeaker), (j === 0 ? 30 : 0.5));
+            }
+            message = "Before hearing the rest of the audio, you will have some time to look at questions";
+            audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(message, "p231"), 3);
+            message = (taskArray[i].exercise[0].numbefOfQuestion + 1).toString();
+            audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(message, "p231"), 0.2);
+            audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(`to`, "p231"), 0.2);
+            message = (taskArray[i].exercise[0].numbefOfQuestion + taskArray[i].exercise[1].numbefOfQuestion).toString();
+            audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(message, "p231"), 0.2);
+
+            for(let j=pos; j<taskArray[i].script.scripts.length; j++) {
+                let name = taskArray[i].script.scripts[j].name;
+                let sentence = taskArray[i].script.scripts[j].message;
+                let currentSpeaker = taskArray[i].script.character1.speaker;
+                if(name === taskArray[i].script.character2.name) currentSpeaker = taskArray[i].script.character2.speaker;
+                audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(sentence, currentSpeaker), (j === pos ? 30 : 0.5));
+            }
+
+            await fetch(`${config.API_PRONOUNCE_BASE_URL}api_pronounce/saveToGGDrive`, {
+                method: "post",
+                body: JSON.stringify({ "audioBase64": audioBase64}),
+                headers: { "X-Api-Key": STScoreAPIKey }
+            }).then(res => res.json())
+                .then(data => {
+                    console.log(data['audioData']);
+                    taskArray[i].audioData = data['audioData'];
+                });
+        }
+
         const token = localStorage.getItem('token');
-        const response = await fetch(`${config.API_BASE_URL}api/create_speaking_problem`, {
+        const response = await fetch(`${config.API_BASE_URL}api/createListeningProblem`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -150,6 +191,7 @@ const SpeakingPage: React.FC = () => {
         else {
             alert('Failed to create problem')
         }
+        setIsCreating(false);
     }
 
     const handleAccessUserChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -350,8 +392,8 @@ const SpeakingPage: React.FC = () => {
                     onChange={handleDropdownChange}
                 >
                     <option value="Task 1">Task 1</option>
-                    <option value="Task 2">Task 2</option>
-                    <option value="Task 3">Task 3</option>
+                    {/* <option value="Task 2">Task 2</option>
+                    <option value="Task 3">Task 3</option> */}
                 </select>
                 <button
                     onClick={handleAddTask}
@@ -361,13 +403,23 @@ const SpeakingPage: React.FC = () => {
                 </button>
             </div>
             <button
-                onClick={create_speaking_problem}
+                onClick={createListeningContest}
                 className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                disabled={isCreating}
             >
                 Create Problem
             </button>
+            {isCreating 
+                ? <Progress
+                    size="sm"
+                    isIndeterminate
+                    aria-label="Loading..."
+                    className="max-w-md mt-4"
+                />
+                : null
+            }
         </div>
     );
 };
 
-export default SpeakingPage;
+export default ListeningPage;

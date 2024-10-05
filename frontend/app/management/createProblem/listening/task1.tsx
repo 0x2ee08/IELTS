@@ -5,7 +5,8 @@ import { Input, Textarea } from "@nextui-org/react";
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import config from '../../../config';
-import { typeOfAudio, difficulty, tone, typeOfQuestion } from "./data/data";
+
+import { typeOfAudio, difficulty, tone, typeOfQuestion, audioList } from "./data/data";
 import "./cssCustomFiles/input.css";
 import { TrashBin } from "./cssCustomFiles/trashBin";
 
@@ -14,8 +15,10 @@ import { mcq, saq } from './data/typeOfQuestion';
 
 import { conversationConverter } from "./converter/conversationConverter";
 import { mcqConverter } from "./converter/mcqConverter";
+import { saqConverter } from "./converter/saqConverter";
 
-import mcqPage from "./questionDisplayer/mcq"
+import mcqPage from "./questionDisplayer/mcq";
+import saqPage from "./questionDisplayer/saq";
 
 const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
     const [task, setTask] = useState<task1QuestionGeneral>({
@@ -28,8 +31,8 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
         script: {
             title: "",
             description: "",
-            character1: { name: "", gender: "", },
-            character2: { name: "", gender: "", },
+            character1: { name: "", gender: "", speaker: "" },
+            character2: { name: "", gender: "", speaker: "" },
             scripts: [],
         },
         exercise: [
@@ -109,6 +112,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
         let convertedData = null;
 
         if(task.exercise[idx].typeOfQuestion === "Multiple choice") convertedData = await mcqConverter(result.content);
+        if(task.exercise[idx].typeOfQuestion === "Short-answer questions") convertedData = await saqConverter(result.content);
 
         setTask((prevTask) => {
             const updatedExercise = prevTask.exercise;
@@ -120,7 +124,6 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
                 exercise: updatedExercise,
             };
         });
-        console.log(task.exercise[0].data)
     };
 
     const handleChooseTypeOfAudio = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -239,6 +242,25 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
         });
     };
 
+    const handleChangeVoiceOfCharacter = (idx: number) => (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedVoice = e.target.value;
+        const audio = new Audio(`/voiceAudioSelection/${selectedVoice}.wav`);
+        audio.play();
+        setTask((prevTask) => {
+            let updatedScript = { ...prevTask.script };
+            if (idx === 0) {
+                updatedScript.character1.speaker = selectedVoice;
+            } else if (idx === 1) {
+                updatedScript.character2.speaker = selectedVoice;
+            }
+            return {
+                ...prevTask,
+                script: updatedScript,
+            };
+        });
+    };
+    
+
     return (
         <div>
             <Divider className="mt-4 mb-4" />
@@ -314,6 +336,27 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
                 variant="bordered" fullWidth={true} className="mb-4"
                 value={task.script.character1.name + ' and ' + task.script.character2.name}
             />
+            <div className="flex flex-row mb-4">
+                {[0, 1].map((_, idx) => (
+                    <Select
+                        label={`Select the voice of character ${idx + 1}`}
+                        className="max-w-xs text-xl mr-2"
+                        variant="bordered"
+                        selectedKeys={[idx === 0
+                            ? task.script.character1.speaker
+                            : task.script.character2.speaker
+                        ]}
+                        onChange={handleChangeVoiceOfCharacter(idx)}
+                    >
+                        {audioList.map((data) => (
+                            <SelectItem key={data.key}>
+                                {data.label}
+                            </SelectItem>
+                        ))}
+                    </Select>
+                ))}
+
+            </div>
             <div className="custom-label">
                 Script: <Button className="ml-2 mb-4" onPress={onOpen} variant="bordered">Click here to see</Button>
             </div>
@@ -367,7 +410,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
                             className="mr-2 max-w-[12rem]" 
                             variant="bordered"
                             label="Enter number of questions" 
-                            onChange={handleChangeNumberOfQuestion(idx)} // Use idx here
+                            onChange={handleChangeNumberOfQuestion(idx)}
                         />
                         <Select
                             label="Select type of question"
@@ -405,7 +448,11 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
                     </div>
                     <div className="mb-6">
                         {task.exercise[idx]?.typeOfQuestion === "Multiple choice" && task.exercise[idx]
-                            ? mcqPage({ exercise: task.exercise[idx].data })
+                            ? mcqPage({ exercise: task.exercise[idx].data, previousNumberOfQuestion: (idx == 1 ? task.exercise[0].numbefOfQuestion : 0) })
+                            : null
+                        }
+                        {task.exercise[idx]?.typeOfQuestion === "Short-answer questions" && task.exercise[idx]
+                            ? saqPage({ exercise: task.exercise[idx].data, previousNumberOfQuestion: (idx == 1 ? task.exercise[0].numbefOfQuestion : 0) })
                             : null
                         }
                     </div>

@@ -6,6 +6,7 @@ export interface mcq {
 }
 
 export interface saq {
-    statement: [];
-    answers: [];
+    statement: string[];
+    answers: string[];
+    explanation: string[];
 }

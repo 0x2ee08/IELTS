@@ -1,7 +1,10 @@
 const express = require('express');
 const axios = require('axios');
 
-const { authenticateToken } = require('../middleware/authMiddleware');
+const { connectToDatabase } = require('../utils/mongodb');
+const { authenticateToken, authorizeTeacher } = require('../middleware/authMiddleware');
+const { secret } = require('../config/config');
+
 const { MODEL_NAME, OPENROUTER_API_KEY, LISTENING_GENERATE_MODEL_NAME } = require('../config/config');
 
 const { conversation, mcq, saq } = require('./listening/message.js');
@@ -57,9 +60,10 @@ router.post('/generateExercise', authenticateToken, async (req, res) => {
     const {task, idx, script} = req.body;
 
     let message = `Here is the script of the audio: ${script}\n`;
-    if(task.exercise[idx].typeOfQuestion === "Multiple choice") {
+    if(task.exercise[idx].typeOfQuestion === "Multiple choice") 
         message = message + "Generate " + `${task.exercise[idx].numbefOfQuestion}` + `${mcq}`
-    }
+    if(task.exercise[idx].typeOfQuestion === "Short-answer questions")
+        message = message + "Generate " + `${task.exercise[idx].numbefOfQuestion}` + `${saq}`
 
     console.log(message);
 
@@ -84,6 +88,47 @@ router.post('/generateExercise', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error generating listening script:', error);
         res.status(500).json({ message: 'Error generating listening script', error });
+    }
+});
+
+router.post('/createListeningProblem', authenticateToken, async (req, res) => {
+    const { problemName, accessUser, startTime, endTime, taskArray } = req.body;
+    const username = req.user;
+    const time_created = new Date();
+
+    const db = await connectToDatabase();
+    const problemCollection = db.collection('contest');
+
+    const count = await problemCollection.countDocuments();
+    const nextProblemId = count + 1;
+
+    const result = await problemCollection.insertOne({
+        id: String(nextProblemId),
+        type: "Listening",
+        taskArray: taskArray || [],
+        accessUser: accessUser,
+        startTime: startTime,
+        endTime: endTime,
+        problemName: problemName,
+        created_by: username.username,
+        //userAnswer: [],
+    });
+
+    res.json({ success: true, message: 'Problem created successfully' });
+});
+
+router.post('/getListeningProblem', authenticateToken, async (req, res) => {
+    const { id } = req.body;
+    try {
+        const db = await connectToDatabase();
+        const problemsCollection = db.collection('contest');
+
+        const result = await problemsCollection.findOne({id: id})
+
+        res.json({ task: result.taskArray });
+    } catch (error) {
+        console.error('Error fetching blog list:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

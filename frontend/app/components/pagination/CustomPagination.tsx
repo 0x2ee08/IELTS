@@ -1,5 +1,5 @@
 import React from 'react';
-import '../contests/speaking/cssCustomFiles/customPagination.css'; // Import your custom CSS
+import './customPagination.css'; // Import your custom CSS
 
 interface PaginationProps {
   total: number;

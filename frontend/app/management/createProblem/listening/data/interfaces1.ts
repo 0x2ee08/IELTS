@@ -19,6 +19,7 @@ export interface Exercise {
 export interface Character {
     name: string;
     gender: string;
+    speaker: string;
 }
 
 export interface Script {
@@ -36,11 +37,4 @@ export interface Discussion {
 
 export interface Task1PageProps {
     onTaskUpdate: (task: task1QuestionGeneral) => void;
-}
-
-export interface mcq {
-    statement: string[];
-    choices: string[];
-    answers: string[];
-    explanation: string[];
 }

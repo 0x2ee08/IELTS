@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import Task1Page from './speaking/task1';
 import Task2Page from './speaking/task2';
 import Task3Page from './speaking/task3';
-import CustomPagination from './speaking/dataDisplayers/customPagination';
+import CustomPagination from '../pagination/CustomPagination';
 import QueuePage from './speaking/dataDisplayers/queue';
 import RankingPage from '../ranking/ranking';
 

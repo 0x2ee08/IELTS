@@ -11,21 +11,22 @@ import { mcq } from '../data/typeOfQuestion';
 
 interface mcqPageProps {
     exercise: mcq;
+    previousNumberOfQuestion: number;
 }
 
-const mcqPage: React.FC<mcqPageProps> = ({ exercise }) => {
+const mcqPage: React.FC<mcqPageProps> = ({ exercise, previousNumberOfQuestion }) => {
 
     return (
         <div>
             <Accordion variant="bordered">
                 {exercise?.statement?.map((question, index) => (
-                    <AccordionItem key={index} aria-label={`Question ${index + 1}`} title={`Question ${index + 1}`}>
+                    <AccordionItem key={index} aria-label={`Question ${previousNumberOfQuestion + index + 1}`} title={`Question ${previousNumberOfQuestion + index + 1}`}>
                         <Textarea
                             variant="bordered" fullWidth={true} className="mb-4" maxRows={1}
                             value={question}
                         />
                         <div className="flex flex-col mb-2">
-                            {exercise.choices[index]?.split(',').map((choice, idx) => (
+                            {exercise.choices[index]?.split(', ').map((choice, idx) => (
                                 (choice === exercise.answers[index]
                                     ? <Checkbox className="mb-1" isSelected={true} color="success">{choice}</Checkbox>
                                     : <Checkbox className="mb-1" isSelected={false}>{choice}</Checkbox>
