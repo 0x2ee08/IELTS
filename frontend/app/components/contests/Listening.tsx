@@ -6,7 +6,6 @@ import CustomPagination from '../pagination/CustomPagination';
 const ListeningContest = ({ contest }: { contest: any }) => {
     const hasInitialized = useRef(false);
     const [currentPage, setCurrentPage] = useState(0);
-    const [taskArray, setTaskArray] = useState<any[]>([]);
 
     useEffect(() => {
         if (!hasInitialized.current) {
@@ -21,7 +20,7 @@ const ListeningContest = ({ contest }: { contest: any }) => {
                 <>
                     <div className='flex justify-center m-4 ml-20 mr-20 mb-10'>
                         <CustomPagination
-                            total={taskArray.length}
+                            total={contest.taskArray.length}
                             currentPage={currentPage}
                             onPageChange={(page) => setCurrentPage(page)}
                         />
