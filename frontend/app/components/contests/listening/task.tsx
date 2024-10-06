@@ -9,6 +9,9 @@ import { PlayIcon } from "./icon/start";
 import { PauseIcon } from "./icon/pause";
 import { VolumeIcon } from "./icon/volume";
 
+import McqQuestion from "./questionDisplayer/mcq"
+import SaqQuestion from "./questionDisplayer/saq"
+
 const ListeningTaskContest = ({ contest, currentPage }: { contest: any; currentPage: number }) => {
     const hasInitialized = useRef(false);
     const [audioBase64, setAudioBase64] = useState<string | null>(null);
@@ -17,6 +20,11 @@ const ListeningTaskContest = ({ contest, currentPage }: { contest: any; currentP
     const [currentSecond, setCurrentSecond] = useState(0);
     const [currentVolume, setCurrentVolume] = useState<SliderValue>(10);
     const [isPlaying, setIsPlaying] = useState(false);
+
+    const [userAnswer, setUserAnswer] = useState([
+        new Array(contest.taskArray[currentPage].exercise[0].numberOfQuestion).fill(""),
+        new Array(contest.taskArray[currentPage].exercise[1].numberOfQuestion).fill("")
+    ]);
 
     const audioLength = contest.taskArray[currentPage].audioLength;
 
@@ -33,7 +41,7 @@ const ListeningTaskContest = ({ contest, currentPage }: { contest: any; currentP
                     });
                     const data = await response.json();
                     setAudioBase64(data['audioBase64']);
-                    console.log('Fetched audioBase64:', data['audioBase64']);
+                    // console.log('Fetched audioBase64:', data['audioBase64']);
                 } catch (error) {
                     console.error("Failed to fetch audio:", error);
                 }
@@ -87,10 +95,25 @@ const ListeningTaskContest = ({ contest, currentPage }: { contest: any; currentP
         }
     };
 
+    function formatTime(seconds: number): string {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+    
+        // Format minutes and seconds to always have two digits
+        const formattedMinutes = String(minutes).padStart(2, '0');
+        const formattedSeconds = String(remainingSeconds).padStart(2, '0');
+    
+        return `${formattedMinutes}:${formattedSeconds}`;
+    }
+
+    const handleSubmit = async () => {
+        console.log(userAnswer);
+    }
+
     return (
         <div className='flex flex-col'>
             <div className="w-full container mx-2 my-4 p-2 border border-gray-300 rounded-xl">
-                <p className='text-2xl font-bold text-center'>{contest.taskArray[currentPage].script.title}</p>
+                <p className='text-3xl font-bold text-center'>{contest.taskArray[currentPage].script.title}</p>
             </div>
             <div className="w-full container mx-2 p-4 mb-4 border border-gray-300 rounded-xl">
                 <div className='flex flex-row items-center'>
@@ -107,8 +130,10 @@ const ListeningTaskContest = ({ contest, currentPage }: { contest: any; currentP
                             : <PlayIcon height="2rem" fill="#006fee"/>
                         }
                     </Button>  
-                    <div className='mr-4'>
-                        {Math.round(currentSecond)}/{audioLength}
+                    <div className='flex items-center mr-4'>
+                        <span className='mr-2'>{formatTime(currentSecond)}</span> 
+                        <span>/</span>
+                        <span className='ml-2'>{formatTime(audioLength)}</span>
                     </div>
                     <Slider 
                         size="sm"
@@ -131,9 +156,42 @@ const ListeningTaskContest = ({ contest, currentPage }: { contest: any; currentP
                     />
                 </div>
             </div>
-            <div className="w-full container mx-2 p-4 border border-gray-300 rounded-xl">
+            
+            {[0, 1].map((_, idx) => (
+                <div>
+                    {contest.taskArray[currentPage].exercise[idx].typeOfQuestion === "Multiple choice"
+                        ? <McqQuestion contest={contest} currentPage={currentPage} idx={idx} userAnswer={userAnswer[idx]}
+                            previousNumber={idx === 0 ? 0 : contest.taskArray[currentPage].exercise[0].numberOfQuestion}
+                            setUserAnswer={(newAnswer: string[]) => {
+                                const updatedUserAnswers = [...userAnswer];
+                                updatedUserAnswers[idx] = newAnswer;
+                                console.log("Updated User Answers:", updatedUserAnswers);
+                                setUserAnswer(updatedUserAnswers);
+                            }}
+                        />
+                        : null
+                    }
+                    {contest.taskArray[currentPage].exercise[idx].typeOfQuestion === "Short-answer questions"
+                        ? <SaqQuestion contest={contest} currentPage={currentPage} idx={idx} userAnswer={userAnswer[idx]}
+                            previousNumber={idx === 0 ? 0 : contest.taskArray[currentPage].exercise[0].numberOfQuestion}
+                            setUserAnswer={(newAnswer: string[]) => {
+                                const updatedUserAnswers = [...userAnswer];
+                                updatedUserAnswers[idx] = newAnswer;
+                                console.log("Updated User Answers:", updatedUserAnswers);
+                                setUserAnswer(updatedUserAnswers);
+                            }}
+                        />
+                        : null
+                    }
+                </div>
+            ))}
 
+            <div className='w-1/3 ml-2'>
+                <Button color='success' onClick={handleSubmit}>
+                    <p className='text-[1.01rem]'>Submit your answer</p>
+                </Button>
             </div>
+
         </div>
     );
 };

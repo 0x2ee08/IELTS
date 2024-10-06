@@ -61,9 +61,9 @@ router.post('/generateExercise', authenticateToken, async (req, res) => {
 
     let message = `Here is the script of the audio: ${script}\n`;
     if(task.exercise[idx].typeOfQuestion === "Multiple choice") 
-        message = message + "Generate " + `${task.exercise[idx].numbefOfQuestion}` + `${mcq}`
+        message = message + "Generate " + `${task.exercise[idx].numberOfQuestion}` + `${mcq}`
     if(task.exercise[idx].typeOfQuestion === "Short-answer questions")
-        message = message + "Generate " + `${task.exercise[idx].numbefOfQuestion}` + `${saq}`
+        message = message + "Generate " + `${task.exercise[idx].numberOfQuestion}` + `${saq}`
 
     console.log(message);
 

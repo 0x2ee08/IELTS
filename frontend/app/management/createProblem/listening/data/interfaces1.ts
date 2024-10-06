@@ -12,7 +12,7 @@ export interface task1QuestionGeneral {
 
 export interface Exercise {
     typeOfQuestion: string;
-    numbefOfQuestion: number;
+    numberOfQuestion: number;
     difficulty: string;
     data: any; 
 }

@@ -36,8 +36,8 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
             scripts: [],
         },
         exercise: [
-            {typeOfQuestion: "", numbefOfQuestion: 0, difficulty: "", data: null},
-            {typeOfQuestion: "", numbefOfQuestion: 0, difficulty: "", data: null},
+            {typeOfQuestion: "", numberOfQuestion: 0, difficulty: "", data: null},
+            {typeOfQuestion: "", numberOfQuestion: 0, difficulty: "", data: null},
         ],
         audioLength: 0,
     });
@@ -221,7 +221,7 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
         setTask((prevTask) => {
             const updatedExercise = prevTask.exercise ? [...prevTask.exercise] : [];
             if (updatedExercise[idx]) {
-                updatedExercise[idx].numbefOfQuestion = Number(e.target.value);
+                updatedExercise[idx].numberOfQuestion = Number(e.target.value);
             }
             return {
                 ...prevTask,
@@ -449,11 +449,11 @@ const Task1Page: React.FC<Task1PageProps> = ({ onTaskUpdate }) => {
                     </div>
                     <div className="mb-6">
                         {task.exercise[idx]?.typeOfQuestion === "Multiple choice" && task.exercise[idx]
-                            ? mcqPage({ exercise: task.exercise[idx].data, previousNumberOfQuestion: (idx == 1 ? task.exercise[0].numbefOfQuestion : 0) })
+                            ? mcqPage({ exercise: task.exercise[idx].data, previousNumberOfQuestion: (idx == 1 ? task.exercise[0].numberOfQuestion : 0) })
                             : null
                         }
                         {task.exercise[idx]?.typeOfQuestion === "Short-answer questions" && task.exercise[idx]
-                            ? saqPage({ exercise: task.exercise[idx].data, previousNumberOfQuestion: (idx == 1 ? task.exercise[0].numbefOfQuestion : 0) })
+                            ? saqPage({ exercise: task.exercise[idx].data, previousNumberOfQuestion: (idx == 1 ? task.exercise[0].numberOfQuestion : 0) })
                             : null
                         }
                     </div>

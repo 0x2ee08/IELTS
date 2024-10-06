@@ -29,13 +29,13 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({ total, currentPage,
                 </button>
             ))}
             {/* Add the "Ranking" button at the end */}
-            <button
+            {/* <button
                 onClick={() => onPageChange(total)} // Assuming the "Ranking" is treated as the next page
                 className={`pagination-button ${currentPage === total ? 'current-page' : ''} ${prevPage === total ? 'fade-in fade-in-active' : ''}`}
                 style={{ animation: prevPage === total ? 'fadeIn 0.3s ease' : 'none' }}
             >
                 Ranking
-            </button>
+            </button> */}
             {queuePage
                 ? <button
                     onClick={() => onPageChange(total + 1)} // Assuming the "Ranking" is treated as the next page

@@ -154,7 +154,7 @@ const ListeningPage: React.FC = () => {
             audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(message, "p231"), 0.5);
             audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(`one`, "p231"), 0.2);
             audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(`to`, "p231"), 0.2);
-            message = taskArray[i].exercise[0].numbefOfQuestion.toString();
+            message = taskArray[i].exercise[0].numberOfQuestion.toString();
             audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(message, "p231"), 0.2);
 
             let pos = 0;
@@ -171,10 +171,10 @@ const ListeningPage: React.FC = () => {
             }
             message = "Before hearing the rest of the audio, you will have some time to look at questions";
             audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(message, "p231"), 3);
-            message = (taskArray[i].exercise[0].numbefOfQuestion + 1).toString();
+            message = (taskArray[i].exercise[0].numberOfQuestion + 1).toString();
             audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(message, "p231"), 0.2);
             audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(`to`, "p231"), 0.2);
-            message = (taskArray[i].exercise[0].numbefOfQuestion + taskArray[i].exercise[1].numbefOfQuestion).toString();
+            message = (taskArray[i].exercise[0].numberOfQuestion + taskArray[i].exercise[1].numberOfQuestion).toString();
             audioBase64 = await mergeBase64(audioBase64, await getAudioFromText(message, "p231"), 0.2);
 
             for(let j=pos; j<taskArray[i].script.scripts.length; j++) {
