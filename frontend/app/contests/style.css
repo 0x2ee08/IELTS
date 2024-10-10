@@ -1,0 +1,56 @@
+.contest-section {
+    text-align: center;
+    padding: 25px 5%;
+}
+
+.contest-container {
+    padding: 3px;
+    padding-bottom: 5px;
+    border-radius: 10px;
+}
+
+.contest-title {
+    font-size: 25px;
+    font-weight: bold;
+    padding: 30px;
+}
+
+.contest-table {
+    margin: 0 auto;
+    border-collapse: collapse;
+    border: 1px solid black;
+    width: 100%;
+}
+
+.contest-table th,
+.contest-table td {
+    border: 1px solid #e1e1e1;
+    padding: 10px;
+    text-align: center;
+}
+
+.even-row {
+    background: #F0F0F0;
+}
+
+.odd-row {
+    background: white;
+}
+
+.contest-name {
+    width: 40%;
+}
+
+.contest-author {
+    width: 10%;
+}
+
+@media (max-width: 768px) {
+    .contest-table {
+        font-size: 14px; /* Smaller font size for mobile */
+    }
+
+    .contest-title {
+        font-size: 20px; /* Adjust title size for mobile */
+    }
+}
