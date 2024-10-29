@@ -3,6 +3,7 @@
 import React, { useState , useEffect} from 'react';
 import axios from 'axios';
 import config from '../../config';
+import { assign } from 'markdown-it/lib/common/utils.mjs';
 
 export interface Task {
     type: string;
@@ -38,7 +39,6 @@ const Task2Type = [
     "To what extent",
     "Do you agree or disagree / Which do you prefer"
 ];
-
 const WritingPage: React.FC = () => {
     const [tasks, setTasks] = useState<Task[]>([
         {type: 'Writing Task 1 General', content: '', isOpen: true, subtype: ''}
@@ -230,7 +230,46 @@ const WritingPage: React.FC = () => {
         }
     };
     
-    
+    const [topics, setTopics] = useState<string[]>([]);
+    const [selectedTopic, setSelectedTopic] = useState<string>('');
+    const [statements, setStatements] = useState<string[]>([]);
+    const [selectedStatement, setSelectedStatement] = useState<string>('');
+
+    // Fetch all topics when the component mounts
+    useEffect(() => {
+        const token = localStorage.getItem('token'); // Replace with your token retrieval method
+
+        axios.post(`${config.API_BASE_URL}api/get_topic_array`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+        })
+        .then((response) => setTopics(response.data.topic))
+        .catch((error) => console.error('Error fetching topics:', error));
+    }, []);
+
+    // Fetch statements based on the selected topic
+    const handleTopicChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const topic = e.target.value;
+        setSelectedTopic(topic);
+        setSelectedStatement(''); // Reset selected statement when topic changes
+
+        if (topic) {
+        const token = localStorage.getItem('token'); // Adjust if stored elsewhere
+
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_array_statement_by_topic`, { topic }, {
+            headers: { Authorization: `Bearer ${token}` },
+            });
+            setStatements(response.data.statements || []);
+        } catch (error) {
+            console.error('Error fetching statements:', error);
+        }
+        }
+    };
+
+  // Handle statement selection
+  const handleStatementChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedStatement(e.target.value);
+  };
     return (
         <>
             <input 
@@ -419,6 +458,38 @@ const WritingPage: React.FC = () => {
                 </div>
             ))}
 
+
+        <div>
+            <h2>Select a Topic</h2>
+            <label>
+                Topic:
+                <select value={selectedTopic} onChange={handleTopicChange}>
+                <option value="">Select a topic</option>
+                {topics.map((topic, index) => (
+                    <option key={index} value={topic}>
+                    {topic}
+                    </option>
+                ))}
+                </select>
+            </label>
+
+            {statements.length > 0 && (
+                <div>
+                <h3>Select a Statement</h3>
+                <label>
+                    Statement:
+                    <select value={selectedStatement} onChange={handleStatementChange}>
+                    <option value="">Select a statement</option>
+                    {statements.map((statement, index) => (
+                        <option key={index} value={statement}>
+                        {statement}
+                        </option>
+                    ))}
+                    </select>
+                </label>
+            </div>
+            )}
+            </div>
             <button 
                 onClick={addTask} 
                 className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2"
