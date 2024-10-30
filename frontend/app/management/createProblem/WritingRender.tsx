@@ -447,30 +447,36 @@ const WritingPage: React.FC = () => {
                                 ></textarea>
                                 </>
                             )}
-                            <label>
-                                <select value={task.selectedTopic} onChange={(e) => handleTopicChange(e,pIndex)}>
-                                <option value="">Select a topic</option>
-                                {topics.map((topic, index) => (
-                                    <option key={index} value={topic}>
-                                    {topic}
-                                    </option>
-                                ))}
-                                </select>
-                            </label>
-
-                            {task.statements.length > 0 && (
+                            {/*Choosing available statements from database*/}
+                            {task.type === "Writing Task 2" && (
                                 <div>
-                                <label>
-                                    <select value={task.content} onChange={(e) => handleStatementChange(e,pIndex)}>
-                                    <option value="">Select a statement</option>
-                                    {task.statements.map((statement, index) => (
-                                        <option key={index} value={statement}>
-                                        {statement}
-                                        </option>
-                                    ))}
-                                    </select>
-                                </label>
-                            </div>
+                                    <label>
+                                        <select value={task.selectedTopic} onChange={(e) => handleTopicChange(e,pIndex)}>
+                                        <option value="">Select a topic</option>
+                                        {topics.map((topic, index) => (
+                                            <option key={index} value={topic}>
+                                            {topic}
+                                            </option>
+                                        ))}
+                                        </select>
+                                    </label>
+
+                                    {task.statements.length > 0 && (
+                                        <div>
+                                            <label>
+                                                <select value={task.content} onChange={(e) => handleStatementChange(e, pIndex)}>
+                                                    <option value="">Select a statement</option>
+                                                    {task.statements.map((statement, index) => (
+                                                        <option key={index} value={statement}>
+                                                            {statement}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </label>
+                                        </div>
+                
+                                    )}
+                                </div>
                             )}
                             <textarea 
                                 placeholder='Prompt' 
