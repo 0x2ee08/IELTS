@@ -7,6 +7,8 @@ import { assign } from 'markdown-it/lib/common/utils.mjs';
 
 export interface Task {
     type: string;
+    selectedTopic: string;
+    statements: string[];
     content: string;
     isOpen: boolean;
     subtype: string;
@@ -40,15 +42,24 @@ const Task2Type = [
     "Do you agree or disagree / Which do you prefer"
 ];
 const WritingPage: React.FC = () => {
+    const [topics, setTopics] = useState<string[]>([]);
+    useEffect(() => {
+        const token = localStorage.getItem('token'); // Replace with your token retrieval method
+
+        axios.post(`${config.API_BASE_URL}api/get_topic_array`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+        })
+        .then((response) => setTopics(response.data.topic))
+        .catch((error) => console.error('Error fetching topics:', error));
+    }, []);
     const [tasks, setTasks] = useState<Task[]>([
-        {type: 'Writing Task 1 General', content: '', isOpen: true, subtype: ''}
+        {type: 'Writing Task 1 General', selectedTopic: '', statements: [], content: '', isOpen: true, subtype: ''}
     ]);
     const [problemName, setProblemName] = useState('');
     const [accessUser, setAccessUser] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
     const createProblem = () => {
         // console.log(problemName);
         // console.log(paragraphs);
@@ -172,7 +183,7 @@ const WritingPage: React.FC = () => {
     };
 
     const addTask = () => {
-        setTasks([...tasks, {type: 'Writing Task 1 General', content: '', isOpen: true, subtype: ''}]);
+        setTasks([...tasks, {type: 'Writing Task 1 General', selectedTopic: '', statements: [], content: '', isOpen: true, subtype: ''}]);
     };
 
     const deleteTask = (pIndex: number) => {
@@ -229,46 +240,37 @@ const WritingPage: React.FC = () => {
             setTasks(updatedTasks);
         }
     };
-    
-    const [topics, setTopics] = useState<string[]>([]);
-    const [selectedTopic, setSelectedTopic] = useState<string>('');
-    const [statements, setStatements] = useState<string[]>([]);
-    const [selectedStatement, setSelectedStatement] = useState<string>('');
-
-    // Fetch all topics when the component mounts
-    useEffect(() => {
-        const token = localStorage.getItem('token'); // Replace with your token retrieval method
-
-        axios.post(`${config.API_BASE_URL}api/get_topic_array`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-        })
-        .then((response) => setTopics(response.data.topic))
-        .catch((error) => console.error('Error fetching topics:', error));
-    }, []);
 
     // Fetch statements based on the selected topic
-    const handleTopicChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleTopicChange = async (e: React.ChangeEvent<HTMLSelectElement>, pIndex: number) => {
         const topic = e.target.value;
-        setSelectedTopic(topic);
-        setSelectedStatement(''); // Reset selected statement when topic changes
 
+        let newStatementsArray = []
         if (topic) {
-        const token = localStorage.getItem('token'); // Adjust if stored elsewhere
+            const token = localStorage.getItem('token'); // Adjust if stored elsewhere
 
-        try {
-            const response = await axios.post(`${config.API_BASE_URL}api/get_array_statement_by_topic`, { topic }, {
-            headers: { Authorization: `Bearer ${token}` },
-            });
-            setStatements(response.data.statements || []);
-        } catch (error) {
-            console.error('Error fetching statements:', error);
+            try {
+                const response = await axios.post(`${config.API_BASE_URL}api/get_array_statement_by_topic`, { topic }, {
+                headers: { Authorization: `Bearer ${token}` },
+                });
+                newStatementsArray = response.data.statements || [];
+            } catch (error) {
+                console.error('Error fetching statements:', error);
+            }
         }
-        }
+        const updatedTasks = tasks.map((task, index) =>
+            index === pIndex ? { ...task, selectedTopic: topic, statements: newStatementsArray } : task
+        );
+
+        setTasks(updatedTasks);
     };
 
   // Handle statement selection
-  const handleStatementChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedStatement(e.target.value);
+  const handleStatementChange = (e: React.ChangeEvent<HTMLSelectElement>, pIndex: number) => {
+    const updatedTasks = tasks.map((task, index) =>
+        index === pIndex ? { ...task, content: e.target.value } : task
+    );
+    setTasks(updatedTasks);
   };
     return (
         <>
@@ -445,7 +447,31 @@ const WritingPage: React.FC = () => {
                                 ></textarea>
                                 </>
                             )}
+                            <label>
+                                <select value={task.selectedTopic} onChange={(e) => handleTopicChange(e,pIndex)}>
+                                <option value="">Select a topic</option>
+                                {topics.map((topic, index) => (
+                                    <option key={index} value={topic}>
+                                    {topic}
+                                    </option>
+                                ))}
+                                </select>
+                            </label>
 
+                            {task.statements.length > 0 && (
+                                <div>
+                                <label>
+                                    <select value={task.content} onChange={(e) => handleStatementChange(e,pIndex)}>
+                                    <option value="">Select a statement</option>
+                                    {task.statements.map((statement, index) => (
+                                        <option key={index} value={statement}>
+                                        {statement}
+                                        </option>
+                                    ))}
+                                    </select>
+                                </label>
+                            </div>
+                            )}
                             <textarea 
                                 placeholder='Prompt' 
                                 className="border border-gray-300 px-4 py-2 rounded-md w-full h-64 my-2" 
@@ -453,43 +479,14 @@ const WritingPage: React.FC = () => {
                                 onChange={(e) => handleInputChange(pIndex, 'content', e.target.value)}
                                 disabled={isLoading}
                             ></textarea>
+                            
                         </div>
                     )}
                 </div>
             ))}
 
 
-        <div>
-            <h2>Select a Topic</h2>
-            <label>
-                Topic:
-                <select value={selectedTopic} onChange={handleTopicChange}>
-                <option value="">Select a topic</option>
-                {topics.map((topic, index) => (
-                    <option key={index} value={topic}>
-                    {topic}
-                    </option>
-                ))}
-                </select>
-            </label>
-
-            {statements.length > 0 && (
-                <div>
-                <h3>Select a Statement</h3>
-                <label>
-                    Statement:
-                    <select value={selectedStatement} onChange={handleStatementChange}>
-                    <option value="">Select a statement</option>
-                    {statements.map((statement, index) => (
-                        <option key={index} value={statement}>
-                        {statement}
-                        </option>
-                    ))}
-                    </select>
-                </label>
-            </div>
-            )}
-            </div>
+        
             <button 
                 onClick={addTask} 
                 className="bg-blue-500 text-white px-4 py-2 rounded-md mt-2"
