@@ -41,6 +41,33 @@ router.post('/generateReadingParagraph', authenticateToken, async (req, res) => 
     res.json({title: title_, content: content_});
 });
 
+router.post('/generateReadingParagraphForStatement', authenticateToken, async (req, res) => {
+    const { statement } = req.body;
+
+    const db = await connectToDatabase();
+    const blogsCollection = db.collection(`problemset`);
+
+    const response = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
+        model: model,
+        messages: [{ role: 'system', content: `Give me a paragraph of IELTS Reading around 800 words, 6 sections base on this Writing Task 2 problem: "${statement}" and some of first line contains the problem mentioned in the statement [ONLY GIVE THE TITLE AND THE PARAGRAPH, DO NOT SAY ANYTHING ELSE, HAVE EXACTLY 6 SMALLER SECTION, 800 WORD MINIMUM, DO NOT HAVE TITLE FOR EACH SECTION]`}],
+    }, {
+        headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    var evaluation = response.data.choices[0].message.content.trim();
+
+    var lines = evaluation.split('\n');
+
+    var title_ = lines[0].trim();
+
+    var content_ = lines.slice(1).join('\n').trim();
+
+    res.json({title: title_, content: content_});
+});
+
 function parseEvaluationType1(evaluation) {
     const evaluationArray = JSON.parse(evaluation);
     const evaluationObject = {};
