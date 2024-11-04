@@ -24,6 +24,7 @@ const graderWritingTask2 = require('./routes/graderWritingTask2');
 const graderWritingTask1Academic = require('./routes/graderWritingTask1Academic');
 const rankingRoutes = require('./routes/rankingRoutes');
 const addWritingProblems = require('./routes/addWritingProblemsRoutes');
+const addReadingProblems = require('./routes/addReadingProblemsRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -55,6 +56,7 @@ app.use('/api', graderWritingTask2);
 app.use('/api', graderWritingTask1Academic);
 app.use('/api', rankingRoutes);
 app.use('/api', addWritingProblems);
+app.use('/api', addReadingProblems);
 
 const flashcardsRoutes = require('./routes/flashcards');
 app.use('/api/flashcards', flashcardsRoutes);

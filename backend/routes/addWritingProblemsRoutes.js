@@ -18,7 +18,7 @@ function parseFileContent(content) {
         if (line.endsWith(':')) {
             // Save the previous topic and its statements if any
             if (currentTopic && currentStatements.length) {
-                parsedData.push({ topic: currentTopic, statements: currentStatements });
+                parsedData.push({ topic: currentTopic.slice(0, -1), statements: currentStatements });
             }
             // Start a new topic
             currentTopic = line.trim();
@@ -31,7 +31,7 @@ function parseFileContent(content) {
 
     // Push the last topic and its statements
     if (currentTopic && currentStatements.length) {
-        parsedData.push({ topic: currentTopic, statements: currentStatements });
+        parsedData.push({ topic: currentTopic.slice(0, -1), statements: currentStatements });
     }
 
     return parsedData;
@@ -62,19 +62,21 @@ router.post('/import_file_writing_statements', authenticateToken, upload.single(
 
 // POST /upload_file_writing_statements - Save parsed topics and statements to the database
 router.post('/upload_file_writing_statements', authenticateToken, async (req, res) => {
-    const { topics } = req.body;
+    const { topic, statement } = req.body;
     const db = await connectToDatabase();
     const problemsetCollection = db.collection('problemset');
 
     try {
-        // Insert each topic with its statements as a single document in the database
-        const insertionPromises = topics.map(topicData =>
-            problemsetCollection.insertOne(topicData)
+        // Insert each statement under the specified topic
+        const result = await problemsetCollection.updateOne(
+            { skill: "Writing", topic: topic },
+            {
+                $push: { statements: statement },
+            },
+            { upsert: true }  // Create document if it doesn't exist
         );
 
-        await Promise.all(insertionPromises);
-
-        res.json({ success: true, message: 'Uploaded!' });
+        res.json({ success: true, message: 'Statement uploaded successfully!' });
     } catch (error) {
         console.error('An error occurred:', error);
         res.status(500).json({ error: 'Internal server error' });
