@@ -9,6 +9,7 @@ import Header from '../components/Header';
 const ProfilePage: React.FC = () => {
     const [data, setData] = useState<any[]>([]);
     const [editMode, setEditMode] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({
         name: '',
         school: '',
@@ -19,6 +20,7 @@ const ProfilePage: React.FC = () => {
     const [classlist, setClasslist] = useState<any[]>([]);
 
     const getMongoDB = async () => {
+        setLoading(true);
         const token = localStorage.getItem('token');
         try {
             const response = await axios.post(`${config.API_BASE_URL}api/get_data_profile`, {}, {
@@ -34,6 +36,8 @@ const ProfilePage: React.FC = () => {
             formData.avatar = profileData.avatar;
         } catch (error) {
             console.error('Error fetching data', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -132,7 +136,11 @@ const ProfilePage: React.FC = () => {
             <Header />
             <div className="flex-grow flex flex-col items-center bg-gray-100 p-6">
                 <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
-                    {data.length > 0 ? (
+                    {loading ? (
+                        <div>
+                            <p className="text-center text-gray-400">Loading...</p>
+                        </div>
+                    ) : data.length > 0 ? (
                         <>
                             <div className="flex justify-center mb-4">
                                 <img src={formData.avatar || '/default-avatar.png'} alt="Avatar" className="w-24 h-24 rounded-full" />
