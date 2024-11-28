@@ -55,6 +55,9 @@ const Header: React.FC = () => {
             setIsLoggedIn(true);
             setRole(storedRole);
         }
+        else{
+            // alert("This website still developing. Please login/register to use features correctly. Most features may not work if not login.")
+        }
     }, []);
 
     const handleLogout = () => {
@@ -69,6 +72,18 @@ const Header: React.FC = () => {
 
     return (
         <header className="sticky top-0 bg-white bg-opacity-90 backdrop-blur-sm shadow-sm z-50">
+            <div
+            style={{
+            backgroundColor: '#fff8c4',
+            color: '#333',
+            padding: '8px 20px',
+            fontSize: '14px',
+            textAlign: 'center',
+            width: '100%',
+            }}
+        >
+            This website still developing. Please login/register to use features correctly. Most features may not work if not login.
+        </div>
             <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center py-5">
                     {/* Logo and left-side menu button */}

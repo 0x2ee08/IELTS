@@ -137,6 +137,8 @@ const MainContent: React.FC = () => {
   const showMorePastContest = () => setPastContestVisible(pastContestVisible + 6);
 
   return (
+    <>
+        
     <div className="flex flex-col lg:flex-row justify-between space-y-8 lg:space-y-0 lg:space-x-8 px-8 lg:px-12 py-8">
       {/* Left Section: Upcoming Contest and Virtual Tests */}
       <div className="flex-1 space-y-8">
@@ -254,6 +256,7 @@ const MainContent: React.FC = () => {
         </section>
       </aside>
     </div>
+    </>
   );
 };
 
