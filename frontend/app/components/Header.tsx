@@ -159,42 +159,43 @@ const Header: React.FC = () => {
                             )}
                         </div>
 
-                        <NavLink href="/flashcards" text="Flash Cards" />
+                        {/* <NavLink href="/flashcards" text="Flash Cards" /> */}
 
-                        <div
+                        {/* <div
                                 onMouseEnter={() => setIsHoveredTedTalk(true)}
                                 onMouseLeave={() => setIsHoveredTedTalk(false)}
                                 className="relative"
-                            >
-                                <NavLink 
+                            > */}
+                                {/* <NavLink 
                                     href="/tedtalk"
                                     text="Ted Talk" 
-                                />
-                                {isHoveredTedTalk && (
-                                    <div 
-                                        className="absolute bg-white p-4 border-t-10 border-[#00B4D8]" // Blue line on top
-                                        style={{ minWidth: '200px' }} // Ensure dropdown has minimum width
-                                    >
-                                        <div className="space-y-2">
-                                            <hr className="border-[#00B4D8] border-t-2" /> 
-                                            <NavLink 
-                                                href="/tedtalk" 
-                                                text="All Videos" 
-                                                customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
-                                            />
-                                            <hr className="border-[#00B4D8] border-t-2" /> 
-                                            {/* Thin line separator */}
-                                            <NavLink 
-                                                href="/notes" 
-                                                text="My Notes" 
-                                                customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
-                                            />
+                                /> */}
+                                {isHoveredTedTalk && (<></>
+                                    // <div 
+                                    //     className="absolute bg-white p-4 border-t-10 border-[#00B4D8]" // Blue line on top
+                                    //     style={{ minWidth: '200px' }} // Ensure dropdown has minimum width
+                                    // >
+                                    //     <div className="space-y-2">
+                                    //         <hr className="border-[#00B4D8] border-t-2" /> 
+                                    //         <NavLink 
+                                    //             href="/tedtalk" 
+                                    //             text="All Videos" 
+                                    //             customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
+                                    //         />
+                                    //         <hr className="border-[#00B4D8] border-t-2" /> 
+                                    //         {/* Thin line separator */}
+                                    //         <NavLink 
+                                    //             href="/notes" 
+                                    //             text="My Notes" 
+                                    //             customStyles="w-full px-4 py-2 block bg-gray-100 text-center"
+                                    //         />
                                             
-                                            {/* Thin line separator */}
-                                        </div>
-                                    </div>
+                                    //         {/* Thin line separator */}
+                                    //     </div>
+                                    // </div>
                                 )}
-                        </div>
+                                
+                        {/* </div> */}
 
                         {username && (role === 'admin' || role === 'teacher') ? (
                             <NavLink href="/management" text="Dashboard" />

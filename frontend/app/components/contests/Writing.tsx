@@ -280,12 +280,13 @@ const WritingContest = ({ contest }: { contest: any }) => {
                   setCurrentPage(page);
                   Cookies.set('Writing_Current_Page-' + contest.id, page.toString());
                 }}
-                queuePage={false}
+                // queuePage={false}
               />
               {/* Add a button for toggling the ranking page */}
               <button
                 className={`pagination-button ${currentPage === null ? 'current-page' : ''}`} // Only active when currentPage is null
                 onClick={() => setCurrentPage(prevPage => prevPage !== null ? null : prevPage)}
+                style={{ margin: '5px' }}
               >
                 Ranking
               </button>

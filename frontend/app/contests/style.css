@@ -1,156 +1,104 @@
+/* style.css */
+
 .contest-section {
     text-align: center;
-    padding: 30px 5%;
-    background-color: #f5f7fa;
+    padding: 2rem 5%;
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .contest-container {
-    padding: 15px;
-    margin-bottom: 30px;
+    width: 100%;
+    max-width: 1200px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
     background-color: white;
     border-radius: 12px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .contest-title {
-    font-size: 30px;
+    font-size: 1.8rem;
     font-weight: 600;
-    padding: 20px 0;
-    color: #222;
+    color: #333;
+    margin-bottom: 1.2rem;
 }
 
 .contest-table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0px;
-    margin: 25px 0;
-}
-
-.contest-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0px;
-    margin: 25px 0;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    border-collapse: collapse;
+    margin-top: 1.2rem;
 }
 
 .contest-table th,
 .contest-table td {
-    border: 0px solid #d9d9d9;
-    padding: 14px;
+    padding: 1rem;
     text-align: center;
-    font-size: 16px;
+    font-size: 1rem;
     color: #444;
 }
 
 .contest-table th {
-    background: linear-gradient(135deg, #5a94ef, #4b85dd);
-    color: white;
-    font-weight: 700;
+    background-color: #ddd;
+    font-weight: 600;
 }
 
-.contest-table th:first-child {
-    border-top-left-radius: 12px;
+.contest-table tbody tr {
+    transition: background-color 0.3s;
 }
 
-.contest-table th:last-child {
-    border-top-right-radius: 12px;
-}
-
-.contest-table tbody tr:last-child td:first-child {
-    border-bottom-left-radius: 12px;
-}
-
-.contest-table tbody tr:last-child td:last-child {
-    border-bottom-right-radius: 12px;
+.contest-table tbody tr:hover {
+    background-color: #f0f0f0;
 }
 
 .even-row {
-    background-color: #f2f5f7;
+    background-color: #f9f9f9;
 }
 
 .odd-row {
     background-color: #ffffff;
 }
 
-.contest-name {
-    width: 35%;
-    font-weight: 600;
-    text-align: left;
-}
-
-.contest-author {
-    width: 15%;
-}
-
-.contest-table tr:hover {
-    background-color: #eaf4ff;
-}
-
-.contest-section .custom-button {
-    background-color: #006699;
-    color: white;
-    padding: 10px 20px;
-    border: none;
+.custom-button {
+    /* background-color: #666; */
+    color: #666;
+    padding: 0.6rem 1.2rem;
     border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
+    border: none;
+    font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.contest-section .custom-button:hover {
-    background-color: #0099cc;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
+/* .custom-button:hover {
+    background-color: #888;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.contest-section .join-button {
-    background-color: #88d4ee;
-    color: #023e8a;
+.join-button {
+    background-color: #4caf50;
+    color: #fff;
 }
 
-.contest-section .join-button:hover {
-    background-color: #bfe9f8;
-}
-
-.contest-section .register-button {
-    background-color: #0099cc;
-    color: white;
-}
-
-.contest-section .register-button:hover {
-    background-color: #88d4ee;
-}
-
-.text-blue-600 {
-    color: #4879c5;
-    font-weight: bold;
-}
-
-.text-blue-600:hover {
-    color: #365fa0;
-}
+.register-button {
+    background-color: #008cba;
+    color: #fff;
+} */
 
 @media (max-width: 768px) {
-    .contest-title {
-        font-size: 24px;
-    }
-
     .contest-table {
-        font-size: 14px;
+        font-size: 0.9rem;
     }
 
-    .contest-table th, .contest-table td {
-        padding: 10px;
+    .contest-table th,
+    .contest-table td {
+        padding: 0.8rem;
     }
 
-    button {
-        padding: 7px 12px;
-        font-size: 14px;
+    .custom-button {
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
     }
 }

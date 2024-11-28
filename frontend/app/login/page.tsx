@@ -4,18 +4,11 @@ import Header from '../components/Header';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import config from '../config';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-
 const LoginPage: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
     const [status, setStatus] = useState('');
     const router = useRouter();
-
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
-    };
 
     const login = async () => {
         try {
@@ -45,60 +38,49 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-100">
-            <Header /> 
-            <div className="flex-grow flex items-center justify-center p-8" style={{
-                backgroundImage: 'linear-gradient(#d6f2fc, #baeef7, #d6f2fc)'
-            }}>
-                <div className="bg-white w-full max-w-3xl rounded-lg shadow-lg overflow-hidden flex">
-                    <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
-                        <h2 className="text-3xl font-semibold text-gray-800 text-center mb-8">LOGIN</h2>
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                            <input
-                                type="text"
-                                className="border border-gray-300 px-4 py-3 rounded-md w-full focus:outline-none focus:border-[#00B4D8]"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                            />
-                        </div>
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                            <div className="relative">
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    className="border border-gray-300 px-4 py-3 rounded-md w-full focus:outline-none focus:border-[#00B4D8]"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={togglePasswordVisibility}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                                >
-                                    {showPassword ? <FaEyeSlash /> : <FaEye />}
-                                </button>
-                            </div>
-                        </div>
-                        <div className="text-right mb-6">
-                            <a href="/password_reset" className="text-sm text-[#0077B6] hover:underline">
-                                Forgot your password?
-                            </a>
-                        </div>
-                        <button
-                            className="shadow-md w-full py-3 bg-[#47d6f8] text-white rounded-full hover:bg-[#00adef] transition duration-300"
-                            onClick={login}
-                        >
-                            Login
-                        </button>
-                    </div>
-                    <div className="hidden md:block md:w-1/2 bg-gradient-to-br from-[#00B4D8] to-[#48CAE4] flex items-center justify-center">
-                        {/* You could replace the background with an image if preferred */}
-                        <img src="https://static.vecteezy.com/system/resources/previews/004/369/833/non_2x/modern-abstract-gradient-blue-background-free-vector.jpg" alt="Gradient Background" className="h-full w-full object-cover" />
-                    </div>
+        <div className="flex flex-col min-h-screen">
+          <Header /> 
+          <div className="flex-grow flex items-center justify-center p-8 bg-gray-200">
+            <div className="bg-gray-200 w-full max-w-4xl h-[500px] p-8 "> 
+              <div className="flex h-full rounded-lg overflow-hidden"> 
+                <div className="w-1/3 bg-gray-100 flex items-center justify-center"> 
+                <div className="w-full px-10"> 
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your Username:</label>
+                    <input
+                        type="text"
+                        className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
                 </div>
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Enter Your Password:</label>
+                    <input
+                        type="password"
+                        className="border border-gray-300 px-3 py-2 rounded-md w-full"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                </div>
+                <div className="mb-4 text-right">
+                    <a href="/password_reset" className="text-sm text-blue-500 hover:underline">
+                        Forgot your password?
+                    </a>
+                </div>
+                <button className="w-full p-2 bg-[#0077B6] text-white rounded-full hover:bg-[#0077B6]"
+                    onClick={login}>
+                    Login
+                </button>
+                </div>
+                </div>
+                <div className="w-2/3">
+                    <img src="https://wallpapers.com/images/hd/blue-fade-9b4urca2ma6eh01o.jpg" alt="Loading" className="h-full w-full object-cover" /> 
+                </div>
+              </div>
             </div>
-            <Footer />
+          </div>
+          <Footer /> 
         </div>
     );
 };
