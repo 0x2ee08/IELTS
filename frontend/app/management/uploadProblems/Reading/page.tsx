@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../../../config';
-import { create } from 'domain';
-import { isKeyObject } from 'util/types';
+import { AxiosError } from 'axios';
 // import { TopologyDescription } from 'mongodb';
 type TopicData = {
     topic: string;
@@ -99,7 +98,6 @@ const ReadingRender: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const questionTypes = [
-        "Choose a question type",
         "Yes/No/Not Given",
         "True/False/Not Given",
         "Fill in the blank with one word only",
@@ -170,544 +168,839 @@ const ReadingRender: React.FC = () => {
     
     
 
-    const handleGenerateYNNQuestion = async(sIndex: number, title: string, content: string) => {
+    const handleGenerateYNNQuestion = async (sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-
+    
         setIsLoading(true);
-
-        // Make an API request with the title and content
-        axios
-            .post(
+    
+        try {
+            // Make an API request with the title and content
+            const response = await axios.post(
                 `${config.API_BASE_URL}api/generateReadingYNN`,
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .then(response => {
-                const data = response.data;
-
-                // Update the specific section's questions in the paragraph
-                const updatedSections = [...paragraph.sections];
-                Object.keys(data).forEach((key, qIndex) => {
-                    const questionData = data[key];
-                    
-                    // Ensure there is a question entry for this index
-                    if (!updatedSections[sIndex].questions[qIndex]) {
-                        updatedSections[sIndex].questions[qIndex] = {
-                            question: '',
-                            answer: '',
-                            explanation: '',
-                            options: '',
-                        };
-                    }
-
-                    // Update the question details
-                    updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                    updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                    updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                    updatedSections[sIndex].questions[qIndex].options = questionData.options
-                        .map((option: string) => option.trim())
-                        .join(', ')
-                        .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-                });
-
-                // Update the paragraph state with the modified section
-                setParagraph({
-                    ...paragraph,
-                    sections: updatedSections,
-                });
-            })
-            .catch(error => alert(error.response?.data?.error || "An error occurred"))
-            .finally(() => {
-                setIsLoading(false); // Set loading state back to false
+            );
+    
+            // Log the API response for debugging purposes
+            console.log("API Response:", response.data);
+    
+            const data = response.data;
+    
+            // Check if the response contains the expected data
+            if (!data || typeof data !== 'object') {
+                throw new Error("Invalid API response structure.");
+            }
+    
+            // Update the specific section's questions in the paragraph
+            const updatedSections = [...paragraph.sections];
+    
+            // Iterate over the response data
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+    
+                // Ensure there is a question entry for this index
+                if (!updatedSections[sIndex].questions[qIndex]) {
+                    updatedSections[sIndex].questions[qIndex] = {
+                        question: '',
+                        answer: '',
+                        explanation: '',
+                        options: '',
+                    };
+                }
+    
+                // Update the question details
+                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+    
+                // Ensure options are safely handled
+                const options = Array.isArray(questionData.options)
+                    ? questionData.options
+                    : []; // Fallback to empty array if options is not an array
+    
+                updatedSections[sIndex].questions[qIndex].options = options
+                    .map((option: string) => option.trim()) // Trim each option
+                    .join(', ')
+                    .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
+    
+            // Update the paragraph state with the modified section
+            setParagraph((prevParagraph) => ({
+                ...prevParagraph,
+                sections: updatedSections,
+            }));
+    
+        } catch (error: unknown) {
+            // Log the error for debugging purposes
+            console.error("Error during YNN question generation:", error);
+    
+            if (error instanceof AxiosError) {
+                // Handle AxiosError specifically
+                alert(`API Error: ${error.response?.data?.error || error.message}`);
+            } else if (error instanceof Error) {
+                // Handle general errors (e.g., throw new Error inside try block)
+                alert(`An unexpected error occurred: ${error.message}`);
+            } else {
+                // Fallback for unknown error types
+                alert("An unexpected error occurred.");
+            }
+        } finally {
+            setIsLoading(false); // Set loading state back to false
+        }
     };
+    
 
-    const handleGenerateTFNQuestion = async(sIndex: number, title: string, content: string) => {
+    const handleGenerateTFNQuestion = async (sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-
+    
         setIsLoading(true);
-
-        // Make an API request with the title and content
-        axios
-            .post(
+    
+        try {
+            // Make an API request with the title and content
+            const response = await axios.post(
                 `${config.API_BASE_URL}api/generateReadingTFNG`,
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .then(response => {
-                const data = response.data;
-
-                // Update the specific section's questions in the paragraph
-                const updatedSections = [...paragraph.sections];
-                Object.keys(data).forEach((key, qIndex) => {
-                    const questionData = data[key];
-                    
-                    // Ensure there is a question entry for this index
-                    if (!updatedSections[sIndex].questions[qIndex]) {
-                        updatedSections[sIndex].questions[qIndex] = {
-                            question: '',
-                            answer: '',
-                            explanation: '',
-                            options: '',
-                        };
-                    }
-
-                    // Update the question details
-                    updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                    updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                    updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                    updatedSections[sIndex].questions[qIndex].options = questionData.options
-                        .map((option: string) => option.trim())
-                        .join(', ')
-                        .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-                });
-
-                // Update the paragraph state with the modified section
-                setParagraph({
-                    ...paragraph,
-                    sections: updatedSections,
-                });
-            })
-            .catch(error => alert(error.response?.data?.error || "An error occurred"))
-            .finally(() => {
-                setIsLoading(false); // Set loading state back to false
+            );
+    
+            // Log the API response for debugging purposes
+            console.log("API Response:", response.data);
+    
+            const data = response.data;
+    
+            // Check if the response contains the expected data
+            if (!data || typeof data !== 'object') {
+                throw new Error("Invalid API response structure.");
+            }
+    
+            // Update the specific section's questions in the paragraph
+            const updatedSections = [...paragraph.sections];
+    
+            // Iterate over the response data
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+    
+                // Ensure there is a question entry for this index
+                if (!updatedSections[sIndex].questions[qIndex]) {
+                    updatedSections[sIndex].questions[qIndex] = {
+                        question: '',
+                        answer: '',
+                        explanation: '',
+                        options: '',
+                    };
+                }
+    
+                // Update the question details
+                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+    
+                // Ensure options are safely handled
+                const options = Array.isArray(questionData.options)
+                    ? questionData.options
+                    : []; // Fallback to empty array if options is not an array
+    
+                updatedSections[sIndex].questions[qIndex].options = options
+                    .map((option: string) => option.trim()) // Trim each option
+                    .join(', ')
+                    .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
+    
+            // Update the paragraph state with the modified section
+            setParagraph((prevParagraph) => ({
+                ...prevParagraph,
+                sections: updatedSections,
+            }));
+    
+        } catch (error: unknown) {
+            // Log the error for debugging purposes
+            console.error("Error during YNN question generation:", error);
+    
+            if (error instanceof AxiosError) {
+                // Handle AxiosError specifically
+                alert(`API Error: ${error.response?.data?.error || error.message}`);
+            } else if (error instanceof Error) {
+                // Handle general errors (e.g., throw new Error inside try block)
+                alert(`An unexpected error occurred: ${error.message}`);
+            } else {
+                // Fallback for unknown error types
+                alert("An unexpected error occurred.");
+            }
+        } finally {
+            setIsLoading(false); // Set loading state back to false
+        }
     };
+    
 
-    const handleGenerateFillOneWordQuestion = async(sIndex: number, title: string, content: string) => {
+    const handleGenerateFillOneWordQuestion = async (sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-
+    
         setIsLoading(true);
-
-        // Make an API request with the title and content
-        axios
-            .post(
+    
+        try {
+            // Make an API request with the title and content
+            const response = await axios.post(
                 `${config.API_BASE_URL}api/generateReadingFillOneWord`,
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .then(response => {
-                const data = response.data;
-
-                // Update the specific section's questions in the paragraph
-                const updatedSections = [...paragraph.sections];
-                Object.keys(data).forEach((key, qIndex) => {
-                    const questionData = data[key];
-                    
-                    // Ensure there is a question entry for this index
-                    if (!updatedSections[sIndex].questions[qIndex]) {
-                        updatedSections[sIndex].questions[qIndex] = {
-                            question: '',
-                            answer: '',
-                            explanation: '',
-                            options: '',
-                        };
-                    }
-
-                    // Update the question details
-                    updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                    updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                    updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                    updatedSections[sIndex].questions[qIndex].options = questionData.options
-                        .map((option: string) => option.trim())
-                        .join(', ')
-                        .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-                });
-
-                // Update the paragraph state with the modified section
-                setParagraph({
-                    ...paragraph,
-                    sections: updatedSections,
-                });
-            })
-            .catch(error => alert(error.response?.data?.error || "An error occurred"))
-            .finally(() => {
-                setIsLoading(false); // Set loading state back to false
+            );
+    
+            // Log the API response for debugging purposes
+            console.log("API Response:", response.data);
+    
+            const data = response.data;
+    
+            // Check if the response contains the expected data
+            if (!data || typeof data !== 'object') {
+                throw new Error("Invalid API response structure.");
+            }
+    
+            // Update the specific section's questions in the paragraph
+            const updatedSections = [...paragraph.sections];
+    
+            // Iterate over the response data
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+    
+                // Ensure there is a question entry for this index
+                if (!updatedSections[sIndex].questions[qIndex]) {
+                    updatedSections[sIndex].questions[qIndex] = {
+                        question: '',
+                        answer: '',
+                        explanation: '',
+                        options: '',
+                    };
+                }
+    
+                // Update the question details
+                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+    
+                // Ensure options are safely handled
+                const options = Array.isArray(questionData.options)
+                    ? questionData.options
+                    : []; // Fallback to empty array if options is not an array
+    
+                updatedSections[sIndex].questions[qIndex].options = options
+                    .map((option: string) => option.trim()) // Trim each option
+                    .join(', ')
+                    .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
+    
+            // Update the paragraph state with the modified section
+            setParagraph((prevParagraph) => ({
+                ...prevParagraph,
+                sections: updatedSections,
+            }));
+    
+        } catch (error: unknown) {
+            // Log the error for debugging purposes
+            console.error("Error during YNN question generation:", error);
+    
+            if (error instanceof AxiosError) {
+                // Handle AxiosError specifically
+                alert(`API Error: ${error.response?.data?.error || error.message}`);
+            } else if (error instanceof Error) {
+                // Handle general errors (e.g., throw new Error inside try block)
+                alert(`An unexpected error occurred: ${error.message}`);
+            } else {
+                // Fallback for unknown error types
+                alert("An unexpected error occurred.");
+            }
+        } finally {
+            setIsLoading(false); // Set loading state back to false
+        }
     };
     
 
     const handleGenerateFillTwoWordQuestion = async(sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-
+    
         setIsLoading(true);
-
-        // Make an API request with the title and content
-        axios
-            .post(
+    
+        try {
+            // Make an API request with the title and content
+            const response = await axios.post(
                 `${config.API_BASE_URL}api/generateReadingFillTwoWords`,
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .then(response => {
-                const data = response.data;
-
-                // Update the specific section's questions in the paragraph
-                const updatedSections = [...paragraph.sections];
-                Object.keys(data).forEach((key, qIndex) => {
-                    const questionData = data[key];
-                    
-                    // Ensure there is a question entry for this index
-                    if (!updatedSections[sIndex].questions[qIndex]) {
-                        updatedSections[sIndex].questions[qIndex] = {
-                            question: '',
-                            answer: '',
-                            explanation: '',
-                            options: '',
-                        };
-                    }
-
-                    // Update the question details
-                    updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                    updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                    updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                    updatedSections[sIndex].questions[qIndex].options = questionData.options
-                        .map((option: string) => option.trim())
-                        .join(', ')
-                        .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-                });
-
-                // Update the paragraph state with the modified section
-                setParagraph({
-                    ...paragraph,
-                    sections: updatedSections,
-                });
-            })
-            .catch(error => alert(error.response?.data?.error || "An error occurred"))
-            .finally(() => {
-                setIsLoading(false); // Set loading state back to false
+            );
+    
+            // Log the API response for debugging purposes
+            console.log("API Response:", response.data);
+    
+            const data = response.data;
+    
+            // Check if the response contains the expected data
+            if (!data || typeof data !== 'object') {
+                throw new Error("Invalid API response structure.");
+            }
+    
+            // Update the specific section's questions in the paragraph
+            const updatedSections = [...paragraph.sections];
+    
+            // Iterate over the response data
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+    
+                // Ensure there is a question entry for this index
+                if (!updatedSections[sIndex].questions[qIndex]) {
+                    updatedSections[sIndex].questions[qIndex] = {
+                        question: '',
+                        answer: '',
+                        explanation: '',
+                        options: '',
+                    };
+                }
+    
+                // Update the question details
+                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+    
+                // Ensure options are safely handled
+                const options = Array.isArray(questionData.options)
+                    ? questionData.options
+                    : []; // Fallback to empty array if options is not an array
+    
+                updatedSections[sIndex].questions[qIndex].options = options
+                    .map((option: string) => option.trim()) // Trim each option
+                    .join(', ')
+                    .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
+    
+            // Update the paragraph state with the modified section
+            setParagraph((prevParagraph) => ({
+                ...prevParagraph,
+                sections: updatedSections,
+            }));
+    
+        } catch (error: unknown) {
+            // Log the error for debugging purposes
+            console.error("Error during YNN question generation:", error);
+    
+            if (error instanceof AxiosError) {
+                // Handle AxiosError specifically
+                alert(`API Error: ${error.response?.data?.error || error.message}`);
+            } else if (error instanceof Error) {
+                // Handle general errors (e.g., throw new Error inside try block)
+                alert(`An unexpected error occurred: ${error.message}`);
+            } else {
+                // Fallback for unknown error types
+                alert("An unexpected error occurred.");
+            }
+        } finally {
+            setIsLoading(false); // Set loading state back to false
+        }
     };
     
 
     const handleGenerateMatchingHeadingQuestion = async(sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-
+    
         setIsLoading(true);
-
-        // Make an API request with the title and content
-        axios
-            .post(
+    
+        try {
+            // Make an API request with the title and content
+            const response = await axios.post(
                 `${config.API_BASE_URL}api/generateReadingMatchingHeading`,
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .then(response => {
-                const data = response.data;
-
-                // Update the specific section's questions in the paragraph
-                const updatedSections = [...paragraph.sections];
-                Object.keys(data).forEach((key, qIndex) => {
-                    const questionData = data[key];
-                    
-                    // Ensure there is a question entry for this index
-                    if (!updatedSections[sIndex].questions[qIndex]) {
-                        updatedSections[sIndex].questions[qIndex] = {
-                            question: '',
-                            answer: '',
-                            explanation: '',
-                            options: '',
-                        };
-                    }
-
-                    // Update the question details
-                    updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                    updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                    updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                    updatedSections[sIndex].questions[qIndex].options = questionData.options
-                        .map((option: string) => option.trim())
-                        .join(', ')
-                        .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-                });
-
-                // Update the paragraph state with the modified section
-                setParagraph({
-                    ...paragraph,
-                    sections: updatedSections,
-                });
-            })
-            .catch(error => alert(error.response?.data?.error || "An error occurred"))
-            .finally(() => {
-                setIsLoading(false); // Set loading state back to false
+            );
+    
+            // Log the API response for debugging purposes
+            console.log("API Response:", response.data);
+    
+            const data = response.data;
+    
+            // Check if the response contains the expected data
+            if (!data || typeof data !== 'object') {
+                throw new Error("Invalid API response structure.");
+            }
+    
+            // Update the specific section's questions in the paragraph
+            const updatedSections = [...paragraph.sections];
+    
+            // Iterate over the response data
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+    
+                // Ensure there is a question entry for this index
+                if (!updatedSections[sIndex].questions[qIndex]) {
+                    updatedSections[sIndex].questions[qIndex] = {
+                        question: '',
+                        answer: '',
+                        explanation: '',
+                        options: '',
+                    };
+                }
+    
+                // Update the question details
+                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+    
+                // Ensure options are safely handled
+                const options = Array.isArray(questionData.options)
+                    ? questionData.options
+                    : []; // Fallback to empty array if options is not an array
+    
+                updatedSections[sIndex].questions[qIndex].options = options
+                    .map((option: string) => option.trim()) // Trim each option
+                    .join(', ')
+                    .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
+    
+            // Update the paragraph state with the modified section
+            setParagraph((prevParagraph) => ({
+                ...prevParagraph,
+                sections: updatedSections,
+            }));
+    
+        } catch (error: unknown) {
+            // Log the error for debugging purposes
+            console.error("Error during YNN question generation:", error);
+    
+            if (error instanceof AxiosError) {
+                // Handle AxiosError specifically
+                alert(`API Error: ${error.response?.data?.error || error.message}`);
+            } else if (error instanceof Error) {
+                // Handle general errors (e.g., throw new Error inside try block)
+                alert(`An unexpected error occurred: ${error.message}`);
+            } else {
+                // Fallback for unknown error types
+                alert("An unexpected error occurred.");
+            }
+        } finally {
+            setIsLoading(false); // Set loading state back to false
+        }
     };
     
     
     const handleGenerateMatchingParagraphInfoQuestion = async(sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-
+    
         setIsLoading(true);
-
-        // Make an API request with the title and content
-        axios
-            .post(
+    
+        try {
+            // Make an API request with the title and content
+            const response = await axios.post(
                 `${config.API_BASE_URL}api/generateReadingMatchingParagraphInfo`,
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .then(response => {
-                const data = response.data;
-
-                // Update the specific section's questions in the paragraph
-                const updatedSections = [...paragraph.sections];
-                Object.keys(data).forEach((key, qIndex) => {
-                    const questionData = data[key];
-                    
-                    // Ensure there is a question entry for this index
-                    if (!updatedSections[sIndex].questions[qIndex]) {
-                        updatedSections[sIndex].questions[qIndex] = {
-                            question: '',
-                            answer: '',
-                            explanation: '',
-                            options: '',
-                        };
-                    }
-
-                    // Update the question details
-                    updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                    updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                    updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                    updatedSections[sIndex].questions[qIndex].options = questionData.options
-                        .map((option: string) => option.trim())
-                        .join(', ')
-                        .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-                });
-
-                // Update the paragraph state with the modified section
-                setParagraph({
-                    ...paragraph,
-                    sections: updatedSections,
-                });
-            })
-            .catch(error => alert(error.response?.data?.error || "An error occurred"))
-            .finally(() => {
-                setIsLoading(false); // Set loading state back to false
+            );
+    
+            // Log the API response for debugging purposes
+            console.log("API Response:", response.data);
+    
+            const data = response.data;
+    
+            // Check if the response contains the expected data
+            if (!data || typeof data !== 'object') {
+                throw new Error("Invalid API response structure.");
+            }
+    
+            // Update the specific section's questions in the paragraph
+            const updatedSections = [...paragraph.sections];
+    
+            // Iterate over the response data
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+    
+                // Ensure there is a question entry for this index
+                if (!updatedSections[sIndex].questions[qIndex]) {
+                    updatedSections[sIndex].questions[qIndex] = {
+                        question: '',
+                        answer: '',
+                        explanation: '',
+                        options: '',
+                    };
+                }
+    
+                // Update the question details
+                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+    
+                // Ensure options are safely handled
+                const options = Array.isArray(questionData.options)
+                    ? questionData.options
+                    : []; // Fallback to empty array if options is not an array
+    
+                updatedSections[sIndex].questions[qIndex].options = options
+                    .map((option: string) => option.trim()) // Trim each option
+                    .join(', ')
+                    .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
+    
+            // Update the paragraph state with the modified section
+            setParagraph((prevParagraph) => ({
+                ...prevParagraph,
+                sections: updatedSections,
+            }));
+    
+        } catch (error: unknown) {
+            // Log the error for debugging purposes
+            console.error("Error during YNN question generation:", error);
+    
+            if (error instanceof AxiosError) {
+                // Handle AxiosError specifically
+                alert(`API Error: ${error.response?.data?.error || error.message}`);
+            } else if (error instanceof Error) {
+                // Handle general errors (e.g., throw new Error inside try block)
+                alert(`An unexpected error occurred: ${error.message}`);
+            } else {
+                // Fallback for unknown error types
+                alert("An unexpected error occurred.");
+            }
+        } finally {
+            setIsLoading(false); // Set loading state back to false
+        }
     };
     
     
     const handleGenerateMatchingFeaturesQuestion = async(sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-
+    
         setIsLoading(true);
-
-        // Make an API request with the title and content
-        axios
-            .post(
+    
+        try {
+            // Make an API request with the title and content
+            const response = await axios.post(
                 `${config.API_BASE_URL}api/generateReadingMatchingFeatures`,
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .then(response => {
-                const data = response.data;
-
-                // Update the specific section's questions in the paragraph
-                const updatedSections = [...paragraph.sections];
-                Object.keys(data).forEach((key, qIndex) => {
-                    const questionData = data[key];
-                    
-                    // Ensure there is a question entry for this index
-                    if (!updatedSections[sIndex].questions[qIndex]) {
-                        updatedSections[sIndex].questions[qIndex] = {
-                            question: '',
-                            answer: '',
-                            explanation: '',
-                            options: '',
-                        };
-                    }
-
-                    // Update the question details
-                    updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                    updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                    updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                    updatedSections[sIndex].questions[qIndex].options = questionData.options
-                        .map((option: string) => option.trim())
-                        .join(', ')
-                        .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-                });
-
-                // Update the paragraph state with the modified section
-                setParagraph({
-                    ...paragraph,
-                    sections: updatedSections,
-                });
-            })
-            .catch(error => alert(error.response?.data?.error || "An error occurred"))
-            .finally(() => {
-                setIsLoading(false); // Set loading state back to false
+            );
+    
+            // Log the API response for debugging purposes
+            console.log("API Response:", response.data);
+    
+            const data = response.data;
+    
+            // Check if the response contains the expected data
+            if (!data || typeof data !== 'object') {
+                throw new Error("Invalid API response structure.");
+            }
+    
+            // Update the specific section's questions in the paragraph
+            const updatedSections = [...paragraph.sections];
+    
+            // Iterate over the response data
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+    
+                // Ensure there is a question entry for this index
+                if (!updatedSections[sIndex].questions[qIndex]) {
+                    updatedSections[sIndex].questions[qIndex] = {
+                        question: '',
+                        answer: '',
+                        explanation: '',
+                        options: '',
+                    };
+                }
+    
+                // Update the question details
+                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+    
+                // Ensure options are safely handled
+                const options = Array.isArray(questionData.options)
+                    ? questionData.options
+                    : []; // Fallback to empty array if options is not an array
+    
+                updatedSections[sIndex].questions[qIndex].options = options
+                    .map((option: string) => option.trim()) // Trim each option
+                    .join(', ')
+                    .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
+    
+            // Update the paragraph state with the modified section
+            setParagraph((prevParagraph) => ({
+                ...prevParagraph,
+                sections: updatedSections,
+            }));
+    
+        } catch (error: unknown) {
+            // Log the error for debugging purposes
+            console.error("Error during YNN question generation:", error);
+    
+            if (error instanceof AxiosError) {
+                // Handle AxiosError specifically
+                alert(`API Error: ${error.response?.data?.error || error.message}`);
+            } else if (error instanceof Error) {
+                // Handle general errors (e.g., throw new Error inside try block)
+                alert(`An unexpected error occurred: ${error.message}`);
+            } else {
+                // Fallback for unknown error types
+                alert("An unexpected error occurred.");
+            }
+        } finally {
+            setIsLoading(false); // Set loading state back to false
+        }
     };
     
 
     const handleGenerateMatchingSentenceEndingQuestion = async(sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-
+    
         setIsLoading(true);
-
-        // Make an API request with the title and content
-        axios
-            .post(
+    
+        try {
+            // Make an API request with the title and content
+            const response = await axios.post(
                 `${config.API_BASE_URL}api/generateReadingMatchingSentenceEnding`,
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .then(response => {
-                const data = response.data;
-
-                // Update the specific section's questions in the paragraph
-                const updatedSections = [...paragraph.sections];
-                Object.keys(data).forEach((key, qIndex) => {
-                    const questionData = data[key];
-                    
-                    // Ensure there is a question entry for this index
-                    if (!updatedSections[sIndex].questions[qIndex]) {
-                        updatedSections[sIndex].questions[qIndex] = {
-                            question: '',
-                            answer: '',
-                            explanation: '',
-                            options: '',
-                        };
-                    }
-
-                    // Update the question details
-                    updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                    updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                    updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                    updatedSections[sIndex].questions[qIndex].options = questionData.options
-                        .map((option: string) => option.trim())
-                        .join(', ')
-                        .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-                });
-
-                // Update the paragraph state with the modified section
-                setParagraph({
-                    ...paragraph,
-                    sections: updatedSections,
-                });
-            })
-            .catch(error => alert(error.response?.data?.error || "An error occurred"))
-            .finally(() => {
-                setIsLoading(false); // Set loading state back to false
+            );
+    
+            // Log the API response for debugging purposes
+            console.log("API Response:", response.data);
+    
+            const data = response.data;
+    
+            // Check if the response contains the expected data
+            if (!data || typeof data !== 'object') {
+                throw new Error("Invalid API response structure.");
+            }
+    
+            // Update the specific section's questions in the paragraph
+            const updatedSections = [...paragraph.sections];
+    
+            // Iterate over the response data
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+    
+                // Ensure there is a question entry for this index
+                if (!updatedSections[sIndex].questions[qIndex]) {
+                    updatedSections[sIndex].questions[qIndex] = {
+                        question: '',
+                        answer: '',
+                        explanation: '',
+                        options: '',
+                    };
+                }
+    
+                // Update the question details
+                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+    
+                // Ensure options are safely handled
+                const options = Array.isArray(questionData.options)
+                    ? questionData.options
+                    : []; // Fallback to empty array if options is not an array
+    
+                updatedSections[sIndex].questions[qIndex].options = options
+                    .map((option: string) => option.trim()) // Trim each option
+                    .join(', ')
+                    .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
+    
+            // Update the paragraph state with the modified section
+            setParagraph((prevParagraph) => ({
+                ...prevParagraph,
+                sections: updatedSections,
+            }));
+    
+        } catch (error: unknown) {
+            // Log the error for debugging purposes
+            console.error("Error during YNN question generation:", error);
+    
+            if (error instanceof AxiosError) {
+                // Handle AxiosError specifically
+                alert(`API Error: ${error.response?.data?.error || error.message}`);
+            } else if (error instanceof Error) {
+                // Handle general errors (e.g., throw new Error inside try block)
+                alert(`An unexpected error occurred: ${error.message}`);
+            } else {
+                // Fallback for unknown error types
+                alert("An unexpected error occurred.");
+            }
+        } finally {
+            setIsLoading(false); // Set loading state back to false
+        }
     };
     
 
     const handleGenerateMultipleChoiceOneAnswerQuestion = async(sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-
+    
         setIsLoading(true);
-
-        // Make an API request with the title and content
-        axios
-            .post(
+    
+        try {
+            // Make an API request with the title and content
+            const response = await axios.post(
                 `${config.API_BASE_URL}api/generateReadingMCQOA`,
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .then(response => {
-                const data = response.data;
-
-                // Update the specific section's questions in the paragraph
-                const updatedSections = [...paragraph.sections];
-                Object.keys(data).forEach((key, qIndex) => {
-                    const questionData = data[key];
-                    
-                    // Ensure there is a question entry for this index
-                    if (!updatedSections[sIndex].questions[qIndex]) {
-                        updatedSections[sIndex].questions[qIndex] = {
-                            question: '',
-                            answer: '',
-                            explanation: '',
-                            options: '',
-                        };
-                    }
-
-                    // Update the question details
-                    updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                    updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                    updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                    updatedSections[sIndex].questions[qIndex].options = questionData.options
-                        .map((option: string) => option.trim())
-                        .join(', ')
-                        .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-                });
-
-                // Update the paragraph state with the modified section
-                setParagraph({
-                    ...paragraph,
-                    sections: updatedSections,
-                });
-            })
-            .catch(error => alert(error.response?.data?.error || "An error occurred"))
-            .finally(() => {
-                setIsLoading(false); // Set loading state back to false
+            );
+    
+            // Log the API response for debugging purposes
+            console.log("API Response:", response.data);
+    
+            const data = response.data;
+    
+            // Check if the response contains the expected data
+            if (!data || typeof data !== 'object') {
+                throw new Error("Invalid API response structure.");
+            }
+    
+            // Update the specific section's questions in the paragraph
+            const updatedSections = [...paragraph.sections];
+    
+            // Iterate over the response data
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+    
+                // Ensure there is a question entry for this index
+                if (!updatedSections[sIndex].questions[qIndex]) {
+                    updatedSections[sIndex].questions[qIndex] = {
+                        question: '',
+                        answer: '',
+                        explanation: '',
+                        options: '',
+                    };
+                }
+    
+                // Update the question details
+                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                updatedSections[sIndex].questions[qIndex].options = questionData.options;
+    
+                // Ensure options are safely handled
+                const options = Array.isArray(questionData.options)
+                    ? questionData.options
+                    : []; // Fallback to empty array if options is not an array
+    
+                updatedSections[sIndex].questions[qIndex].options = options
+                    .map((option: string) => option.trim()) // Trim each option
+                    .join(', ')
+                    .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
+    
+            // Update the paragraph state with the modified section
+            setParagraph((prevParagraph) => ({
+                ...prevParagraph,
+                sections: updatedSections,
+            }));
+    
+        } catch (error: unknown) {
+            // Log the error for debugging purposes
+            console.error("Error during YNN question generation:", error);
+    
+            if (error instanceof AxiosError) {
+                // Handle AxiosError specifically
+                alert(`API Error: ${error.response?.data?.error || error.message}`);
+            } else if (error instanceof Error) {
+                // Handle general errors (e.g., throw new Error inside try block)
+                alert(`An unexpected error occurred: ${error.message}`);
+            } else {
+                // Fallback for unknown error types
+                alert("An unexpected error occurred.");
+            }
+        } finally {
+            setIsLoading(false); // Set loading state back to false
+        }
     };
     
 
     const handleGenerateMultipleChoiceMultipleAnswerQuestion = async(sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
         const token = localStorage.getItem('token');
-
+    
         setIsLoading(true);
-
-        // Make an API request with the title and content
-        axios
-            .post(
+    
+        try {
+            // Make an API request with the title and content
+            const response = await axios.post(
                 `${config.API_BASE_URL}api/generateReadingMCQMA`,
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
-            )
-            .then(response => {
-                const data = response.data;
-
-                // Update the specific section's questions in the paragraph
-                const updatedSections = [...paragraph.sections];
-                Object.keys(data).forEach((key, qIndex) => {
-                    const questionData = data[key];
-                    
-                    // Ensure there is a question entry for this index
-                    if (!updatedSections[sIndex].questions[qIndex]) {
-                        updatedSections[sIndex].questions[qIndex] = {
-                            question: '',
-                            answer: '',
-                            explanation: '',
-                            options: '',
-                        };
-                    }
-
-                    // Update the question details
-                    updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                    updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                    updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
-                    updatedSections[sIndex].questions[qIndex].options = questionData.options
-                        .map((option: string) => option.trim())
-                        .join(', ')
-                        .replace(/\s*,\s*/g, ','); // Remove spaces after commas
-                });
-
-                // Update the paragraph state with the modified section
-                setParagraph({
-                    ...paragraph,
-                    sections: updatedSections,
-                });
-            })
-            .catch(error => alert(error.response?.data?.error || "An error occurred"))
-            .finally(() => {
-                setIsLoading(false); // Set loading state back to false
+            );
+    
+            // Log the API response for debugging purposes
+            console.log("API Response:", response.data);
+    
+            const data = response.data;
+    
+            // Check if the response contains the expected data
+            if (!data || typeof data !== 'object') {
+                throw new Error("Invalid API response structure.");
+            }
+    
+            // Update the specific section's questions in the paragraph
+            const updatedSections = [...paragraph.sections];
+    
+            // Iterate over the response data
+            Object.keys(data).forEach((key, qIndex) => {
+                const questionData = data[key];
+    
+                // Ensure there is a question entry for this index
+                if (!updatedSections[sIndex].questions[qIndex]) {
+                    updatedSections[sIndex].questions[qIndex] = {
+                        question: '',
+                        answer: '',
+                        explanation: '',
+                        options: '',
+                    };
+                }
+    
+                // Update the question details
+                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                updatedSections[sIndex].questions[qIndex].options = questionData.options;
+    
+                // Ensure options are safely handled
+                const options = Array.isArray(questionData.options)
+                    ? questionData.options
+                    : []; // Fallback to empty array if options is not an array
+    
+                updatedSections[sIndex].questions[qIndex].options = options
+                    .map((option: string) => option.trim()) // Trim each option
+                    .join(', ')
+                    .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
+    
+            // Update the paragraph state with the modified section
+            setParagraph((prevParagraph) => ({
+                ...prevParagraph,
+                sections: updatedSections,
+            }));
+    
+        } catch (error: unknown) {
+            // Log the error for debugging purposes
+            console.error("Error during YNN question generation:", error);
+    
+            if (error instanceof AxiosError) {
+                // Handle AxiosError specifically
+                alert(`API Error: ${error.response?.data?.error || error.message}`);
+            } else if (error instanceof Error) {
+                // Handle general errors (e.g., throw new Error inside try block)
+                alert(`An unexpected error occurred: ${error.message}`);
+            } else {
+                // Fallback for unknown error types
+                alert("An unexpected error occurred.");
+            }
+        } finally {
+            setIsLoading(false); // Set loading state back to false
+        }
     };
 
-    const handleGenerateQuestion = async(sIndex: number) => {
+    const handleGenerateQuestion = async(paragraph: Paragraph, sIndex: number) => {
+        console.log(paragraph)
         if (!paragraph.title || !paragraph.content){
             alert("Paragraph is empty");
             return;
@@ -764,6 +1057,35 @@ const ReadingRender: React.FC = () => {
         // Get the first two types
         return shuffledTypes.slice(0, 2);
     };
+
+    const uploadProblemReading = async (topic: string, paragraph: any) => {
+        if (!paragraph || !paragraph.title || !paragraph.content) {
+            alert("Paragraph is empty or missing title/content.");
+            return;
+        }
+    
+        try {
+            setIsLoading(true); // Show loading indicator
+    
+            const token = localStorage.getItem('token'); // Token for authorization (if needed)
+    
+            // Send the paragraph data to the backend
+            const response = await axios.post(
+                `${config.API_BASE_URL}api/upload_reading_problem`,
+                { topic, paragraph },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+    
+            alert("Paragraph uploaded successfully!");
+            console.log("Response:", response.data);
+        } catch (error) {
+            console.error("Error uploading paragraph:", error);
+        } finally {
+            setIsLoading(false); // Hide loading indicator
+        }
+    };
     
     const createProblem = async (topics: TopicData[]): Promise<void> => {
         if (!topics || topics.length === 0) {
@@ -785,6 +1107,7 @@ const ReadingRender: React.FC = () => {
                 try {
                     // Generate the paragraph and directly use the result
                     const generatedParagraph = await handleGenerateParagraph(statement);
+                    setParagraph(generatedParagraph);
     
                     // Ensure paragraph has valid data
                     if (!generatedParagraph.title || !generatedParagraph.content) {
@@ -792,16 +1115,39 @@ const ReadingRender: React.FC = () => {
                         continue;
                     }
     
-                    // Log the valid paragraph
-                    console.log("Valid Paragraph:", generatedParagraph);
-    
-                    // Generate random question types
                     const randomQuestionTypes = getRandomQuestionTypes();
+                    console.log(randomQuestionTypes);
     
                     // Generate questions
                     for (let sIndex = 0; sIndex < randomQuestionTypes.length; sIndex++) {
-                        await handleGenerateQuestion(sIndex); // Generate question for each type
+                        generatedParagraph.sections[sIndex].type = randomQuestionTypes[sIndex];
+                        await handleGenerateQuestion(generatedParagraph, sIndex); // Generate question for each type
                     }
+    
+                    // Upload the paragraph after generation is complete
+                    await uploadProblemReading(topic.topic, generatedParagraph);
+    
+                    // Clear the paragraph state only after the upload is complete
+                    setParagraph({
+                        title: '',
+                        content: '',
+                        sections: [
+                            {
+                                type: '',
+                                options: [],
+                                questions: [{ question: '', answer: '', explanation: '', options: '' }],
+                                isOpen: true,
+                            },
+                            {
+                                type: '',
+                                options: [],
+                                questions: [{ question: '', answer: '', explanation: '', options: '' }],
+                                isOpen: true,
+                            },
+                        ],
+                        isOpen: true,
+                        vocabularyIsOpen: false,
+                    });
                 } catch (error) {
                     console.error("Error in paragraph generation:", error);
                 }
@@ -810,12 +1156,9 @@ const ReadingRender: React.FC = () => {
     };
     
     
-    
-
     const uploadingProblemsReading = async () => {
         const extractedTopics = await extractStatements(); // Get topics directly
         await createProblem(extractedTopics); // Pass topics
-        // await uploadStatementsReading();
     };
     
     return(

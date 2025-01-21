@@ -1,35 +1,48 @@
 const express = require('express');
-const multer = require('multer');
-const fs = require('fs');
 const { authenticateToken } = require('../middleware/authMiddleware');
 const { connectToDatabase } = require('../utils/mongodb');
 
 const router = express.Router();
-const upload = multer({ dest: 'uploads/' }); // Multer setup for file upload
 
-router.post('/upload_file_reading_statements', authenticateToken, async (req, res) => {
-    const { paragraphs } = req.body;
-    const db = await connectToDatabase();
-    const paragraphsCollection = db.collection('problemset');
+router.post('/upload_reading_problem', authenticateToken, async (req, res) => {
+    const { topic, paragraph } = req.body;
+    
+    // Check if the topic and paragraph data are valid
+    if (!topic || !paragraph || !paragraph.title || !paragraph.content) {
+        return res.status(400).json({ error: 'Topic, title, or content is missing.' });
+    }
 
     try {
-        // Loop through each paragraph and insert/update it in the collection
-        const operations = paragraphs.map((paragraph) => ({
-            updateOne: {
-                filter: { title: paragraph.title },
-                update: { $set: paragraph },
-                upsert: true, // Create document if it doesn't exist
-            },
-        }));
+        const db = await connectToDatabase();
+        const problemSetCollection = db.collection('problemset');
 
-        // Perform bulk write for better efficiency
-        const result = await paragraphsCollection.bulkWrite(operations);
+        // Find the existing document by skill ("reading") and topic
+        const existingDoc = await problemSetCollection.findOne({ skill: 'reading', topic });
 
-        res.json({ success: true, message: 'Paragraphs uploaded successfully!', result });
+        if (existingDoc) {
+            // If the document already exists, add the new paragraph to the existing 'statements' array
+            await problemSetCollection.updateOne(
+                { skill: 'Reading', topic },
+                { $push: { statements: paragraph } } // Use $push to add the new paragraph to the array
+            );
+            return res.json({ success: true, message: 'Paragraph added to existing topic.' });
+        } else {
+            // If the document does not exist, create a new document
+            const newDoc = {
+                skill: 'reading',
+                topic,
+                statements: [paragraph], // Add the new paragraph as the first statement
+            };
+            await problemSetCollection.insertOne(newDoc);
+            return res.json({ success: true, message: 'New topic created with paragraph.' });
+        }
     } catch (error) {
-        console.error('An error occurred:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Error uploading problem:', error);
+        return res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+module.exports = router;
+
 
 module.exports = router;
