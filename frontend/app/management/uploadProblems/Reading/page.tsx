@@ -97,10 +97,10 @@ const ReadingRender: React.FC = () => {
         "True/False/Not Given",
         "Fill in the blank with one word only",
         "Fill in the blank with no more than two words",
-        "Matching Heading",
-        "Matching Paragraph Information",
-        "Matching Features",
-        "Matching Sentence Endings",
+        // "Matching Heading",
+        // "Matching Paragraph Information",
+        // "Matching Features",
+        // "Matching Sentence Endings",
         "Multiple Choice One Answer",
         "Multiple Choice Multiple Answer"
     ];

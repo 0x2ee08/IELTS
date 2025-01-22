@@ -378,7 +378,7 @@ router.post('/generateReadingFillOneWord', authenticateToken, async (req, res) =
             content: `[LEVEL: HARD/INSANE] Generate 6 Fill in the Blanks (THE BLANK REPRESENT AS "........") question for IELTS READING TASK (ANSWER HAVE ONE WORD ONLY, 6 question SHOULD BE 6 OR MORE SENTENCE OF A PARAGRAPH) (question must be paraphased) (the given paragraph must contain answer word) with the following format: 
 {
     "1": {
-        "question": "sentence 1, with the missing word replaced with ........ Note: exactly EIGHT dots",
+        "question": "sentence 1, with the missing word replaced with ........ (Note: exactly EIGHT dots)",
         "answer": "answer 1 [WORD MUST OCCUR IN THE PARAGRAPH]",
         "explaination": "explaination 1",
     },
@@ -423,8 +423,8 @@ router.post('/generateReadingFillTwoWords', authenticateToken, async (req, res) 
             OUTPUT FORMAT:
 {
     "1": {
-        "question": "sentence 1, with the missing word(s) replaced with ........ Note: exactly EIGHT dots",
-        "answer": "answer 1 Note: [WORD(s) MUST OCCUR IN THE PARAGRAPH]",
+        "question": "sentence 1, with the missing word(s) replaced with ........ (Note: exactly EIGHT dots)",
+        "answer": "answer 1 (Note: [WORD(s) MUST OCCUR IN THE PARAGRAPH])",
         "explaination": "explaination 1",
     },
     "2": {
