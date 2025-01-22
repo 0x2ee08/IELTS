@@ -165,8 +165,6 @@ const ReadingRender: React.FC = () => {
                 });
         });
     };
-    
-    
 
     const handleGenerateYNNQuestion = async (sIndex: number, title: string, content: string) => {
         // Retrieve token from localStorage
@@ -210,9 +208,9 @@ const ReadingRender: React.FC = () => {
                 }
     
                 // Update the question details
-                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                updatedSections[sIndex].questions[qIndex].question = questionData.question;
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer;
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation;
     
                 // Ensure options are safely handled
                 const options = Array.isArray(questionData.options)
@@ -220,7 +218,7 @@ const ReadingRender: React.FC = () => {
                     : []; // Fallback to empty array if options is not an array
     
                 updatedSections[sIndex].questions[qIndex].options = options
-                    .map((option: string) => option.trim()) // Trim each option
+                    .map((option: string) => option) // Trim each option
                     .join(', ')
                     .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
@@ -293,9 +291,9 @@ const ReadingRender: React.FC = () => {
                 }
     
                 // Update the question details
-                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                updatedSections[sIndex].questions[qIndex].question = questionData.question;
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer;
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation;
     
                 // Ensure options are safely handled
                 const options = Array.isArray(questionData.options)
@@ -303,7 +301,7 @@ const ReadingRender: React.FC = () => {
                     : []; // Fallback to empty array if options is not an array
     
                 updatedSections[sIndex].questions[qIndex].options = options
-                    .map((option: string) => option.trim()) // Trim each option
+                    .map((option: string) => option) // Trim each option
                     .join(', ')
                     .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
@@ -376,9 +374,9 @@ const ReadingRender: React.FC = () => {
                 }
     
                 // Update the question details
-                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                updatedSections[sIndex].questions[qIndex].question = questionData.question;
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer;
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation;
     
                 // Ensure options are safely handled
                 const options = Array.isArray(questionData.options)
@@ -386,7 +384,7 @@ const ReadingRender: React.FC = () => {
                     : []; // Fallback to empty array if options is not an array
     
                 updatedSections[sIndex].questions[qIndex].options = options
-                    .map((option: string) => option.trim()) // Trim each option
+                    .map((option: string) => option) // Trim each option
                     .join(', ')
                     .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
@@ -459,9 +457,9 @@ const ReadingRender: React.FC = () => {
                 }
     
                 // Update the question details
-                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
+                updatedSections[sIndex].questions[qIndex].question = questionData.question;
                 updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation;
     
                 // Ensure options are safely handled
                 const options = Array.isArray(questionData.options)
@@ -469,7 +467,7 @@ const ReadingRender: React.FC = () => {
                     : []; // Fallback to empty array if options is not an array
     
                 updatedSections[sIndex].questions[qIndex].options = options
-                    .map((option: string) => option.trim()) // Trim each option
+                    .map((option: string) => option) // Trim each option
                     .join(', ')
                     .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
@@ -542,9 +540,9 @@ const ReadingRender: React.FC = () => {
                 }
     
                 // Update the question details
-                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                updatedSections[sIndex].questions[qIndex].question = questionData.question;
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer;
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation;
     
                 // Ensure options are safely handled
                 const options = Array.isArray(questionData.options)
@@ -552,7 +550,7 @@ const ReadingRender: React.FC = () => {
                     : []; // Fallback to empty array if options is not an array
     
                 updatedSections[sIndex].questions[qIndex].options = options
-                    .map((option: string) => option.trim()) // Trim each option
+                    .map((option: string) => option) // Trim each option
                     .join(', ')
                     .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
@@ -625,9 +623,9 @@ const ReadingRender: React.FC = () => {
                 }
     
                 // Update the question details
-                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                updatedSections[sIndex].questions[qIndex].question = questionData.question;
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer;
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation;
     
                 // Ensure options are safely handled
                 const options = Array.isArray(questionData.options)
@@ -635,7 +633,7 @@ const ReadingRender: React.FC = () => {
                     : []; // Fallback to empty array if options is not an array
     
                 updatedSections[sIndex].questions[qIndex].options = options
-                    .map((option: string) => option.trim()) // Trim each option
+                    .map((option: string) => option) // Trim each option
                     .join(', ')
                     .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
@@ -708,9 +706,9 @@ const ReadingRender: React.FC = () => {
                 }
     
                 // Update the question details
-                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                updatedSections[sIndex].questions[qIndex].question = questionData.question;
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer;
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation;
     
                 // Ensure options are safely handled
                 const options = Array.isArray(questionData.options)
@@ -718,7 +716,7 @@ const ReadingRender: React.FC = () => {
                     : []; // Fallback to empty array if options is not an array
     
                 updatedSections[sIndex].questions[qIndex].options = options
-                    .map((option: string) => option.trim()) // Trim each option
+                    .map((option: string) => option) // Trim each option
                     .join(', ')
                     .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
@@ -791,9 +789,9 @@ const ReadingRender: React.FC = () => {
                 }
     
                 // Update the question details
-                updatedSections[sIndex].questions[qIndex].question = questionData.question.trim();
-                updatedSections[sIndex].questions[qIndex].answer = questionData.answer.trim();
-                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation.trim();
+                updatedSections[sIndex].questions[qIndex].question = questionData.question;
+                updatedSections[sIndex].questions[qIndex].answer = questionData.answer;
+                updatedSections[sIndex].questions[qIndex].explanation = questionData.explanation;
     
                 // Ensure options are safely handled
                 const options = Array.isArray(questionData.options)
@@ -801,7 +799,7 @@ const ReadingRender: React.FC = () => {
                     : []; // Fallback to empty array if options is not an array
     
                 updatedSections[sIndex].questions[qIndex].options = options
-                    .map((option: string) => option.trim()) // Trim each option
+                    .map((option: string) => option) // Trim each option
                     .join(', ')
                     .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
@@ -885,7 +883,7 @@ const ReadingRender: React.FC = () => {
                     : []; // Fallback to empty array if options is not an array
     
                 updatedSections[sIndex].questions[qIndex].options = options
-                    .map((option: string) => option.trim()) // Trim each option
+                    .map((option: string) => option) // Trim each option
                     .join(', ')
                     .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
@@ -969,7 +967,7 @@ const ReadingRender: React.FC = () => {
                     : []; // Fallback to empty array if options is not an array
     
                 updatedSections[sIndex].questions[qIndex].options = options
-                    .map((option: string) => option.trim()) // Trim each option
+                    .map((option: string) => option) // Trim each option
                     .join(', ')
                     .replace(/\s*,\s*/g, ','); // Remove spaces after commas
             });
@@ -999,68 +997,87 @@ const ReadingRender: React.FC = () => {
         }
     };
 
-    const handleGenerateQuestion = async(paragraph: Paragraph, sIndex: number) => {
-        console.log(paragraph)
-        if (!paragraph.title || !paragraph.content){
+    const handleGenerateQuestion = async (paragraph: Paragraph, sIndex: number): Promise<boolean> => {
+        console.log(paragraph);
+        if (!paragraph.title || !paragraph.content) {
             alert("Paragraph is empty");
-            return;
+            return false;
         }
+    
         const selectedParagraph = paragraph;
         const selectedSection = selectedParagraph.sections[sIndex];
         const title = selectedParagraph.title;
         const content = selectedParagraph.content;
-        // console.log(selectedSection.type);
-        switch (selectedSection.type) {
-            case 'Yes/No/Not Given':
-                handleGenerateYNNQuestion(sIndex, title, content);
-                break;
-            case 'True/False/Not Given':
-                handleGenerateTFNQuestion(sIndex, title, content);
-                break;
-            case 'Fill in the blank with one word only':
-                handleGenerateFillOneWordQuestion(sIndex, title, content);
-                break;
-            case 'Fill in the blank with no more than two words':
-                handleGenerateFillTwoWordQuestion(sIndex, title, content);
-                break;
-            case 'Matching Heading':
-                handleGenerateMatchingHeadingQuestion(sIndex, title, content);
-                break;
-            case 'Matching Paragraph Information':
-                handleGenerateMatchingParagraphInfoQuestion(sIndex, title, content);
-                break;
-            case 'Matching Features':
-                handleGenerateMatchingFeaturesQuestion(sIndex, title, content);
-                break;
-            case 'Matching Sentence Endings':
-                handleGenerateMatchingSentenceEndingQuestion(sIndex, title, content);
-                break;
-            case 'Multiple Choice One Answer':
-                handleGenerateMultipleChoiceOneAnswerQuestion(sIndex, title, content);
-                break;
-            case 'Multiple Choice Multiple Answer':
-                handleGenerateMultipleChoiceMultipleAnswerQuestion(sIndex, title, content);
-                break;
-            default:
-                console.error('Unknown question type:', selectedSection.type);
+    
+        try {
+            switch (selectedSection.type) {
+                case 'Yes/No/Not Given':
+                    await handleGenerateYNNQuestion(sIndex, title, content);
+                    break;
+                case 'True/False/Not Given':
+                    await handleGenerateTFNQuestion(sIndex, title, content);
+                    break;
+                case 'Fill in the blank with one word only':
+                    await handleGenerateFillOneWordQuestion(sIndex, title, content);
+                    break;
+                case 'Fill in the blank with no more than two words':
+                    await handleGenerateFillTwoWordQuestion(sIndex, title, content);
+                    break;
+                case 'Matching Heading':
+                    await handleGenerateMatchingHeadingQuestion(sIndex, title, content);
+                    break;
+                case 'Matching Paragraph Information':
+                    await handleGenerateMatchingParagraphInfoQuestion(sIndex, title, content);
+                    break;
+                case 'Matching Features':
+                    await handleGenerateMatchingFeaturesQuestion(sIndex, title, content);
+                    break;
+                case 'Matching Sentence Endings':
+                    await handleGenerateMatchingSentenceEndingQuestion(sIndex, title, content);
+                    break;
+                case 'Multiple Choice One Answer':
+                    await handleGenerateMultipleChoiceOneAnswerQuestion(sIndex, title, content);
+                    break;
+                case 'Multiple Choice Multiple Answer':
+                    await handleGenerateMultipleChoiceMultipleAnswerQuestion(sIndex, title, content);
+                    break;
+                default:
+                    console.error('Unknown question type:', selectedSection.type);
+                    return false;
+            }
+            return true; // Successfully generated question
+        } catch (error) {
+            console.error(`Error generating question for section ${sIndex}:`, error);
+            return false; // Failed to generate question
         }
-        
     };
+    
 
     const getRandomQuestionTypes = (): string[] => {
         // Exclude the first option ("Choose a question type")
         const validQuestionTypes = questionTypes.slice(1);
     
-        // Shuffle the array
+        // Shuffle array securely
         const shuffledTypes = validQuestionTypes.sort(() => Math.random() - 0.5);
     
-        // Get the first two types
+        // Return the first two types
         return shuffledTypes.slice(0, 2);
     };
-
-    const uploadProblemReading = async (topic: string, paragraph: any) => {
-        if (!paragraph || !paragraph.title || !paragraph.content) {
-            alert("Paragraph is empty or missing title/content.");
+    
+    
+    const uploadProblemReading = async (topic: string, paragraph: Paragraph): Promise<void> => {
+        if (!paragraph) {
+            alert("Paragraph is missing.");
+            return;
+        }
+    
+        if (!paragraph.title) {
+            alert("Paragraph title is missing.");
+            return;
+        }
+    
+        if (!paragraph.content) {
+            alert("Paragraph content is missing.");
             return;
         }
     
@@ -1078,14 +1095,23 @@ const ReadingRender: React.FC = () => {
                 }
             );
     
-            alert("Paragraph uploaded successfully!");
             console.log("Response:", response.data);
-        } catch (error) {
-            console.error("Error uploading paragraph:", error);
+        } catch (error: any) {
+            if (error.response) {
+                console.error("Server Error:", error.response.data);
+                alert(`Error uploading paragraph: ${error.response.data.error || 'Unknown error'}`);
+            } else if (error.request) {
+                console.error("Network Error:", error.request);
+                alert("Network error: Unable to reach the server. Please check your connection.");
+            } else {
+                console.error("Unexpected Error:", error.message);
+                alert(`Unexpected error: ${error.message}`);
+            }
         } finally {
             setIsLoading(false); // Hide loading indicator
         }
     };
+    
     
     const createProblem = async (topics: TopicData[]): Promise<void> => {
         if (!topics || topics.length === 0) {
@@ -1105,11 +1131,11 @@ const ReadingRender: React.FC = () => {
                 const statement = topic.statements[statementIndex];
     
                 try {
-                    // Generate the paragraph and directly use the result
+                    // Step 1: Generate the paragraph
                     const generatedParagraph = await handleGenerateParagraph(statement);
                     setParagraph(generatedParagraph);
     
-                    // Ensure paragraph has valid data
+                    // Ensure the paragraph is valid
                     if (!generatedParagraph.title || !generatedParagraph.content) {
                         alert("Failed to generate a valid paragraph.");
                         continue;
@@ -1118,13 +1144,15 @@ const ReadingRender: React.FC = () => {
                     const randomQuestionTypes = getRandomQuestionTypes();
                     console.log(randomQuestionTypes);
     
-                    // Generate questions
-                    for (let sIndex = 0; sIndex < randomQuestionTypes.length; sIndex++) {
-                        generatedParagraph.sections[sIndex].type = randomQuestionTypes[sIndex];
-                        await handleGenerateQuestion(generatedParagraph, sIndex); // Generate question for each type
-                    }
+                    // Step 2: Generate all questions for the paragraph
+                    await Promise.all(
+                        randomQuestionTypes.map(async (type, sIndex) => {
+                            generatedParagraph.sections[sIndex].type = type;
+                            await handleGenerateQuestion(generatedParagraph, sIndex);
+                        })
+                    );
     
-                    // Upload the paragraph after generation is complete
+                    // Step 3: Upload the paragraph after all questions are generated
                     await uploadProblemReading(topic.topic, generatedParagraph);
     
                     // Clear the paragraph state only after the upload is complete
@@ -1156,10 +1184,26 @@ const ReadingRender: React.FC = () => {
     };
     
     
+
     const uploadingProblemsReading = async () => {
-        const extractedTopics = await extractStatements(); // Get topics directly
-        await createProblem(extractedTopics); // Pass topics
+        try {
+            console.log("Starting extraction of topics...");
+            const extractedTopics = await extractStatements(); // Get topics directly
+            console.log("Extracted Topics:", extractedTopics);
+    
+            if (!extractedTopics || extractedTopics.length === 0) {
+                console.warn("No topics were extracted. Aborting.");
+                return;
+            }
+    
+            console.log("Starting problem creation...");
+            await createProblem(extractedTopics); // Pass topics
+            console.log("Problem creation completed successfully.");
+        } catch (error) {
+            console.error("Error during uploadingProblemsReading:", error);
+        }
     };
+    
     
     return(
         <div>
@@ -1174,25 +1218,6 @@ const ReadingRender: React.FC = () => {
 
                     {error && <p style={{ color: 'red' }}>{error}</p>}
                     <div>
-                        {topics.length > 0 && (
-                            <div>
-                                <h2>Extracted Topics and Statements</h2>
-                                {topics.map((topic, topicIndex) => (
-                                    <div key={topicIndex} style={{ marginBottom: '20px' }}>
-                                        <h3>{topic.topic}: {topic.statements || 'Untitled'}</h3>
-                                        {topic.statements?.length > 0 ? (
-                                            <ul>
-                                                {topic.statements.map((statement, statementIndex) => (
-                                                    <li key={statementIndex}>{statement}</li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p>No statements found for this topic.</p>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
 
                         {topics.length === 0 && !loading && !error && (
                             <p>No topics available. Please upload a file to extract topics and statements.</p>
