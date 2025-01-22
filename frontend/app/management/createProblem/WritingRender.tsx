@@ -46,7 +46,7 @@ const WritingPage: React.FC = () => {
     useEffect(() => {
         const token = localStorage.getItem('token'); // Replace with your token retrieval method
 
-        axios.post(`${config.API_BASE_URL}api/get_topic_array`, {}, {
+        axios.post(`${config.API_BASE_URL}api/get_topic_array_writing`, {}, {
         headers: { Authorization: `Bearer ${token}` }
         })
         .then((response) => setTopics(response.data.topic))
@@ -250,7 +250,7 @@ const WritingPage: React.FC = () => {
             const token = localStorage.getItem('token'); // Adjust if stored elsewhere
 
             try {
-                const response = await axios.post(`${config.API_BASE_URL}api/get_array_statement_by_topic`, { topic }, {
+                const response = await axios.post(`${config.API_BASE_URL}api/get_array_statement_writing_by_topic`, { topic }, {
                 headers: { Authorization: `Bearer ${token}` },
                 });
                 newStatementsArray = response.data.statements || [];

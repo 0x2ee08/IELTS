@@ -27,13 +27,14 @@ router.post('/get_writing_prob_data', async (req, res) => {
 });
 
 // Endpoint to get all unique topics
-router.post('/get_topic_array', authenticateToken, async (req, res) => {
+router.post('/get_topic_array_writing', authenticateToken, async (req, res) => {
 try {
     const db = await connectToDatabase();
     const problemsetCollection = db.collection('problemset');
 
     // Use aggregation to group by topic and get unique topics
     const result = await problemsetCollection.aggregate([
+    { $match: { "skill": "Writing" } },
     { $group: { _id: "$topic" } },
     { $project: { topic: "$_id", _id: 0 } }
     ]).toArray();
@@ -48,7 +49,7 @@ try {
 });
 
 // Endpoint to get statements for a specific topic
-router.post('/get_array_statement_by_topic', authenticateToken, async (req, res) => {
+router.post('/get_array_writing_statement_by_topic', authenticateToken, async (req, res) => {
 const { topic } = req.body;
 
 if (!topic) {
@@ -60,7 +61,7 @@ try {
     const problemsetCollection = db.collection('problemset');
 
     // Find the document with the specified topic
-    const result = await problemsetCollection.findOne({ topic });
+    const result = await problemsetCollection.findOne({ skill: "Writing", topic: topic });
     
     // Check if statements were found for the topic
     if (result && result.statements) {
@@ -73,7 +74,67 @@ try {
     res.status(500).json({ error: 'Failed to fetch statements' });
 }
 });
-  
+
+
+// Endpoint to get all unique topics
+router.post('/get_topic_array_reading', authenticateToken, async (req, res) => {
+    try {
+        const db = await connectToDatabase();
+        const problemsetCollection = db.collection('problemset');
+    
+        // Use aggregation to group by topic and get unique topics
+        const result = await problemsetCollection.aggregate([
+        { $match: { "skill": "Reading" } },
+        { $group: { _id: "$topic" } },
+        { $project: { topic: "$_id", _id: 0 } }
+        ]).toArray();
+    
+        const topics = result.map(item => item.topic); // Extract topics from result
+    
+        res.json({ topic: topics });
+    } catch (error) {
+        console.error('Error fetching topics:', error.message || error);
+        res.status(500).json({ error: 'Failed to fetch topics' });
+    }
+    });
+    
+// Endpoint to get statements for a specific topic
+// Endpoint to get statements for a specific topic
+router.post('/get_array_reading_problem_by_topic', authenticateToken, async (req, res) => {
+    const { topic } = req.body;
+
+    if (!topic) {
+        return res.status(400).json({ error: 'Topic is required' });
+    }
+
+    try {
+        const db = await connectToDatabase();
+        const problemsetCollection = db.collection('problemset');
+
+        // Find the document with the specified topic
+        const result = await problemsetCollection.findOne({ skill: "Reading", topic: topic });
+
+        if (result && result.statements) {
+            // Extract only the titles
+            const titles = result.statements.map(statement => statement.title || "Untitled");
+
+            // Return the titles and the full statements
+            res.json({
+                titles, // Array of titles
+                statements: result.statements, // Full structure
+            });
+        } else {
+            res.status(404).json({ error: 'No statements found for this topic' });
+        }
+    } catch (error) {
+        console.error('Error fetching statements:', error.message || error);
+        res.status(500).json({ error: 'Failed to fetch statements' });
+    }
+});
+
+    
+
+
 router.post('/generateWritingPrompt', authenticateToken, async(req, res)  => {
     var {type, content, subtype} = req.body;
     if(content === '') content = 'random';

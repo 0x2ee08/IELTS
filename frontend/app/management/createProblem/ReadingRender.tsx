@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import config from '../../config';
+import { PiGarage } from 'react-icons/pi';
 // import { TopologyDescription } from 'mongodb';
 
 export interface Question {
@@ -21,6 +22,7 @@ export interface Section {
 }
 
 export interface Paragraph {
+    selectedTopic: string;
     title: string;
     content: string;
     sections: Section[];
@@ -32,6 +34,7 @@ export interface Paragraph {
 const ReadingRender: React.FC = () => {
     const [paragraphs, setParagraphs] = useState<Paragraph[]>([
         { 
+            selectedTopic: "Choose a topic",
             title: '', 
             content: '', 
             sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], 
@@ -191,7 +194,7 @@ const ReadingRender: React.FC = () => {
     };
 
     const addParagraph = () => {
-        setParagraphs([...paragraphs, { title: '', content: '', sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], isOpen: true, vocabularyIsOpen: false }]);
+        setParagraphs([...paragraphs, {selectedTopic: "Choose a topic", title: '', content: '', sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], isOpen: true, vocabularyIsOpen: false }]);
     };
 
     const addSection = (pIndex: number) => {
@@ -700,6 +703,43 @@ const ReadingRender: React.FC = () => {
         
     };
 
+    const [topics, setTopics] = useState<string[]>([]);
+    useEffect(() => {
+        const token = localStorage.getItem('token'); // Replace with your token retrieval method
+
+        axios.post(`${config.API_BASE_URL}api/get_topic_array_reading`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+        })
+        .then((response) => setTopics(response.data.topic))
+        .catch((error) => console.error('Error fetching topics:', error));
+    }, []);
+
+    const handleTopicChange = async (e: React.ChangeEvent<HTMLSelectElement>, pIndex: number) => {
+        const topic = e.target.value;
+
+        let newStatementsArray = []
+        if (topic) {
+            const token = localStorage.getItem('token'); // Adjust if stored elsewhere
+
+            try {
+                const response = await axios.post(`${config.API_BASE_URL}api/get_array_statement_writing_by_topic`, { topic }, {
+                headers: { Authorization: `Bearer ${token}` },
+                });
+                newStatementsArray = response.data.statements || [];
+            } catch (error) {
+                console.error('Error fetching statements:', error);
+            }
+        }
+        const updatedParagraphs = paragraphs.map((paragraph, index) =>
+            index === pIndex ? { ...paragraph, selectedTopic: topic } : paragraph
+        );
+    
+        // Update the state with the updated paragraphs array
+        setParagraphs(updatedParagraphs);
+    };
+
+
+
     const createProblem = () => {
         // console.log(problemName);
         // console.log(paragraphs);
@@ -965,6 +1005,17 @@ const ReadingRender: React.FC = () => {
                                     Generate
                                 </button>
                             </div>
+
+                            <label>
+                                <select value={paragraph.selectedTopic} onChange={(e) => handleTopicChange(e,pIndex)}>
+                                <option value="">Select a topic</option>
+                                {topics.map((topic, index) => (
+                                    <option key={index} value={topic}>
+                                    {topic}
+                                    </option>
+                                ))}
+                                </select>
+                            </label>
         
                             <textarea 
                                 placeholder='Content' 
