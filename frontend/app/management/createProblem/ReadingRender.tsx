@@ -23,6 +23,8 @@ export interface Section {
 
 export interface Paragraph {
     selectedTopic: string;
+    selectedTitles: string[];
+    chosenTitle: string;
     title: string;
     content: string;
     sections: Section[];
@@ -34,7 +36,9 @@ export interface Paragraph {
 const ReadingRender: React.FC = () => {
     const [paragraphs, setParagraphs] = useState<Paragraph[]>([
         { 
-            selectedTopic: "Choose a topic",
+            selectedTopic: '',
+            selectedTitles: [],
+            chosenTitle: '',
             title: '', 
             content: '', 
             sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], 
@@ -194,7 +198,7 @@ const ReadingRender: React.FC = () => {
     };
 
     const addParagraph = () => {
-        setParagraphs([...paragraphs, {selectedTopic: "Choose a topic", title: '', content: '', sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], isOpen: true, vocabularyIsOpen: false }]);
+        setParagraphs([...paragraphs, {selectedTitles: [], selectedTopic: '', chosenTitle: '', title: '', content: '', sections: [{ type: '', options:[], questions: [{ question: '', answer: '', explanation: '', options: '' }], isOpen: true }], isOpen: true, vocabularyIsOpen: false }]);
     };
 
     const addSection = (pIndex: number) => {
@@ -708,37 +712,104 @@ const ReadingRender: React.FC = () => {
         const token = localStorage.getItem('token'); // Replace with your token retrieval method
 
         axios.post(`${config.API_BASE_URL}api/get_topic_array_reading`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` }
         })
         .then((response) => setTopics(response.data.topic))
         .catch((error) => console.error('Error fetching topics:', error));
     }, []);
 
-    const handleTopicChange = async (e: React.ChangeEvent<HTMLSelectElement>, pIndex: number) => {
-        const topic = e.target.value;
-
-        let newStatementsArray = []
-        if (topic) {
-            const token = localStorage.getItem('token'); // Adjust if stored elsewhere
-
-            try {
-                const response = await axios.post(`${config.API_BASE_URL}api/get_array_statement_writing_by_topic`, { topic }, {
+    // Fetch the titles for a selected topic
+    const fetchTitlesForTopic = async (topic: string, pIndex: number) => {
+        const token = localStorage.getItem('token');
+        
+        try {
+            const response = await axios.post(`${config.API_BASE_URL}api/get_array_reading_problem_by_topic`, { topic }, {
                 headers: { Authorization: `Bearer ${token}` },
-                });
-                newStatementsArray = response.data.statements || [];
-            } catch (error) {
-                console.error('Error fetching statements:', error);
-            }
+            });
+
+            const updatedParagraphs = paragraphs.map((paragraph, index) =>
+                index === pIndex
+                    ? { ...paragraph, selectedTopic: topic, selectedTitles: response.data.titles } // Only change the selectedTopic of the paragraph at pIndex
+                    : paragraph
+            );
+
+            setParagraphs(updatedParagraphs)
+        } catch (error) {
+            console.error('Error fetching titles:', error);
+            return [];
         }
-        const updatedParagraphs = paragraphs.map((paragraph, index) =>
-            index === pIndex ? { ...paragraph, selectedTopic: topic } : paragraph
-        );
-    
-        // Update the state with the updated paragraphs array
-        setParagraphs(updatedParagraphs);
     };
 
+    const handleTopicChange = (e: React.ChangeEvent<HTMLSelectElement>, pIndex: number) => {
+        const topic = e.target.value;
 
+        // Update the selectedTopic for the specific paragraph
+        const updatedParagraphs = paragraphs.map((paragraph, index) =>
+            index === pIndex
+                ? { ...paragraph, selectedTopic: topic } // Only change the selectedTopic of the paragraph at pIndex
+                : paragraph
+        );
+
+        // Update the state with the updated paragraphs array
+        setParagraphs(updatedParagraphs);
+
+        fetchTitlesForTopic(topic, pIndex)
+        
+    };
+
+    const handleTitleChange = async (e: React.ChangeEvent<HTMLSelectElement>, pIndex: number) => {
+        const title = e.target.value;
+    
+        // Update the chosenTitle for the specific paragraph
+        const updatedParagraphs = paragraphs.map((paragraph, index) =>
+            index === pIndex
+                ? { ...paragraph, chosenTitle: title } // Update the chosen title
+                : paragraph
+        );
+    
+        setParagraphs(updatedParagraphs);
+    
+        // Fetch the full paragraph after updating
+        fetchFullParagraph(title, paragraphs[pIndex].selectedTopic, pIndex);
+    };
+    
+
+    // Fetch the full paragraph when a title is selected
+    const fetchFullParagraph = async (title: string, topic: string, pIndex: number) => {
+        if (!title || !topic) {
+            console.error("Title or topic is missing.");
+            return;
+        }
+    
+        console.log("Fetching paragraph for topic:", topic, "and title:", title);
+    
+        const token = localStorage.getItem('token');
+        try {
+            const response = await axios.post(
+                `${config.API_BASE_URL}api/get_full_paragraph_by_title`,
+                { topic, title },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+    
+            // Merge the fetched paragraph into the paragraph array
+            const updatedParagraphs = paragraphs.map((paragraph, index) =>
+                index === pIndex
+                    ? {
+                          ...paragraph,
+                          chosenTitle: title,  // Update the chosenTitle to the selected title
+                          title: response.data.paragraph.title || "",  // Ensure title is set
+                          content: response.data.paragraph.content || "",  // Ensure content is set
+                          sections: response.data.paragraph.sections || [],  // Ensure sections are set (default to empty array)
+                      }
+                    : paragraph
+            );
+    
+            setParagraphs(updatedParagraphs);
+        } catch (error) {
+            console.error("Error fetching paragraph:", error);
+        }
+    };
+    
 
     const createProblem = () => {
         // console.log(problemName);
@@ -1006,17 +1077,35 @@ const ReadingRender: React.FC = () => {
                                 </button>
                             </div>
 
-                            <label>
+                            <>
                                 <select value={paragraph.selectedTopic} onChange={(e) => handleTopicChange(e,pIndex)}>
-                                <option value="">Select a topic</option>
-                                {topics.map((topic, index) => (
-                                    <option key={index} value={topic}>
-                                    {topic}
-                                    </option>
-                                ))}
+                                    <option value="">Choose a topic</option>
+                                    {topics.map((topic, index) => (
+                                        <option key={index} value={topic}>
+                                            {topic}
+                                        </option>
+                                    ))}
                                 </select>
-                            </label>
-        
+                            </>
+
+                            {paragraph.selectedTopic && (
+                                <>
+                                    <select
+                                        id={`title-select-${pIndex}`}
+                                        onChange={(e) => handleTitleChange(e, pIndex)}
+                                    >
+                                        <option value="">Choose a title</option>
+                                        {paragraph.selectedTitles.map((title, index) => (
+                                            <option key={index} value={title}>
+                                                {title}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </>
+                            )}
+
+                            
+
                             <textarea 
                                 placeholder='Content' 
                                 className="border border-gray-300 px-4 py-2 rounded-md w-full h-64 my-2" 

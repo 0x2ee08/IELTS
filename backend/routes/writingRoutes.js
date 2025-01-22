@@ -96,11 +96,11 @@ router.post('/get_topic_array_reading', authenticateToken, async (req, res) => {
         console.error('Error fetching topics:', error.message || error);
         res.status(500).json({ error: 'Failed to fetch topics' });
     }
-    });
-    
-// Endpoint to get statements for a specific topic
-// Endpoint to get statements for a specific topic
+});
+
 router.post('/get_array_reading_problem_by_topic', authenticateToken, async (req, res) => {
+    console.log("Request received for fetching titles by topic");
+
     const { topic } = req.body;
 
     if (!topic) {
@@ -111,28 +111,62 @@ router.post('/get_array_reading_problem_by_topic', authenticateToken, async (req
         const db = await connectToDatabase();
         const problemsetCollection = db.collection('problemset');
 
-        // Find the document with the specified topic
+        // Find the document with the specified skill and topic
         const result = await problemsetCollection.findOne({ skill: "Reading", topic: topic });
 
-        if (result && result.statements) {
-            // Extract only the titles
-            const titles = result.statements.map(statement => statement.title || "Untitled");
+        if (result && result.problems && Array.isArray(result.problems)) {
+            // Extract the titles from the problems array
+            const titles = result.problems.map(problem => problem.title || "Untitled");
 
-            // Return the titles and the full statements
-            res.json({
-                titles, // Array of titles
-                statements: result.statements, // Full structure
+            return res.json({
+                success: true,
+                titles // Array of titles
             });
         } else {
-            res.status(404).json({ error: 'No statements found for this topic' });
+            return res.status(404).json({ error: 'No problems found for this topic' });
         }
     } catch (error) {
-        console.error('Error fetching statements:', error.message || error);
-        res.status(500).json({ error: 'Failed to fetch statements' });
+        console.error('Error fetching titles:', error.message || error);
+        return res.status(500).json({ error: 'Failed to fetch titles' });
     }
 });
 
-    
+
+// Fetches the full paragraph data when a title is selected
+router.post('/get_full_paragraph_by_title', authenticateToken, async (req, res) => {
+    const { topic, title } = req.body;
+
+    if (!topic || !title) {
+        return res.status(400).json({ error: 'Topic and title are required' });
+    }
+
+    try {
+        const db = await connectToDatabase();
+        const problemsetCollection = db.collection('problemset');
+
+        // Find the document with the specified topic and title
+        const result = await problemsetCollection.findOne({
+            skill: "Reading",
+            topic: topic,
+            "problems.title": title, // Use 'problems' instead of 'statements'
+        });
+
+        if (result && result.problems) {
+            // Find the full paragraph data for the selected title
+            const paragraph = result.problems.find(problem => problem.title === title);
+
+            // Return the full paragraph data
+            res.json({
+                paragraph,
+            });
+        } else {
+            res.status(404).json({ error: 'No paragraph found for this title' });
+        }
+    } catch (error) {
+        console.error('Error fetching paragraph:', error.message || error);
+        res.status(500).json({ error: 'Failed to fetch paragraph' });
+    }
+});
 
 
 router.post('/generateWritingPrompt', authenticateToken, async(req, res)  => {
