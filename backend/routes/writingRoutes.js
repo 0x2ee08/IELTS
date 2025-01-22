@@ -49,7 +49,7 @@ try {
 });
 
 // Endpoint to get statements for a specific topic
-router.post('/get_array_writing_statement_by_topic', authenticateToken, async (req, res) => {
+router.post('/get_array_statement_writing_by_topic', authenticateToken, async (req, res) => {
 const { topic } = req.body;
 
 if (!topic) {
