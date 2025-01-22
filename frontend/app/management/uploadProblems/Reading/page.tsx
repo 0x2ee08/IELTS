@@ -68,7 +68,6 @@ const ReadingRender: React.FC = () => {
     
             const result = response.data.topics; // Assuming topics is an array
             setTopics(result); // Update state
-            console.log(result);
             return result; // Return extracted topics
         } catch (err) {
             console.error('Error extracting topics and statements:', err);
@@ -90,10 +89,6 @@ const ReadingRender: React.FC = () => {
             vocabularyIsOpen: false
         }
     );;
-
-    useEffect(() => {
-        console.log('Updated Paragraph:', paragraph);
-    }, [paragraph]); // This will run every time `paragraph` state is updated
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -128,11 +123,7 @@ const ReadingRender: React.FC = () => {
                     { headers: { Authorization: `Bearer ${token}` } }
                 )
                 .then(response => {
-                    const { title, content } = response.data;
-    
-                    // Log API response
-                    console.log("API Response:", response.data);
-    
+                    const { title, content } = response.data;    
                     if (!title || !content) {
                         alert("Failed to generate paragraph. Incomplete response.");
                         console.error("Incomplete response:", response.data);
@@ -145,9 +136,6 @@ const ReadingRender: React.FC = () => {
                         title,
                         content,
                     };
-    
-                    // Log the updated paragraph before setting the state
-                    console.log("Updated Paragraph:", updatedParagraph);
     
                     setParagraph(updatedParagraph); // Update the state
                     resolve(updatedParagraph); // Resolve with the updated paragraph
@@ -179,10 +167,7 @@ const ReadingRender: React.FC = () => {
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-    
-            // Log the API response for debugging purposes
-            console.log("API Response:", response.data);
-    
+
             const data = response.data;
     
             // Check if the response contains the expected data
@@ -230,8 +215,7 @@ const ReadingRender: React.FC = () => {
             }));
     
         } catch (error: unknown) {
-            // Log the error for debugging purposes
-            console.error("Error during YNN question generation:", error);
+            
     
             if (error instanceof AxiosError) {
                 // Handle AxiosError specifically
@@ -262,10 +246,7 @@ const ReadingRender: React.FC = () => {
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-    
-            // Log the API response for debugging purposes
-            console.log("API Response:", response.data);
-    
+
             const data = response.data;
     
             // Check if the response contains the expected data
@@ -313,8 +294,7 @@ const ReadingRender: React.FC = () => {
             }));
     
         } catch (error: unknown) {
-            // Log the error for debugging purposes
-            console.error("Error during YNN question generation:", error);
+            
     
             if (error instanceof AxiosError) {
                 // Handle AxiosError specifically
@@ -345,10 +325,7 @@ const ReadingRender: React.FC = () => {
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-    
-            // Log the API response for debugging purposes
-            console.log("API Response:", response.data);
-    
+
             const data = response.data;
     
             // Check if the response contains the expected data
@@ -396,8 +373,7 @@ const ReadingRender: React.FC = () => {
             }));
     
         } catch (error: unknown) {
-            // Log the error for debugging purposes
-            console.error("Error during YNN question generation:", error);
+            
     
             if (error instanceof AxiosError) {
                 // Handle AxiosError specifically
@@ -428,10 +404,7 @@ const ReadingRender: React.FC = () => {
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-    
-            // Log the API response for debugging purposes
-            console.log("API Response:", response.data);
-    
+
             const data = response.data;
     
             // Check if the response contains the expected data
@@ -479,8 +452,7 @@ const ReadingRender: React.FC = () => {
             }));
     
         } catch (error: unknown) {
-            // Log the error for debugging purposes
-            console.error("Error during YNN question generation:", error);
+            
     
             if (error instanceof AxiosError) {
                 // Handle AxiosError specifically
@@ -511,10 +483,7 @@ const ReadingRender: React.FC = () => {
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-    
-            // Log the API response for debugging purposes
-            console.log("API Response:", response.data);
-    
+
             const data = response.data;
     
             // Check if the response contains the expected data
@@ -562,8 +531,7 @@ const ReadingRender: React.FC = () => {
             }));
     
         } catch (error: unknown) {
-            // Log the error for debugging purposes
-            console.error("Error during YNN question generation:", error);
+            
     
             if (error instanceof AxiosError) {
                 // Handle AxiosError specifically
@@ -594,10 +562,7 @@ const ReadingRender: React.FC = () => {
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-    
-            // Log the API response for debugging purposes
-            console.log("API Response:", response.data);
-    
+
             const data = response.data;
     
             // Check if the response contains the expected data
@@ -645,8 +610,7 @@ const ReadingRender: React.FC = () => {
             }));
     
         } catch (error: unknown) {
-            // Log the error for debugging purposes
-            console.error("Error during YNN question generation:", error);
+            
     
             if (error instanceof AxiosError) {
                 // Handle AxiosError specifically
@@ -677,10 +641,7 @@ const ReadingRender: React.FC = () => {
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-    
-            // Log the API response for debugging purposes
-            console.log("API Response:", response.data);
-    
+
             const data = response.data;
     
             // Check if the response contains the expected data
@@ -728,8 +689,7 @@ const ReadingRender: React.FC = () => {
             }));
     
         } catch (error: unknown) {
-            // Log the error for debugging purposes
-            console.error("Error during YNN question generation:", error);
+            
     
             if (error instanceof AxiosError) {
                 // Handle AxiosError specifically
@@ -760,10 +720,7 @@ const ReadingRender: React.FC = () => {
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-    
-            // Log the API response for debugging purposes
-            console.log("API Response:", response.data);
-    
+
             const data = response.data;
     
             // Check if the response contains the expected data
@@ -811,8 +768,7 @@ const ReadingRender: React.FC = () => {
             }));
     
         } catch (error: unknown) {
-            // Log the error for debugging purposes
-            console.error("Error during YNN question generation:", error);
+            
     
             if (error instanceof AxiosError) {
                 // Handle AxiosError specifically
@@ -843,10 +799,7 @@ const ReadingRender: React.FC = () => {
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-    
-            // Log the API response for debugging purposes
-            console.log("API Response:", response.data);
-    
+
             const data = response.data;
     
             // Check if the response contains the expected data
@@ -895,8 +848,7 @@ const ReadingRender: React.FC = () => {
             }));
     
         } catch (error: unknown) {
-            // Log the error for debugging purposes
-            console.error("Error during YNN question generation:", error);
+            
     
             if (error instanceof AxiosError) {
                 // Handle AxiosError specifically
@@ -927,10 +879,7 @@ const ReadingRender: React.FC = () => {
                 { title, content },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-    
-            // Log the API response for debugging purposes
-            console.log("API Response:", response.data);
-    
+
             const data = response.data;
     
             // Check if the response contains the expected data
@@ -979,8 +928,7 @@ const ReadingRender: React.FC = () => {
             }));
     
         } catch (error: unknown) {
-            // Log the error for debugging purposes
-            console.error("Error during YNN question generation:", error);
+            
     
             if (error instanceof AxiosError) {
                 // Handle AxiosError specifically
@@ -998,7 +946,6 @@ const ReadingRender: React.FC = () => {
     };
 
     const handleGenerateQuestion = async (paragraph: Paragraph, sIndex: number): Promise<boolean> => {
-        console.log(paragraph);
         if (!paragraph.title || !paragraph.content) {
             alert("Paragraph is empty");
             return false;
@@ -1094,8 +1041,6 @@ const ReadingRender: React.FC = () => {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
-    
-            console.log("Response:", response.data);
         } catch (error: any) {
             if (error.response) {
                 console.error("Server Error:", error.response.data);
@@ -1142,7 +1087,6 @@ const ReadingRender: React.FC = () => {
                     }
     
                     const randomQuestionTypes = getRandomQuestionTypes();
-                    console.log(randomQuestionTypes);
     
                     // Step 2: Generate all questions for the paragraph
                     await Promise.all(
@@ -1187,18 +1131,14 @@ const ReadingRender: React.FC = () => {
 
     const uploadingProblemsReading = async () => {
         try {
-            console.log("Starting extraction of topics...");
             const extractedTopics = await extractStatements(); // Get topics directly
-            console.log("Extracted Topics:", extractedTopics);
     
             if (!extractedTopics || extractedTopics.length === 0) {
                 console.warn("No topics were extracted. Aborting.");
                 return;
             }
     
-            console.log("Starting problem creation...");
             await createProblem(extractedTopics); // Pass topics
-            console.log("Problem creation completed successfully.");
         } catch (error) {
             console.error("Error during uploadingProblemsReading:", error);
         }
@@ -1218,7 +1158,25 @@ const ReadingRender: React.FC = () => {
 
                     {error && <p style={{ color: 'red' }}>{error}</p>}
                     <div>
-
+                    {topics.length > 0 && (
+                        <div>
+                            <h2>Extracted Topics and Statements</h2>
+                            {topics.map((topic, topicIndex) => (
+                                <div key={topicIndex} style={{ marginBottom: '20px' }}>
+                                    <h3>Topic {topicIndex + 1}: {topic.topic || 'Untitled'}</h3>
+                                    {topic.statements?.length > 0 ? (
+                                        <ul>
+                                            {topic.statements.map((statement, statementIndex) => (
+                                                <li key={statementIndex}>{statement}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p>No statements found for this topic.</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                         {topics.length === 0 && !loading && !error && (
                             <p>No topics available. Please upload a file to extract topics and statements.</p>
                         )}

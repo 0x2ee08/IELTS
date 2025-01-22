@@ -6,43 +6,47 @@ const router = express.Router();
 
 router.post('/upload_reading_problem', authenticateToken, async (req, res) => {
     const { topic, paragraph } = req.body;
-    
-    // Check if the topic and paragraph data are valid
-    if (!topic || !paragraph || !paragraph.title || !paragraph.content) {
-        return res.status(400).json({ error: 'Topic, title, or content is missing.' });
+
+    // Validate input
+    if (!topic) {
+        return res.status(400).json({ error: 'Topic is missing.' });
+    }
+    if (!paragraph) {
+        return res.status(400).json({ error: 'Paragraph object is missing.' });
+    }
+    if (!paragraph.title || !paragraph.content) {
+        return res.status(400).json({ error: 'Paragraph title or content is missing.' });
     }
 
     try {
         const db = await connectToDatabase();
         const problemSetCollection = db.collection('problemset');
 
-        // Find the existing document by skill ("reading") and topic
-        const existingDoc = await problemSetCollection.findOne({ skill: 'reading', topic });
+        // Find the existing document by skill ("Reading") and topic
+        const existingDoc = await problemSetCollection.findOne({ skill: 'Reading', topic });
 
         if (existingDoc) {
-            // If the document already exists, add the new paragraph to the existing 'statements' array
+            // Add the new paragraph to the 'problems' array
             await problemSetCollection.updateOne(
                 { skill: 'Reading', topic },
-                { $push: { statements: paragraph } } // Use $push to add the new paragraph to the array
+                { $push: { problems: paragraph } }
             );
-            return res.json({ success: true, message: 'Paragraph added to existing topic.' });
+            return res.json({ success: true, message: 'Paragraph added to the existing topic.' });
         } else {
-            // If the document does not exist, create a new document
+            // Create a new document
             const newDoc = {
-                skill: 'reading',
+                skill: 'Reading',
                 topic,
-                statements: [paragraph], // Add the new paragraph as the first statement
+                problems: [paragraph],
             };
             await problemSetCollection.insertOne(newDoc);
-            return res.json({ success: true, message: 'New topic created with paragraph.' });
+            return res.json({ success: true, message: 'New topic created with the paragraph.' });
         }
     } catch (error) {
-        console.error('Error uploading problem:', error);
+        console.error('Error uploading paragraph:', error);
         return res.status(500).json({ error: 'Internal server error' });
     }
 });
-
-module.exports = router;
 
 
 module.exports = router;
